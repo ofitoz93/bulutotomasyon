@@ -4,6 +4,9 @@ import DashboardLayout from "@/layouts/DashboardLayout";
 import Login from "@/pages/auth/Login";
 import UpdatePassword from "@/pages/auth/UpdatePassword";
 import CompaniesPage from "@/pages/admin/CompaniesPage";
+import ModulesPage from "@/pages/admin/ModulesPage";
+import TeamPage from "@/pages/manager/TeamPage";
+import DocumentTrackingPage from "@/pages/modules/DocumentTrackingPage";
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/lib/supabase";
@@ -11,7 +14,6 @@ import { supabase } from "@/lib/supabase";
 function App() {
   const setSession = useAuthStore((state) => state.setSession);
   const loading = useAuthStore((state) => state.loading);
-
   const setProfile = useAuthStore((state) => state.setProfile);
 
   useEffect(() => {
@@ -41,7 +43,7 @@ function App() {
   }, [setSession, setProfile]);
 
   if (loading) {
-    return <div className="h-screen w-screen flex items-center justify-center">Yükleniyor...</div>
+    return <div className="h-screen w-screen flex items-center justify-center">Yükleniyor...</div>;
   }
 
   return (
@@ -56,14 +58,21 @@ function App() {
 
         <Route path="/app" element={<DashboardLayout />}>
           <Route index element={<div className="text-gray-600">Panele Hoşgeldiniz! Modül seçmek için menüyü kullanın.</div>} />
+          <Route path="evrak-takip" element={<DocumentTrackingPage />} />
         </Route>
 
-        {/* Admin Routerları */}
+        {/* Admin Routes */}
         <Route path="/admin" element={<DashboardLayout />}>
           <Route path="companies" element={<CompaniesPage />} />
+          <Route path="modules" element={<ModulesPage />} />
           <Route index element={<Navigate to="/admin/companies" replace />} />
         </Route>
 
+        {/* Manager Routes */}
+        <Route path="/manager" element={<DashboardLayout />}>
+          <Route path="team" element={<TeamPage />} />
+          <Route index element={<Navigate to="/manager/team" replace />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
