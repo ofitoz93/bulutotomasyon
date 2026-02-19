@@ -47,6 +47,13 @@ interface Inspection {
     equipment_inspectors: { name: string } | null;
     equipments?: { name: string; code: string } | null;
 }
+interface LocationHistory {
+    id: string;
+    equipment_id: string;
+    location: string;
+    scanned_by: string | null;
+    created_at: string;
+}
 
 type TabView = "dashboard" | "equipments" | "inspectors";
 
@@ -73,6 +80,8 @@ export default function EquipmentTrackingPage() {
     const [selectedEquip, setSelectedEquip] = useState<Equipment | null>(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailInspections, setDetailInspections] = useState<Inspection[]>([]);
+    const [locationHistory, setLocationHistory] = useState<LocationHistory[]>([]);
+    const [detailTab, setDetailTab] = useState<"overview" | "maintenance" | "location">("overview");
     const [showInlineInsp, setShowInlineInsp] = useState(false);
 
     // Ekipman adı listesi - yeni tanım ekleme
@@ -187,10 +196,13 @@ export default function EquipmentTrackingPage() {
     // Ekipman seçilince detail modal aç
     const openDetail = async (eq: Equipment) => {
         setSelectedEquip(eq);
-        const { data } = await supabase.from("equipment_inspections")
-            .select("*, equipment_inspectors(name)").eq("equipment_id", eq.id)
-            .order("inspection_date", { ascending: false });
-        setDetailInspections((data || []) as Inspection[]);
+        setDetailTab("overview");
+        const [inspRes, locRes] = await Promise.all([
+            supabase.from("equipment_inspections").select("*, equipment_inspectors(name)").eq("equipment_id", eq.id).order("inspection_date", { ascending: false }),
+            supabase.from("equipment_locations").select("*").eq("equipment_id", eq.id).order("created_at", { ascending: false }),
+        ]);
+        setDetailInspections((inspRes.data || []) as Inspection[]);
+        setLocationHistory((locRes.data || []) as LocationHistory[]);
         setShowInlineInsp(false);
         setInspForm({ ...defaultInspForm(), equipment_id: eq.id });
         setShowDetailModal(true);
@@ -779,110 +791,209 @@ export default function EquipmentTrackingPage() {
                             <button onClick={() => setShowDetailModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
                         </div>
 
-                        <div className="p-4 space-y-6 flex-1">
-                            {/* Özet Kartı */}
-                            <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
-                                {(() => {
-                                    const days = selectedEquip.maintenance_required ? getDaysUntilInspection(selectedEquip) : null;
-                                    const st = selectedEquip.maintenance_required ? getInspStatus(days) : { label: "Gerekmiyor", color: "bg-gray-200 text-gray-600 border-gray-300" };
-                                    // Border color derivation for badge
-                                    const borderColor = st.color.includes("border-") ? "" : st.color.replace("bg-", "border-").replace("text-", "text-");
-                                    return (
-                                        <>
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className="text-sm font-medium text-indigo-900">Bakıma Kalan Süre</span>
-                                                <span className={`px-2 py-0.5 text-xs rounded-full font-bold bg-white border ${borderColor} ${st.color.replace("bg-", "text-")}`}>
-                                                    {st.label}
-                                                </span>
-                                            </div>
-                                            <div className="text-3xl font-bold text-indigo-700 mb-1">
-                                                {selectedEquip.maintenance_required ? (days ?? "—") : "—"} <span className="text-base font-normal text-indigo-500">gün</span>
-                                            </div>
-                                            <p className="text-xs text-indigo-400">Sonraki Planlanan: {selectedEquip.maintenance_required ? formatDate(selectedEquip.next_inspection_date || null) : "—"}</p>
-                                        </>
-                                    );
-                                })()}
-                            </div>
+                        <div className="flex border-b border-gray-200 sticky top-[73px] bg-white z-10">
+                            {[
+                                { id: "overview", label: "Genel Bakış" },
+                                { id: "maintenance", label: "Bakım Geçmişi" },
+                                { id: "location", label: "Konum Geçmişi" }
+                            ].map(tab => (
+                                <button key={tab.id}
+                                    onClick={() => setDetailTab(tab.id as any)}
+                                    className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${detailTab === tab.id ? "text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/50" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"}`}>
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
 
-                            {/* Ekipman Künye */}
-                            <div className="space-y-2 text-sm">
-                                <h3 className="font-semibold text-gray-900 border-b pb-1">Künye Bilgileri</h3>
-                                <div className="grid grid-cols-2 gap-y-1 text-gray-600">
-                                    <span>Marka/Model:</span> <span className="text-gray-900 font-medium">{selectedEquip.brand || "—"} / {selectedEquip.model || "—"}</span>
-                                    <span>Seri No:</span> <span className="text-gray-900 font-medium font-mono">{selectedEquip.serial_no || "—"}</span>
-                                    <span>Lokasyon:</span> <span className="text-gray-900 font-medium">{selectedEquip.current_location || selectedEquip.default_location || "—"}</span>
-                                    <span>Zimmet:</span> <span className="text-gray-900 font-medium">{selectedEquip.assigned_to || "—"}</span>
-                                    <span>Risk Grubu:</span> <span className={`font-medium ${RISK_COLORS[selectedEquip.risk_level]}`}>{selectedEquip.risk_level}</span>
-                                </div>
-                            </div>
+                        <div className="p-4 space-y-6 flex-1 overflow-y-auto">
+                            {detailTab === "overview" && (
+                                <div className="space-y-6 animate-fade-in">
+                                    {/* Özet Kartı */}
+                                    <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100 shadow-sm">
+                                        {(() => {
+                                            const days = selectedEquip.maintenance_required ? (selectedEquip.next_inspection_date ? getDaysUntilInspection(selectedEquip) : null) : null;
+                                            const st = selectedEquip.maintenance_required ? getInspStatus(days) : { label: "Gerekmiyor", color: "bg-gray-200 text-gray-600 border-gray-300" };
+                                            const borderColor = st.color.includes("border-") ? "" : st.color.replace("bg-", "border-").replace("text-", "text-");
+                                            return (
+                                                <>
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <span className="text-sm font-medium text-indigo-900">Bakıma Kalan Süre</span>
+                                                        <span className={`px-2 py-0.5 text-xs rounded-full font-bold bg-white border ${borderColor} ${st.color.replace("bg-", "text-")}`}>
+                                                            {st.label}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-3xl font-bold text-indigo-700 mb-1">
+                                                        {selectedEquip.maintenance_required ? (days ?? "—") : "—"} <span className="text-base font-normal text-indigo-500">gün</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-end mt-2 pt-2 border-t border-indigo-100/50">
+                                                        <p className="text-xs text-indigo-400">Sonraki Planlanan</p>
+                                                        <p className="text-sm font-medium text-indigo-800">{selectedEquip.maintenance_required ? formatDate(selectedEquip.next_inspection_date || null) : "—"}</p>
+                                                    </div>
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
 
-                            {/* Bakım Geçmişi */}
-                            <div>
-                                <div className="flex justify-between items-center mb-3">
-                                    <h3 className="font-semibold text-gray-900">Bakım Geçmişi</h3>
-                                    <button onClick={() => { setShowInlineInsp(!showInlineInsp); }}
-                                        className="text-indigo-600 text-sm hover:underline font-medium">
-                                        {showInlineInsp ? "İptal" : "+ Bakım Ekle"}
-                                    </button>
-                                </div>
-
-                                {showInlineInsp && (
-                                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-4 space-y-3 animate-fade-in">
-                                        <p className="text-xs font-bold text-gray-500 uppercase">Yeni Bakım Kaydı</p>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <input type="date" value={inspForm.inspection_date} onChange={e => setInspForm(f => ({ ...f, inspection_date: e.target.value }))} className="text-xs p-1.5 rounded border" />
-                                            <input type="date" value={inspForm.next_inspection_date} onChange={e => setInspForm(f => ({ ...f, next_inspection_date: e.target.value }))} className="text-xs p-1.5 rounded border" />
+                                    {/* Ekipman Künye */}
+                                    <div className="space-y-3 text-sm">
+                                        <h3 className="font-semibold text-gray-900 border-b pb-2 flex items-center gap-2">
+                                            <span>📋</span> Künye Bilgileri
+                                        </h3>
+                                        <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-gray-600">
+                                            <div className="flex flex-col"><span className="text-xs text-gray-400">Marka / Model</span><span className="text-gray-900 font-medium">{selectedEquip.brand || "—"} / {selectedEquip.model || "—"}</span></div>
+                                            <div className="flex flex-col"><span className="text-xs text-gray-400">Seri No</span><span className="text-gray-900 font-medium font-mono">{selectedEquip.serial_no || "—"}</span></div>
+                                            <div className="flex flex-col"><span className="text-xs text-gray-400">Tür</span><span className="text-gray-900 font-medium">{selectedEquip.type || "—"}</span></div>
+                                            <div className="flex flex-col"><span className="text-xs text-gray-400">Üretim Yılı</span><span className="text-gray-900 font-medium">{selectedEquip.manufacture_year || "—"}</span></div>
+                                            <div className="flex flex-col"><span className="text-xs text-gray-400">Satın Alma</span><span className="text-gray-900 font-medium">{formatDate(selectedEquip.purchase_date)}</span></div>
+                                            <div className="flex flex-col"><span className="text-xs text-gray-400">Risk Seviyesi</span><span className={`font-medium w-max px-2 rounded ${RISK_COLORS[selectedEquip.risk_level]}`}>{selectedEquip.risk_level.toUpperCase()}</span></div>
+                                            <div className="flex flex-col col-span-2"><span className="text-xs text-gray-400">Zimmet</span><span className="text-gray-900 font-medium">{selectedEquip.assigned_to || "—"}</span></div>
+                                            <div className="flex flex-col col-span-2"><span className="text-xs text-gray-400">Güncel Konum</span><span className="text-gray-900 font-medium">{selectedEquip.current_location || selectedEquip.default_location || "—"}</span></div>
                                         </div>
-                                        <select value={inspForm.inspector_id} onChange={e => setInspForm(f => ({ ...f, inspector_id: e.target.value }))} className="w-full text-xs p-1.5 rounded border">
-                                            <option value="">Yetkili seç...</option>
-                                            {inspectors.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
-                                        </select>
-                                        <select value={inspForm.result} onChange={e => setInspForm(f => ({ ...f, result: e.target.value as any }))} className="w-full text-xs p-1.5 rounded border">
-                                            <option value="uygun">Uygun</option>
-                                            <option value="koşullu uygun">Koşullu Uygun</option>
-                                            <option value="uygunsuz">Uygunsuz</option>
-                                        </select>
-                                        <textarea value={inspForm.notes} onChange={e => setInspForm(f => ({ ...f, notes: e.target.value }))} placeholder="Notlar..." className="w-full text-xs p-1.5 rounded border h-16" />
+                                    </div>
 
-                                        <div className="mb-2">
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">Dosya Yükle</label>
-                                            <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                                                onChange={e => setSelectedFile(e.target.files?.[0] || null)}
-                                                className="w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
-                                        </div>
-
-                                        <button onClick={handleSaveInspection} disabled={inspLoading} className="w-full bg-indigo-600 text-white py-1.5 rounded text-xs font-bold hover:bg-indigo-700 disabled:opacity-50">
-                                            {inspLoading ? "..." : "Kaydet"}
+                                    {/* QR İndir Butonu */}
+                                    <div className="pt-2">
+                                        <button onClick={() => downloadQR(selectedEquip)} className="w-full flex justify-center items-center gap-2 border border-gray-200 bg-gray-50 rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 transition shadow-sm">
+                                            <span>📱</span> QR Kodunu İndir
                                         </button>
                                     </div>
-                                )}
+                                </div>
+                            )}
 
-                                <div className="space-y-3 relative">
-                                    <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-gray-200"></div>
-                                    {detailInspections.length === 0 ? (
-                                        <p className="text-sm text-gray-400 pl-6 italic">Kayıt bulunamadı.</p>
-                                    ) : (
-                                        detailInspections.map(i => (
-                                            <div key={i.id} className="relative pl-6">
-                                                <div className={`absolute left-0 top-1.5 w-5 h-5 rounded-full border-2 bg-white ${i.result === "uygun" ? "border-green-500" : i.result === "koşullu uygun" ? "border-yellow-500" : "border-red-500"}`}></div>
-                                                <div className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-                                                    <div className="flex justify-between items-start">
-                                                        <span className="text-sm font-bold text-gray-900">{formatDate(i.inspection_date)}</span>
-                                                        <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-bold ${i.result === "uygun" ? "bg-green-100 text-green-700" : i.result === "koşullu uygun" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}`}>{i.result}</span>
+                            {detailTab === "maintenance" && (
+                                <div className="space-y-4 animate-fade-in">
+                                    <div className="flex justify-between items-center sticky top-0 bg-white z-10 pb-2 border-b">
+                                        <h3 className="font-semibold text-gray-900">Bakım Kayıtları</h3>
+                                        {!showInlineInsp && (
+                                            <button onClick={() => setShowInlineInsp(true)} className="text-xs bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full font-medium hover:bg-indigo-100 transition border border-indigo-100">
+                                                + Kayıt Ekle
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {showInlineInsp && (
+                                        <div className="bg-white p-4 rounded-xl border border-indigo-100 shadow-md ring-4 ring-indigo-50/50 animate-slide-down">
+                                            <div className="flex justify-between items-center mb-3">
+                                                <h4 className="text-sm font-bold text-gray-800">Yeni Bakım Kaydı</h4>
+                                                <button onClick={() => setShowInlineInsp(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label className="block text-xs font-medium text-gray-500 mb-1">Tarih</label>
+                                                        <input type="date" value={inspForm.inspection_date} onChange={e => setInspForm(f => ({ ...f, inspection_date: e.target.value }))}
+                                                            className="w-full border rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500" />
                                                     </div>
-                                                    <p className="text-xs text-gray-500 mt-0.5">{i.inspector_name_override || (i.equipment_inspectors as any)?.name || "—"}</p>
-                                                    {i.notes && <p className="text-xs text-gray-600 mt-2 bg-gray-50 p-2 rounded italic">"{i.notes}"</p>}
-                                                    {i.file_url && (
-                                                        <a href={i.file_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center text-xs text-indigo-600 hover:underline">
-                                                            📄 {i.file_name?.substring(0, 15) || "Belge"}
-                                                        </a>
-                                                    )}
+                                                    <div>
+                                                        <label className="block text-xs font-medium text-gray-500 mb-1">Sonuç</label>
+                                                        <select value={inspForm.result} onChange={e => setInspForm(f => ({ ...f, result: e.target.value as any }))}
+                                                            className="w-full border rounded-lg px-2 py-1.5 text-sm bg-white focus:ring-2 focus:ring-indigo-500">
+                                                            <option value="uygun">Uygun</option>
+                                                            <option value="koşullu uygun">Koşullu Uygun</option>
+                                                            <option value="uygunsuz">Uygunsuz</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <Field label="Kontrol Eden (Liste)" as="select" value={inspForm.inspector_id} onChange={v => setInspForm(f => ({ ...f, inspector_id: v }))}>
+                                                    <option value="">Seçiniz...</option>
+                                                    {inspectors.map(i => <option key={i.id} value={i.id}>{i.name} ({i.type})</option>)}
+                                                </Field>
+                                                {!inspForm.inspector_id && (
+                                                    <Field label="veya Harici Uzman Adı" value={inspForm.inspector_name_override} onChange={v => setInspForm(f => ({ ...f, inspector_name_override: v }))} />
+                                                )}
+                                                <div>
+                                                    <label className="block text-xs font-medium text-gray-500 mb-1">Notlar</label>
+                                                    <textarea rows={2} value={inspForm.notes} onChange={e => setInspForm(f => ({ ...f, notes: e.target.value }))}
+                                                        className="w-full border rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Yapılan işlemler..." />
+                                                </div>
+                                                <div className="pt-2">
+                                                    <button onClick={handleSaveInspection} disabled={inspLoading} className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition disabled:opacity-50 shadow-sm">
+                                                        {inspLoading ? "Kaydediliyor..." : "Kaydet ve Tamamla"}
+                                                    </button>
                                                 </div>
                                             </div>
-                                        ))
+                                        </div>
                                     )}
+
+                                    <div className="space-y-4 relative pl-2">
+                                        <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-gray-100 rounded-full"></div>
+                                        {detailInspections.length === 0 ? (
+                                            <p className="text-center text-sm text-gray-400 py-8 italic bg-gray-50 rounded-lg border border-dashed">Henüz bakım kaydı yok.</p>
+                                        ) : (
+                                            detailInspections.map(insp => (
+                                                <div key={insp.id} className="relative pl-8 group">
+                                                    <div className={`absolute left-0 top-1.5 w-6 h-6 rounded-full border-4 bg-white z-10 transition-transform group-hover:scale-110 ${insp.result === "uygun" ? "border-green-500" : insp.result === "koşullu uygun" ? "border-yellow-500" : "border-red-500"}`}></div>
+                                                    <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group-hover:border-indigo-100">
+                                                        <div className="flex justify-between items-start mb-1">
+                                                            <span className="text-sm font-bold text-gray-900">{formatDate(insp.inspection_date)}</span>
+                                                            <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wide ${insp.result === "uygun" ? "bg-green-100 text-green-700" : insp.result === "koşullu uygun" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}`}>{insp.result}</span>
+                                                        </div>
+                                                        <p className="text-xs text-gray-500 flex items-center gap-1">
+                                                            <span>👤</span> {insp.inspector_name_override || (insp.equipment_inspectors as any)?.name || "—"}
+                                                        </p>
+                                                        {insp.notes && <div className="mt-2 text-xs text-gray-600 bg-gray-50 p-2 rounded-lg italic border border-gray-100">"{insp.notes}"</div>}
+                                                        {insp.file_url && (
+                                                            <a href={insp.file_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs text-indigo-600 hover:underline bg-indigo-50 px-2 py-1 rounded">
+                                                                <span>📄</span> {insp.file_name?.substring(0, 15) || "Belge"}
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
+
+                            {detailTab === "location" && (
+                                <div className="space-y-6 animate-fade-in">
+                                    {/* Map Embed */}
+                                    {selectedEquip.current_location && (
+                                        <div className="rounded-xl overflow-hidden border border-gray-200 h-48 bg-gray-100 relative shadow-sm">
+                                            <iframe
+                                                width="100%"
+                                                height="100%"
+                                                frameBorder="0"
+                                                scrolling="no"
+                                                src={`https://maps.google.com/maps?q=${encodeURIComponent(selectedEquip.current_location)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                                                className="grayscale-[20%] hover:grayscale-0 transition-all duration-500"
+                                            ></iframe>
+                                            <div className="absolute bottom-0 left-0 right-0 bg-white/95 px-3 py-2 text-xs font-medium text-gray-700 truncate border-t backdrop-blur-sm flex items-center gap-2">
+                                                <span className="text-red-500">📍</span> {selectedEquip.current_location}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-4">
+                                        <h3 className="font-semibold text-gray-900 border-b pb-2 flex items-center gap-2">
+                                            <span>🗺️</span> Konum Geçmişi
+                                        </h3>
+                                        <div className="space-y-0 relative pl-2">
+                                            <div className="absolute left-[7px] top-2 bottom-4 w-0.5 bg-gray-200"></div>
+                                            {locationHistory.length === 0 ? (
+                                                <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                                    <p className="text-sm text-gray-500 mb-1">Henüz konum kaydı yok.</p>
+                                                    <p className="text-xs text-gray-400">QR kod okutulduğunda konumlar buraya eklenecek.</p>
+                                                </div>
+                                            ) : (
+                                                locationHistory.map((loc, i) => (
+                                                    <div key={loc.id} className="relative pl-6 pb-6 last:pb-0 group">
+                                                        <div className={`absolute left-0 top-1.5 w-4 h-4 rounded-full border-2 z-10 transition-all ${i === 0 ? "bg-indigo-600 border-indigo-100 ring-4 ring-indigo-50" : "bg-white border-gray-300"}`}></div>
+                                                        <div className={`${i === 0 ? "opacity-100" : "opacity-70 group-hover:opacity-100"} transition-opacity`}>
+                                                            <p className="text-sm font-medium text-gray-900 leading-none mb-1">{loc.location}</p>
+                                                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                                <span>🕒 {new Date(loc.created_at).toLocaleString("tr-TR")}</span>
+                                                                <span>•</span>
+                                                                <span>👤 {loc.scanned_by || "Sistem"}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -895,14 +1006,20 @@ export default function EquipmentTrackingPage() {
 }
 
 // ===================== HELPERS =====================
-function Field({ label, value, onChange, placeholder, type = "text" }: {
-    label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string;
+function Field({ label, value, onChange, placeholder, type = "text", children, as }: {
+    label: string; value: string | undefined; onChange: (v: string) => void; placeholder?: string; type?: string; children?: React.ReactNode; as?: "input" | "select";
 }) {
     return (
         <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-            <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            {as === "select" ? (
+                <select value={value || ""} onChange={e => onChange(e.target.value)} className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                    {children}
+                </select>
+            ) : (
+                <input type={type} value={value || ""} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            )}
         </div>
     );
 }
