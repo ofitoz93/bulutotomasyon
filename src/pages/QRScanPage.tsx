@@ -77,30 +77,80 @@ export default function QRScanPage() {
         setLoading(false);
     };
 
-    const handleUpdateLocation = async () => {
-        if (!newLocation.trim() || !equipment) { alert("Lütfen lokasyon girin."); return; }
+    const [gpsLoading, setGpsLoading] = useState(false);
+
+    useEffect(() => {
+        if (equipment && !updated && !gpsLoading) {
+            // Otomatik GPS denemesi
+            attemptAutoLocationUpdate();
+        }
+    }, [equipment]);
+
+    const attemptAutoLocationUpdate = () => {
+        if (!navigator.geolocation) return;
+        setGpsLoading(true);
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const { latitude, longitude } = pos.coords;
+            try {
+                // Reverse Geocoding (OpenStreetMap Nominatim)
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`);
+                const data = await res.json();
+
+                // Adres formatlama (kısa ve anlamlı)
+                let loc = "";
+                if (data.address) {
+                    const parts = [
+                        data.address.road || data.address.pedestrian,
+                        data.address.house_number,
+                        data.address.suburb || data.address.neighbourhood,
+                        data.address.city || data.address.town || data.address.county
+                    ].filter(Boolean);
+                    loc = parts.join(", ");
+                }
+                const finalLoc = loc || data.display_name?.split(",")[0] || `GPS: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+
+                // Eğer mevcut lokasyondan farklıysa güncelle
+                if (equipment && finalLoc !== equipment.current_location) {
+                    await updateLocationDB(finalLoc, `Otomatik (GPS)`);
+                }
+            } catch (e) {
+                console.error("GPS Reverse Geocode Error", e);
+            } finally {
+                setGpsLoading(false);
+            }
+        }, (err) => {
+            console.warn("GPS Error", err);
+            setGpsLoading(false);
+        }, { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 });
+    };
+
+    const updateLocationDB = async (loc: string, by: string) => {
+        if (!equipment) return;
         setUpdating(true);
         try {
-            // Lokasyon geçmişine ekle
             await supabase.from("equipment_locations").insert([{
                 equipment_id: equipment.id,
-                location: newLocation.trim(),
-                scanned_by: scannedBy.trim() || null,
+                location: loc,
+                scanned_by: by || null,
             }]);
-            // Ekipmanın güncel lokasyonunu güncelle
             await supabase.from("equipments").update({
-                current_location: newLocation.trim(),
+                current_location: loc,
                 updated_at: new Date().toISOString(),
             }).eq("id", equipment.id);
-
-            setEquipment(e => e ? { ...e, current_location: newLocation.trim() } : e);
+            setEquipment(e => e ? { ...e, current_location: loc } : e);
+            setNewLocation(loc);
             setUpdated(true);
             setShowUpdateForm(false);
         } catch (e: any) {
-            alert("Hata: " + e.message);
+            console.error("Update DB Error", e);
         } finally {
             setUpdating(false);
         }
+    };
+
+    const handleUpdateLocation = async () => {
+        if (!newLocation.trim()) { alert("Lütfen lokasyon girin."); return; }
+        await updateLocationDB(newLocation.trim(), scannedBy.trim());
     };
 
     const formatDate = (d: string | null) => (d ? new Date(d).toLocaleDateString("tr-TR") : "—");
