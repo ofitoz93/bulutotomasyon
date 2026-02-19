@@ -95,6 +95,7 @@ export default function DashboardLayout() {
 
     const moduleRoutes: Record<string, string> = {
         evrak_takip: "/app/evrak-takip",
+        ekipman_takip: "/app/ekipman-takip",
     };
 
     const getRoleLabel = () => {

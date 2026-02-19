@@ -89,9 +89,11 @@ export default function DocumentTrackingPage() {
             const { data: allDocs, error } = await query.order("created_at", { ascending: false });
             if (error) throw error;
 
-            // Profil bilgileri (yönetici için)
+
+
+            // Profil bilgileri (herkes için)
             let profilesMap: Record<string, { email: string; first_name: string | null; last_name: string | null }> = {};
-            if (isManager && allDocs && allDocs.length > 0) {
+            if (allDocs && allDocs.length > 0) {
                 const userIds = [...new Set(allDocs.map((d: any) => d.user_id))];
                 const { data: profilesData } = await supabase
                     .from("profiles").select("id, email, first_name, last_name").in("id", userIds);
@@ -203,7 +205,7 @@ export default function DocumentTrackingPage() {
             .eq("scope", "kurumsal");
         if (excludeId) query = query.neq("id", excludeId);
         const { data } = await query;
-        return (data && data.length > 0);
+        return !!(data && Array.isArray(data) && data.length > 0);
     };
 
     const resetForm = () => {
@@ -485,7 +487,7 @@ export default function DocumentTrackingPage() {
                                             <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kapsam</th>
                                             <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Belge Türü</th>
                                             <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lokasyon</th>
-                                            {isManager && <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kullanıcı</th>}
+                                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kullanıcı</th>
                                             <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alınma</th>
                                             <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bitiş</th>
                                             <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Son Başvuru</th>
@@ -520,11 +522,9 @@ export default function DocumentTrackingPage() {
                                                             {doc.title || (doc.document_types as any)?.name || "—"}
                                                         </td>
                                                         <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{(doc.locations as any)?.name || "—"}</td>
-                                                        {isManager && (
-                                                            <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
-                                                                {(doc.profiles as any)?.first_name || ""} {(doc.profiles as any)?.last_name || (doc.profiles as any)?.email || ""}
-                                                            </td>
-                                                        )}
+                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                            {(doc.profiles as any)?.first_name || ""} {(doc.profiles as any)?.last_name || (doc.profiles as any)?.email || ""}
+                                                        </td>
                                                         <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{formatDate(doc.acquisition_date)}</td>
                                                         <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{doc.is_indefinite ? "Süresiz" : formatDate(doc.expiry_date)}</td>
                                                         <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{doc.is_indefinite ? "—" : formatDate(doc.application_deadline)}</td>

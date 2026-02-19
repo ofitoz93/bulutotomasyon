@@ -7,6 +7,8 @@ import CompaniesPage from "@/pages/admin/CompaniesPage";
 import ModulesPage from "@/pages/admin/ModulesPage";
 import TeamPage from "@/pages/manager/TeamPage";
 import DocumentTrackingPage from "@/pages/modules/DocumentTrackingPage";
+import EquipmentTrackingPage from "@/pages/modules/EquipmentTrackingPage";
+import QRScanPage from "@/pages/QRScanPage";
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/lib/supabase";
@@ -59,7 +61,10 @@ function App() {
         <Route path="/app" element={<DashboardLayout />}>
           <Route index element={<div className="text-gray-600">Panele Hoşgeldiniz! Modül seçmek için menüyü kullanın.</div>} />
           <Route path="evrak-takip" element={<DocumentTrackingPage />} />
+          <Route path="ekipman-takip" element={<EquipmentTrackingPage />} />
         </Route>
+
+        <Route path="/qr/:token" element={<QRScanPage />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<DashboardLayout />}>
