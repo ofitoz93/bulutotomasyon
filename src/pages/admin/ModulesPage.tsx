@@ -5,6 +5,12 @@ interface Module {
     key: string;
     name: string;
     description: string | null;
+    category_id?: string;
+    category?: string; // Fallback
+    module_categories?: {
+        id: string;
+        name: string;
+    } | null;
 }
 
 interface Company {
@@ -20,13 +26,19 @@ interface CompanyModule {
     expires_at: string | null;
 }
 
+interface Category {
+    id: string;
+    name: string;
+}
+
 export default function ModulesPage() {
     const [modules, setModules] = useState<Module[]>([]);
     const [companies, setCompanies] = useState<Company[]>([]);
     const [assignments, setAssignments] = useState<CompanyModule[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Firma arama & seçim
+    // Firma arama & seçim (Şirket)
     const [companySearch, setCompanySearch] = useState("");
     const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
 
@@ -39,27 +51,45 @@ export default function ModulesPage() {
     const [expiresAt, setExpiresAt] = useState("");
     const [assignLoading, setAssignLoading] = useState(false);
 
+    // Modül Düzenleme Modal
+    const [editModal, setEditModal] = useState(false);
+    const [editingModule, setEditingModule] = useState<Module | null>(null);
+    const [editForm, setEditForm] = useState({ name: "", description: "", category_id: "" });
+    const [saveLoading, setSaveLoading] = useState(false);
+
+    // Kategori Yönetimi Modal
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState("");
+    const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+    const [categoryLoading, setCategoryLoading] = useState(false);
+
     useEffect(() => { fetchAll(); }, []);
 
     const fetchAll = async () => {
         try {
-            const [modulesRes, companiesRes, assignmentsRes] = await Promise.all([
-                supabase.from("modules").select("*"),
+            const [modulesRes, companiesRes, assignmentsRes, categoriesRes] = await Promise.all([
+                supabase.from("modules").select("*, module_categories(id, name)").order("name"),
                 supabase.from("companies").select("id, name").order("name"),
                 supabase.from("company_modules").select("*"),
+                supabase.from("module_categories").select("*").order("name")
             ]);
             if (modulesRes.error) throw modulesRes.error;
             if (companiesRes.error) throw companiesRes.error;
             if (assignmentsRes.error) throw assignmentsRes.error;
+            if (categoriesRes.error) throw categoriesRes.error;
+
             setModules(modulesRes.data || []);
             setCompanies(companiesRes.data || []);
             setAssignments(assignmentsRes.data || []);
+            setCategories(categoriesRes.data || []);
         } catch (error) {
             console.error("Error:", error);
         } finally {
             setLoading(false);
         }
     };
+
+    // --- HELPERLER ---
 
     // Firma araması sonuçları
     const filteredCompanies = companySearch.trim()
@@ -97,7 +127,14 @@ export default function ModulesPage() {
         return { label: expiry.toLocaleDateString("tr-TR"), color: "bg-blue-100 text-blue-800" };
     };
 
-    // Modül ata (modal)
+    const getAssignmentCount = (moduleKey: string) => {
+        return assignments.filter(a => a.module_key === moduleKey && a.is_active).length;
+    };
+
+
+    // --- ACTIONS ---
+
+    // Modül Atama
     const openAssignModal = (mod: Module) => {
         setSelectedModule(mod);
         setModalCompanySearch("");
@@ -117,21 +154,24 @@ export default function ModulesPage() {
             const existing = assignments.find(
                 a => a.company_id === modalSelectedCompany.id && a.module_key === selectedModule.key
             );
+            // Upsert mantığı (update or insert)
+            const payload = {
+                company_id: modalSelectedCompany.id,
+                module_key: selectedModule.key,
+                is_active: true,
+                is_indefinite: isIndefinite,
+                expires_at: isIndefinite ? null : expiresAt,
+            };
+
             if (existing) {
                 await supabase.from("company_modules").update({
                     is_active: true, is_indefinite: isIndefinite,
                     expires_at: isIndefinite ? null : expiresAt,
                 }).eq("company_id", modalSelectedCompany.id).eq("module_key", selectedModule.key);
-                alert("Modül ataması güncellendi!");
             } else {
-                await supabase.from("company_modules").insert([{
-                    company_id: modalSelectedCompany.id,
-                    module_key: selectedModule.key,
-                    is_active: true, is_indefinite: isIndefinite,
-                    expires_at: isIndefinite ? null : expiresAt,
-                }]);
-                alert("Modül başarıyla atandı!");
+                await supabase.from("company_modules").insert([payload]);
             }
+            alert("Modül ataması yapıldı!");
             setShowAssignModal(false);
             fetchAll();
         } catch (error: any) {
@@ -152,18 +192,89 @@ export default function ModulesPage() {
         } catch (error: any) { alert("Hata: " + error.message); }
     };
 
-    // Modüle atanmış toplam şirket sayısı
-    const getAssignmentCount = (moduleKey: string) => {
-        return assignments.filter(a => a.module_key === moduleKey && a.is_active).length;
+    // Modül Düzenleme
+    const openEditModal = (mod: Module) => {
+        setEditingModule(mod);
+        setEditForm({
+            name: mod.name,
+            description: mod.description || "",
+            category_id: mod.category_id || (mod.module_categories?.id || "") // Öncelik ID'de
+        });
+        setEditModal(true);
     };
+
+    const handleSaveModule = async () => {
+        if (!editingModule) return;
+        setSaveLoading(true);
+        try {
+            const { error } = await supabase.from("modules").update({
+                name: editForm.name,
+                description: editForm.description,
+                category_id: editForm.category_id || null // Empty string -> null
+            }).eq("key", editingModule.key);
+
+            if (error) throw error;
+            setEditModal(false);
+            fetchAll();
+        } catch (error: any) {
+            alert("Hata: " + error.message);
+        } finally {
+            setSaveLoading(false);
+        }
+    };
+
+    // Kategori Yönetimi
+    const handleSaveCategory = async () => {
+        if (!newCategoryName.trim()) return;
+        setCategoryLoading(true);
+        try {
+            if (editingCategory) {
+                const { error } = await supabase.from("module_categories")
+                    .update({ name: newCategoryName.trim() })
+                    .eq("id", editingCategory.id);
+                if (error) throw error;
+            } else {
+                const { error } = await supabase.from("module_categories")
+                    .insert([{ name: newCategoryName.trim() }]);
+                if (error) throw error;
+            }
+            setNewCategoryName("");
+            setEditingCategory(null);
+            fetchAll();
+        } catch (error: any) {
+            alert("Hata: " + error.message);
+        } finally {
+            setCategoryLoading(false);
+        }
+    };
+
+    const handleDeleteCategory = async (id: string, name: string) => {
+        if (!window.confirm(`"${name}" kategorisini silmek istediğinize emin misiniz? Bu kategoriye bağlı modüller 'Genel' veya kategorisiz duruma düşebilir.`)) return;
+        try {
+            const { error } = await supabase.from("module_categories").delete().eq("id", id);
+            if (error) throw error;
+            fetchAll();
+        } catch (error: any) {
+            alert("Hata: " + error.message);
+        }
+    };
+
 
     if (loading) return <div className="p-6">Yükleniyor...</div>;
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold tracking-tight">Modül Yönetimi</h1>
-                <p className="text-sm text-gray-500 mt-1">Firma arayarak modül erişimini yönetin veya toplu atama yapın.</p>
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Modül Yönetimi</h1>
+                    <p className="text-sm text-gray-500 mt-1">Firma arayarak modül erişimini yönetin veya kategori düzenleyin.</p>
+                </div>
+                <button
+                    onClick={() => setShowCategoryModal(true)}
+                    className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm"
+                >
+                    📂 Kategorileri Yönet
+                </button>
             </div>
 
             {/* Firma Arama */}
@@ -252,14 +363,20 @@ export default function ModulesPage() {
                 <h2 className="text-sm font-semibold text-gray-700 uppercase mb-3">Modül Genel Bakış</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {modules.map(mod => (
-                        <div key={mod.key} className="bg-white shadow rounded-lg p-5 border-l-4 border-indigo-500">
+                        <div key={mod.key} className="bg-white shadow rounded-lg p-5 border-l-4 border-indigo-500 relative group">
+                            <button onClick={() => openEditModal(mod)} className="absolute top-2 right-2 text-gray-400 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition">
+                                ✏️
+                            </button>
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h3 className="text-sm font-semibold text-gray-900">{mod.name}</h3>
+                                    <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded mt-1 inline-block">
+                                        {mod.module_categories?.name || mod.category || "Genel"}
+                                    </span>
                                     {mod.description && <p className="text-xs text-gray-500 mt-1">{mod.description}</p>}
                                 </div>
                                 <button onClick={() => openAssignModal(mod)}
-                                    className="text-indigo-600 hover:text-indigo-800 text-xs font-medium">+ Ata</button>
+                                    className="text-indigo-600 hover:text-indigo-800 text-xs font-medium ml-2">+ Ata</button>
                             </div>
                             <div className="mt-3 flex items-center gap-2">
                                 <span className="text-2xl font-bold text-indigo-700">{getAssignmentCount(mod.key)}</span>
@@ -270,7 +387,7 @@ export default function ModulesPage() {
                 </div>
             </div>
 
-            {/* Atama Modal (firma arama ile) */}
+            {/* Atama Modal */}
             {showAssignModal && selectedModule && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-lg max-w-md w-full p-6 space-y-4">
@@ -333,6 +450,106 @@ export default function ModulesPage() {
                                 className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
                                 {assignLoading ? "Atanıyor..." : "Ata"}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modül Düzenleme Modal */}
+            {editModal && editingModule && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg max-w-sm w-full p-6 space-y-4">
+                        <h3 className="text-lg font-bold">Modül Düzenle</h3>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Modül Adı</label>
+                            <input type="text" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+                            <select
+                                value={editForm.category_id}
+                                onChange={e => setEditForm({ ...editForm, category_id: e.target.value })}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                            >
+                                <option value="">Kategori Seçin...</option>
+                                {categories.map(cat => (
+                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
+                            <textarea value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 h-20" />
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2">
+                            <button onClick={() => setEditModal(false)} className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">İptal</button>
+                            <button onClick={handleSaveModule} disabled={saveLoading}
+                                className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
+                                {saveLoading ? "Kaydediliyor..." : "Kaydet"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Kategori Yönetimi Modal */}
+            {showCategoryModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg max-w-sm w-full p-6 flex flex-col max-h-[80vh]">
+                        <h3 className="text-lg font-bold mb-4">Kategori Yönetimi</h3>
+
+                        {/* Yeni Kategori Ekleme */}
+                        <div className="flex gap-2 mb-4">
+                            <input
+                                type="text"
+                                placeholder="Yeni kategori adı..."
+                                value={newCategoryName}
+                                onChange={(e) => setNewCategoryName(e.target.value)}
+                                className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
+                            />
+                            <button
+                                onClick={handleSaveCategory}
+                                disabled={categoryLoading || !newCategoryName.trim()}
+                                className="bg-indigo-600 text-white px-3 py-2 rounded text-sm hover:bg-indigo-700 disabled:opacity-50"
+                            >
+                                {editingCategory ? "Güncelle" : "Ekle"}
+                            </button>
+                        </div>
+                        {editingCategory && (
+                            <div className="text-xs text-blue-600 mb-2 flex justify-between">
+                                <span>Düzenleniyor: {editingCategory.name}</span>
+                                <button onClick={() => { setEditingCategory(null); setNewCategoryName(""); }} className="underline">İptal</button>
+                            </div>
+                        )}
+
+                        {/* Liste */}
+                        <div className="flex-1 overflow-y-auto border-t border-gray-100 pt-2 space-y-1">
+                            {categories.length === 0 && <p className="text-sm text-gray-500 italic text-center py-4">Henüz kategori yok.</p>}
+                            {categories.map(cat => (
+                                <div key={cat.id} className="flex justify-between items-center p-2 hover:bg-gray-50 rounded group">
+                                    <span className="text-sm text-gray-900">{cat.name}</span>
+                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={() => { setEditingCategory(cat); setNewCategoryName(cat.name); }}
+                                            className="text-blue-600 hover:text-blue-800 p-1 text-xs"
+                                        >
+                                            ✏️
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                                            className="text-red-600 hover:text-red-800 p-1 text-xs"
+                                        >
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex justify-end pt-4 mt-2 border-t border-gray-100">
+                            <button onClick={() => setShowCategoryModal(false)} className="text-gray-600 text-sm hover:text-gray-900">Kapat</button>
                         </div>
                     </div>
                 </div>

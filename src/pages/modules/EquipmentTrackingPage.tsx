@@ -111,6 +111,9 @@ export default function EquipmentTrackingPage() {
     const [newCatName, setNewCatName] = useState("");
     const [newCatLoading, setNewCatLoading] = useState(false);
 
+    // Arama
+    const [searchQuery, setSearchQuery] = useState("");
+
     // QR
     const qrCanvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -366,13 +369,37 @@ export default function EquipmentTrackingPage() {
                 </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex gap-1 border-b border-gray-200">
-                <button className={tabClass("dashboard")} onClick={() => setActiveTab("dashboard")}>Dashboard</button>
-                <button className={tabClass("equipments")} onClick={() => setActiveTab("equipments")}>
-                    Ekipmanlar {equipments.length > 0 && <span className="ml-1 bg-indigo-100 text-indigo-700 text-xs px-1.5 py-0.5 rounded-full">{equipments.length}</span>}
-                </button>
-                <button className={tabClass("inspectors")} onClick={() => setActiveTab("inspectors")}>Yetkili Kuruluşlar</button>
+            {/* Search & Tabs */}
+            <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4 border-b border-gray-200 pb-1">
+                <div className="flex gap-1">
+                    <button className={tabClass("dashboard")} onClick={() => setActiveTab("dashboard")}>Dashboard</button>
+                    <button className={tabClass("equipments")} onClick={() => setActiveTab("equipments")}>
+                        Ekipmanlar {equipments.length > 0 && <span className="ml-1 bg-indigo-100 text-indigo-700 text-xs px-1.5 py-0.5 rounded-full">{equipments.length}</span>}
+                    </button>
+                    <button className={tabClass("inspectors")} onClick={() => setActiveTab("inspectors")}>Yetkili Kuruluşlar</button>
+                </div>
+                {(activeTab === "equipments" || activeTab === "inspectors") && (
+                    <div className="relative w-full sm:w-64 mb-1">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span className="text-gray-400">🔍</span>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Ara..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10 pr-4 py-1.5 w-full border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery("")}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                            >
+                                ✕
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
 
             {loading ? (
@@ -469,7 +496,18 @@ export default function EquipmentTrackingPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {equipments.map(eq => {
+                                    {equipments.filter(eq => {
+                                        if (!searchQuery) return true;
+                                        const q = searchQuery.toLowerCase();
+                                        return (
+                                            eq.name.toLowerCase().includes(q) ||
+                                            eq.code.toLowerCase().includes(q) ||
+                                            (eq.type && eq.type.toLowerCase().includes(q)) ||
+                                            (eq.serial_no && eq.serial_no.toLowerCase().includes(q)) ||
+                                            (eq.brand && eq.brand.toLowerCase().includes(q)) ||
+                                            (eq.model && eq.model.toLowerCase().includes(q))
+                                        );
+                                    }).map(eq => {
                                         const days = eq.maintenance_required ? getDaysUntilInspection(eq) : null;
                                         const st = eq.maintenance_required ? getInspStatus(days) : { label: "Gerekmiyor", color: "bg-gray-100 text-gray-400 border-gray-200" };
                                         const lastDate = eq.last_inspection_date || eq.purchase_date;
@@ -523,7 +561,14 @@ export default function EquipmentTrackingPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {inspectors.map(ins => (
+                                    {inspectors.filter(ins => {
+                                        if (!searchQuery) return true;
+                                        const q = searchQuery.toLowerCase();
+                                        return (
+                                            ins.name.toLowerCase().includes(q) ||
+                                            (ins.certificate_no && ins.certificate_no.toLowerCase().includes(q))
+                                        );
+                                    }).map(ins => (
                                         <tr key={ins.id} className="hover:bg-gray-50">
                                             <td className="px-3 py-3 text-sm font-medium text-gray-900">{ins.name}</td>
                                             <td className="px-3 py-3">

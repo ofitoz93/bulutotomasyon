@@ -78,16 +78,30 @@ export default function QRScanPage() {
     };
 
     const [gpsLoading, setGpsLoading] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
-        if (equipment && !updated && !gpsLoading) {
-            // Otomatik GPS denemesi
+        // Basit mobil cihaz kontrolü
+        const checkMobile = () => {
+            const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+            // Regex ile mobil cihazları kontrol et
+            if (/android/i.test(userAgent) || /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) {
+                return true;
+            }
+            return false;
+        };
+        setIsMobile(checkMobile());
+    }, []);
+
+    useEffect(() => {
+        if (equipment && !updated && !gpsLoading && isMobile) {
+            // Otomatik GPS denemesi - Sadece mobilde
             attemptAutoLocationUpdate();
         }
-    }, [equipment]);
+    }, [equipment, isMobile]);
 
     const attemptAutoLocationUpdate = () => {
-        if (!navigator.geolocation) return;
+        if (!navigator.geolocation || !isMobile) return;
         setGpsLoading(true);
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const { latitude, longitude } = pos.coords;
@@ -253,6 +267,12 @@ export default function QRScanPage() {
                             <div className="text-4xl mb-2">✅</div>
                             <p className="text-green-700 font-medium">Lokasyon güncellendi!</p>
                             <p className="text-sm text-gray-400 mt-1">{newLocation}</p>
+                        </div>
+                    ) : !isMobile ? (
+                        <div className="px-6 py-5 text-center bg-yellow-50">
+                            <div className="text-4xl mb-2">📱</div>
+                            <p className="text-sm text-yellow-800 font-medium">Bu cihazdan konum güncellenemez.</p>
+                            <p className="text-xs text-yellow-600 mt-1">Konum güncellemesi sadece mobil cihazlardan QR kod okutularak yapılabilir.</p>
                         </div>
                     ) : !showUpdateForm ? (
                         <div className="px-6 py-5 text-center">

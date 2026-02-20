@@ -9,6 +9,9 @@ import TeamPage from "@/pages/manager/TeamPage";
 import DocumentTrackingPage from "@/pages/modules/DocumentTrackingPage";
 import EquipmentTrackingPage from "@/pages/modules/EquipmentTrackingPage";
 import QRScanPage from "@/pages/QRScanPage";
+import ADRDashboard from "@/pages/adr/ADRDashboard";
+import NewADRForm from "@/pages/adr/NewADRForm";
+import ADRDetail from "@/pages/adr/ADRDetail";
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/lib/supabase";
@@ -62,6 +65,11 @@ function App() {
           <Route index element={<div className="text-gray-600">Panele Hoşgeldiniz! Modül seçmek için menüyü kullanın.</div>} />
           <Route path="evrak-takip" element={<DocumentTrackingPage />} />
           <Route path="ekipman-takip" element={<EquipmentTrackingPage />} />
+          <Route path="adr">
+            <Route index element={<ADRDashboard />} />
+            <Route path="new" element={<NewADRForm />} />
+            <Route path=":id" element={<ADRDetail />} />
+          </Route>
         </Route>
 
         <Route path="/qr/:token" element={<QRScanPage />} />
