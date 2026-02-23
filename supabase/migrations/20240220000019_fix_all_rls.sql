@@ -43,7 +43,7 @@ FOR UPDATE USING (
 -- Personel: Sadece kendi PENDING kayıtlarını güncelleyebilir
 CREATE POLICY "ADR Formu Güncelleme - Personel" ON public.adr_forms
 FOR UPDATE USING (
-    auth.uid() = user_id AND status = 'pending'
+    auth.uid() = user_id AND status IN ('pending', 'rejected')
 );
 
 -- FORM CEVAPLARI: RLS Politikalarını Temizle

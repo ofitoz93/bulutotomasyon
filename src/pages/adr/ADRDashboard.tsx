@@ -80,6 +80,9 @@ export default function ADRDashboard() {
                 <button onClick={() => setFilter("approved")} className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${filter === "approved" ? "bg-green-600 text-white" : "bg-white text-gray-600 border"}`}>
                     Onaylananlar ({forms.filter(f => f.status === 'approved').length})
                 </button>
+                <button onClick={() => setFilter("rejected")} className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${filter === "rejected" ? "bg-red-600 text-white" : "bg-white text-gray-600 border"}`}>
+                    Reddedilenler ({forms.filter(f => f.status === 'rejected').length})
+                </button>
             </div>
 
             {/* Liste */}
@@ -114,17 +117,6 @@ export default function ADRDashboard() {
                         ))}
                     </div>
                 )}
-            </div>
-            {/* DEBUG PANEL */}
-            <div className="bg-orange-50 p-4 rounded border border-orange-200 text-xs font-mono text-orange-800 break-all">
-                <p><strong>DEBUG INFO:</strong></p>
-                <p>User ID: {profile?.id || "None"}</p>
-                <p>Tenant ID: {profile?.tenant_id || "None"}</p>
-                <p>Role: {profile?.role || "None"}</p>
-                <p>Loading: {loading ? "Yes" : "No"}</p>
-                <p>Forms Count: {forms.length}</p>
-                <p>Fetch Error: {fetchError || "None"}</p>
-                <button onClick={fetchForms} className="mt-2 px-2 py-1 bg-orange-200 rounded">Retry Fetch</button>
             </div>
         </div>
     );

@@ -69,7 +69,7 @@ FOR UPDATE USING (
 
 CREATE POLICY "ADR Formu Güncelleme - Personel" ON public.adr_forms
 FOR UPDATE USING (
-    auth.uid() = user_id AND status = 'pending'
+    auth.uid() = user_id AND status IN ('pending', 'rejected')
 );
 
 -- form_answers & form_media
