@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import type { ADRForm } from "@/types/adr";
 import { useAuthStore } from "@/stores/authStore";
-import { Plus, Search, FileText, CheckCircle, Clock, XCircle } from "lucide-react";
+import { Plus, FileText, CheckCircle, Clock, XCircle } from "lucide-react";
 
 export default function ADRDashboard() {
     const navigate = useNavigate();
@@ -12,7 +12,7 @@ export default function ADRDashboard() {
     const [forms, setForms] = useState<ADRForm[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("all"); // all, pending, approved
-    const [fetchError, setFetchError] = useState<string | null>(null);
+
 
     useEffect(() => {
         fetchForms();
@@ -29,10 +29,7 @@ export default function ADRDashboard() {
 
             // RLS handles visibility, but we can filter further if needed
             const { data, error } = await query;
-            if (error) {
-                setFetchError(error.message);
-                throw error;
-            }
+            throw error;
             setForms(data || []);
         } catch (error: any) {
             console.error("Error fetching forms:", error);
