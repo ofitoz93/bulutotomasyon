@@ -12,6 +12,14 @@ import QRScanPage from "@/pages/QRScanPage";
 import ADRDashboard from "@/pages/adr/ADRDashboard";
 import NewADRForm from "@/pages/adr/NewADRForm";
 import ADRDetail from "@/pages/adr/ADRDetail";
+
+// Action Tracking
+import ActionLayout from "@/pages/actions/ActionLayout";
+import ActionDashboard from "@/pages/actions/ActionDashboard";
+import ClosedActions from "@/pages/actions/ClosedActions";
+import ActionSettings from "@/pages/actions/ActionSettings";
+import NewAction from "@/pages/actions/NewAction";
+import ActionDetail from "@/pages/actions/ActionDetail";
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/lib/supabase";
@@ -69,6 +77,14 @@ function App() {
             <Route index element={<ADRDashboard />} />
             <Route path="new" element={<NewADRForm />} />
             <Route path=":id" element={<ADRDetail />} />
+          </Route>
+
+          <Route path="aksiyon-takip" element={<ActionLayout />}>
+            <Route index element={<ActionDashboard />} />
+            <Route path="closed" element={<ClosedActions />} />
+            <Route path="settings" element={<ActionSettings />} />
+            <Route path="new" element={<NewAction />} />
+            <Route path=":id" element={<ActionDetail />} />
           </Route>
         </Route>
 

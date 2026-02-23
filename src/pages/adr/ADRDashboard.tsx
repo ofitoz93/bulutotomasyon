@@ -29,7 +29,7 @@ export default function ADRDashboard() {
 
             // RLS handles visibility, but we can filter further if needed
             const { data, error } = await query;
-            throw error;
+            if (error) throw error;
             setForms(data || []);
         } catch (error: any) {
             console.error("Error fetching forms:", error);

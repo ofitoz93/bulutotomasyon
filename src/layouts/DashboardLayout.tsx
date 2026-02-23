@@ -124,6 +124,7 @@ export default function DashboardLayout() {
         evrak_takip: "/app/evrak-takip",
         ekipman_takip: "/app/ekipman-takip",
         adr: "/app/adr",
+        aksiyon_takip: "/app/aksiyon-takip",
     };
 
     const getRoleLabel = () => {
