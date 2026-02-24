@@ -7,6 +7,7 @@ interface Profile {
     email: string
     first_name: string | null
     last_name: string | null
+    phone_number?: string | null
     role: 'system_admin' | 'company_manager' | 'employee'
     tenant_id: string | null
 }
@@ -18,6 +19,7 @@ interface AuthState {
     loading: boolean
     setSession: (session: Session | null) => void
     setProfile: (profile: Profile | null) => void
+    updateUserProfile: (updates: Partial<Profile>) => void
     signOut: () => Promise<void>
 }
 
@@ -28,6 +30,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     loading: true,
     setSession: (session) => set({ session, user: session?.user ?? null, loading: false }),
     setProfile: (profile) => set({ profile }),
+    updateUserProfile: (updates) => set((state) => ({
+        profile: state.profile ? { ...state.profile, ...updates } : null
+    })),
     signOut: async () => {
         await supabase.auth.signOut()
         set({ session: null, user: null, profile: null })

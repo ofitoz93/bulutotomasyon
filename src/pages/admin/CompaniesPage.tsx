@@ -82,46 +82,65 @@ export default function CompaniesPage() {
                 throw companyError;
             }
 
-            // 2. Geçici şifre
-            const tempPassword = Math.random().toString(36).slice(-12) + "Aa1!";
+            // 2. Yeni yönetici zaten sistemde var mı kontrol et
+            const { data: existingProfile } = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("email", managerEmail.trim())
+                .single();
 
-            // 3. Ayrı client ile signUp (Admin oturumunu bozmaz)
-            const { createClient } = await import("@supabase/supabase-js");
-            const tempSupabase = createClient(
-                import.meta.env.VITE_SUPABASE_URL,
-                import.meta.env.VITE_SUPABASE_ANON_KEY,
-                {
-                    auth: {
-                        persistSession: false,
-                        autoRefreshToken: false,
-                        detectSessionInUrl: false,
-                    },
-                }
-            );
-
-            const { data: authData, error: authError } = await tempSupabase.auth.signUp({
-                email: managerEmail,
-                password: tempPassword,
-                options: {
-                    data: {
-                        first_name: "Şirket",
-                        last_name: "Yöneticisi",
-                        force_password_change: true,
-                    },
-                },
-            });
-
-            if (authError) throw authError;
-
-            // 4. Profili güncelle
-            if (authData.user) {
-                await supabase
+            if (existingProfile) {
+                // Mevcut kullanıcıyı yeni şirketin yöneticisi yap
+                const { error: updateError } = await supabase
                     .from("profiles")
                     .update({ role: "company_manager", tenant_id: companyData.id })
-                    .eq("id", authData.user.id);
+                    .eq("id", existingProfile.id);
+
+                if (updateError) {
+                    throw updateError;
+                }
+            } else {
+                // 3. Geçici şifre
+                const tempPassword = Math.random().toString(36).slice(-12) + "Aa1!";
+
+                // 4. Ayrı client ile signUp (Admin oturumunu bozmaz)
+                const { createClient } = await import("@supabase/supabase-js");
+                const tempSupabase = createClient(
+                    import.meta.env.VITE_SUPABASE_URL,
+                    import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    {
+                        auth: {
+                            persistSession: false,
+                            autoRefreshToken: false,
+                            detectSessionInUrl: false,
+                        },
+                    }
+                );
+
+                const { data: authData, error: authError } = await tempSupabase.auth.signUp({
+                    email: managerEmail,
+                    password: tempPassword,
+                    options: {
+                        data: {
+                            first_name: "Şirket",
+                            last_name: "Yöneticisi",
+                            force_password_change: true,
+                        },
+                    },
+                });
+
+                if (authError) throw authError;
+
+                // 5. Profili güncelle
+                if (authData.user) {
+                    await supabase
+                        .from("profiles")
+                        .update({ role: "company_manager", tenant_id: companyData.id })
+                        .eq("id", authData.user.id);
+                }
             }
 
-            alert(`Şirket "${newCompanyName}" oluşturuldu!\n\n${managerEmail} adresine doğrulama bağlantısı gönderildi.`);
+            alert(`Şirket "${newCompanyName}" oluşturuldu!\n\n${existingProfile ? "Mevcut kullanıcı yeni şirketin yöneticisi yapıldı." : managerEmail + " adresine doğrulama bağlantısı gönderildi."}`);
             setShowModal(false);
             setNewCompanyName("");
             setManagerEmail("");
@@ -297,8 +316,8 @@ export default function CompaniesPage() {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${company.subscription_status === "active"
-                                                ? "bg-green-100 text-green-800"
-                                                : "bg-red-100 text-red-800"
+                                            ? "bg-green-100 text-green-800"
+                                            : "bg-red-100 text-red-800"
                                             }`}>
                                             {company.subscription_status === "active" ? "Aktif" : "Pasif"}
                                         </span>

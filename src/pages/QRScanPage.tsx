@@ -41,8 +41,33 @@ export default function QRScanPage() {
     const [updating, setUpdating] = useState(false);
     const [updated, setUpdated] = useState(false);
 
+    const [locationPermission, setLocationPermission] = useState<"pending" | "granted" | "denied">("pending");
+    const [gpsLoading, setGpsLoading] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const [locationErrorMsg, setLocationErrorMsg] = useState("");
+
+    // Damage / Fault reporting
+    const [showDamageForm, setShowDamageForm] = useState(false);
+    const [damageDesc, setDamageDesc] = useState("");
+    const [reportingDamage, setReportingDamage] = useState(false);
+    const [damageReported, setDamageReported] = useState(false);
+
+    useEffect(() => {
+        // Basit mobil cihaz kontrolü
+        const checkMobile = () => {
+            const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+            if (/android/i.test(userAgent) || /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) {
+                return true;
+            }
+            return false;
+        };
+        setIsMobile(checkMobile());
+    }, []);
+
     useEffect(() => {
         if (!token) { setNotFound(true); setLoading(false); return; }
+        // Ekipman detaylarını çekmeden önce / veya paralelde konum izni isteyeceğiz.
+        // Ancak ID lazım. Önce yükleyelim, sonra lokasyon soralım.
         fetchEquipment();
     }, [token]);
 
@@ -57,7 +82,6 @@ export default function QRScanPage() {
 
         if (error || !eq) { setNotFound(true); setLoading(false); return; }
 
-        // Son bakım kaydını getir
         const { data: lastInsp } = await supabase
             .from("equipment_inspections")
             .select("inspection_date, next_inspection_date, result, inspector_name_override, equipment_inspectors(name)")
@@ -75,42 +99,27 @@ export default function QRScanPage() {
         });
         setNewLocation(eq.current_location || eq.default_location || "");
         setLoading(false);
+
+        // Ekipman yüklendi, şimdi GPS zorunlu.
+        requestLocationUpdate(eq);
     };
 
-    const [gpsLoading, setGpsLoading] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        // Basit mobil cihaz kontrolü
-        const checkMobile = () => {
-            const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
-            // Regex ile mobil cihazları kontrol et
-            if (/android/i.test(userAgent) || /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) {
-                return true;
-            }
-            return false;
-        };
-        setIsMobile(checkMobile());
-    }, []);
-
-    useEffect(() => {
-        if (equipment && !updated && !gpsLoading && isMobile) {
-            // Otomatik GPS denemesi - Sadece mobilde
-            attemptAutoLocationUpdate();
+    const requestLocationUpdate = (eq: any) => {
+        if (!navigator.geolocation) {
+            setLocationPermission("denied");
+            setLocationErrorMsg("Cihazınız konum servisini desteklemiyor.");
+            return;
         }
-    }, [equipment, isMobile]);
 
-    const attemptAutoLocationUpdate = () => {
-        if (!navigator.geolocation || !isMobile) return;
         setGpsLoading(true);
         navigator.geolocation.getCurrentPosition(async (pos) => {
+            setLocationPermission("granted");
             const { latitude, longitude } = pos.coords;
             try {
                 // Reverse Geocoding (OpenStreetMap Nominatim)
                 const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`);
                 const data = await res.json();
 
-                // Adres formatlama (kısa ve anlamlı)
                 let loc = "";
                 if (data.address) {
                     const parts = [
@@ -123,34 +132,37 @@ export default function QRScanPage() {
                 }
                 const finalLoc = loc || data.display_name?.split(",")[0] || `GPS: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
 
-                // Eğer mevcut lokasyondan farklıysa güncelle
-                if (equipment && finalLoc !== equipment.current_location) {
-                    await updateLocationDB(finalLoc, `Otomatik (GPS)`);
-                }
+                // Adresi DB'ye yaz
+                await updateLocationDB(finalLoc, "Oto-GPS", eq.id);
             } catch (e) {
                 console.error("GPS Reverse Geocode Error", e);
+                // Reverse geocode çalışmasa bile GPS ile koordinat kaydedelim:
+                await updateLocationDB(`GPS: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, "Oto-GPS", eq.id);
             } finally {
                 setGpsLoading(false);
             }
         }, (err) => {
             console.warn("GPS Error", err);
+            setLocationPermission("denied");
+            setLocationErrorMsg("Ekipman bilgilerini görmek için konum izni vermeniz gerekmektedir.");
             setGpsLoading(false);
-        }, { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 });
+        }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
     };
 
-    const updateLocationDB = async (loc: string, by: string) => {
-        if (!equipment) return;
+    const updateLocationDB = async (loc: string, by: string, eqId?: string) => {
+        const targetId = eqId || equipment?.id;
+        if (!targetId) return;
         setUpdating(true);
         try {
             await supabase.from("equipment_locations").insert([{
-                equipment_id: equipment.id,
+                equipment_id: targetId,
                 location: loc,
                 scanned_by: by || null,
             }]);
             await supabase.from("equipments").update({
                 current_location: loc,
                 updated_at: new Date().toISOString(),
-            }).eq("id", equipment.id);
+            }).eq("id", targetId);
             setEquipment(e => e ? { ...e, current_location: loc } : e);
             setNewLocation(loc);
             setUpdated(true);
@@ -167,6 +179,33 @@ export default function QRScanPage() {
         await updateLocationDB(newLocation.trim(), scannedBy.trim());
     };
 
+    const submitDamageReport = async () => {
+        if (!damageDesc.trim()) { alert("Lütfen hasar/arıza durumunu açıklayın."); return; }
+        setReportingDamage(true);
+        try {
+            await supabase.from("equipment_fault_reports").insert([{
+                equipment_id: equipment!.id,
+                tenant_id: (equipment as any).tenant_id,
+                reported_by_name: scannedBy.trim() || "Anonim (QR İzleyici)",
+                description: damageDesc.trim(),
+                location: equipment!.current_location || "Bilinmeyen Konum"
+            }]);
+
+            await supabase.from("equipments").update({
+                is_damaged: true,
+                updated_at: new Date().toISOString()
+            }).eq("id", equipment!.id);
+
+            setDamageReported(true);
+            setShowDamageForm(false);
+        } catch (e: any) {
+            console.error(e);
+            alert("Bildirim gönderilirken hata oluştu.");
+        } finally {
+            setReportingDamage(false);
+        }
+    };
+
     const formatDate = (d: string | null) => (d ? new Date(d).toLocaleDateString("tr-TR") : "—");
 
     const getDaysUntilInspection = () => {
@@ -180,10 +219,13 @@ export default function QRScanPage() {
     const daysLabel = days === null ? "Bakım kaydı yok" : days < 0 ? `${Math.abs(days)} gün gecikmiş` : days === 0 ? "Bugün!" : `${days} gün kaldı`;
     const daysColor = days === null ? "bg-gray-100 text-gray-500 border-gray-200" : days < 0 ? "bg-red-100 text-red-700 border-red-200" : days <= 30 ? "bg-yellow-100 text-yellow-700 border-yellow-200" : "bg-green-100 text-green-700 border-green-200";
 
-    if (loading) {
+    if (loading || gpsLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <p className="text-gray-400 text-lg">Yükleniyor...</p>
+            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center space-y-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                <p className="text-gray-500 font-medium">
+                    {loading ? "Ekipman bilgileri yükleniyor..." : "Konumunuz alınıyor, lütfen bekleyin..."}
+                </p>
             </div>
         );
     }
@@ -195,6 +237,34 @@ export default function QRScanPage() {
                     <div className="text-6xl mb-4">❌</div>
                     <h1 className="text-xl font-bold text-gray-700">Ekipman bulunamadı</h1>
                     <p className="text-gray-400 mt-2">Bu QR kod geçersiz veya ekipman devre dışı bırakılmış.</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (locationPermission === "denied") {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+                <div className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full text-center">
+                    <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <h1 className="text-xl font-bold text-gray-800 mb-2">Konum İzni Gerekli</h1>
+                    <p className="text-gray-600 text-sm mb-6">
+                        {locationErrorMsg || "Bu ekipmanın bilgilerini görüntüleyebilmek ve işleme devam edebilmek için cihazınızın konum (GPS) iznini vermeniz gerekmektedir."}
+                    </p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="w-full bg-indigo-600 text-white py-3 rounded-xl font-medium hover:bg-indigo-700 transition"
+                    >
+                        Tekrar Dene
+                    </button>
+                    <p className="text-xs text-gray-400 mt-4 px-2">
+                        Tarayıcınızın ayarlarından veya adres çubuğundan konum erişimine izin vermeyi unutmayın.
+                    </p>
                 </div>
             </div>
         );
@@ -258,6 +328,51 @@ export default function QRScanPage() {
                             </div>
                         )}
                     </div>
+                </div>
+
+                {/* Hasar / Arıza Bildir */}
+                <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+                    {damageReported ? (
+                        <div className="px-6 py-5 text-center">
+                            <div className="text-4xl mb-2">✅</div>
+                            <p className="text-green-700 font-medium">Arıza/Hasar kaydı alındı!</p>
+                            <p className="text-sm text-gray-400 mt-1">İlgili yöneticilere iletildi.</p>
+                        </div>
+                    ) : !showDamageForm ? (
+                        <div className="px-6 py-5 text-center bg-red-50">
+                            <p className="text-sm text-red-800 font-medium mb-3">Ekipmanda bir arıza veya fiziksel hasar mı tespit ettiniz?</p>
+                            <button onClick={() => setShowDamageForm(true)}
+                                className="bg-red-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-red-700 transition">
+                                ⚠️ Arıza / Hasar Bildir
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="px-6 py-5 space-y-3 bg-red-50 border-t-4 border-red-500">
+                            <h3 className="font-bold text-red-800 text-sm">Hasar Bildirim Formu</h3>
+                            <div>
+                                <label className="block text-xs text-red-700 font-medium mb-1">Arıza / Hasar Detayı *</label>
+                                <textarea rows={3} value={damageDesc} onChange={e => setDamageDesc(e.target.value)}
+                                    placeholder="Lütfen tespit ettiğiniz sorunu kısaca açıklayın..."
+                                    className="w-full border border-red-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white" />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-red-700 font-medium mb-1">Adınız (opsiyonel)</label>
+                                <input type="text" value={scannedBy} onChange={e => setScannedBy(e.target.value)}
+                                    placeholder="Örn: Ahmet Yılmaz"
+                                    className="w-full border border-red-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white" />
+                            </div>
+                            <div className="flex gap-2 pt-2">
+                                <button onClick={() => setShowDamageForm(false)}
+                                    className="flex-1 border border-red-200 text-red-700 bg-white px-4 py-2 rounded-lg text-sm hover:bg-red-50 transition font-medium">
+                                    İptal
+                                </button>
+                                <button onClick={submitDamageReport} disabled={reportingDamage}
+                                    className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-700 transition disabled:opacity-50">
+                                    {reportingDamage ? "Gönderiliyor..." : "Bildirimi Gönder"}
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Lokasyon Güncelle */}

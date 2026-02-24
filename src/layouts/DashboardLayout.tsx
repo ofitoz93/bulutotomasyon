@@ -167,6 +167,7 @@ export default function DashboardLayout() {
                             <div className="text-gray-400 text-xs uppercase font-semibold mt-4 mb-2 px-4">Yönetim</div>
                             <a href="/admin/companies" className={linkClass("/admin/companies")}>Şirket Yönetimi</a>
                             <a href="/admin/modules" className={linkClass("/admin/modules")}>Modül Yönetimi</a>
+                            <a href="/admin/announcements" className={linkClass("/admin/announcements")}>Sistem Duyuruları</a>
                         </>
                     )}
 
@@ -175,6 +176,7 @@ export default function DashboardLayout() {
                         <>
                             <div className="text-gray-400 text-xs uppercase font-semibold mt-4 mb-2 px-4">Şirket İşlemleri</div>
                             <a href="/manager/team" className={linkClass("/manager/team")}>Alt Hesap Daveti</a>
+                            <a href="/manager/announcements" className={linkClass("/manager/announcements")}>Şirket Duyuruları</a>
                         </>
                     )}
 
@@ -203,6 +205,9 @@ export default function DashboardLayout() {
                     <div className="text-lg font-medium">Hoşgeldiniz</div>
                     <div className="flex items-center space-x-4">
                         <span className="text-sm text-gray-600">{user?.email}</span>
+                        <a href="/app/settings" className="text-sm text-indigo-600 hover:text-indigo-800 font-medium bg-indigo-50 px-3 py-1.5 rounded-md">
+                            Ayarlar
+                        </a>
                     </div>
                 </header>
                 <div className="p-6 overflow-auto flex-1">

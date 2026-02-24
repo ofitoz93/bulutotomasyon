@@ -5,10 +5,13 @@ import Login from "@/pages/auth/Login";
 import UpdatePassword from "@/pages/auth/UpdatePassword";
 import CompaniesPage from "@/pages/admin/CompaniesPage";
 import ModulesPage from "@/pages/admin/ModulesPage";
+import SystemAnnouncementsPage from "@/pages/admin/AnnouncementsPage";
 import TeamPage from "@/pages/manager/TeamPage";
+import ManagerAnnouncementsPage from "@/pages/manager/ManagerAnnouncementsPage";
 import DocumentTrackingPage from "@/pages/modules/DocumentTrackingPage";
 import EquipmentTrackingPage from "@/pages/modules/EquipmentTrackingPage";
 import QRScanPage from "@/pages/QRScanPage";
+import Dashboard from "@/pages/Dashboard";
 import ADRDashboard from "@/pages/adr/ADRDashboard";
 import NewADRForm from "@/pages/adr/NewADRForm";
 import ADRDetail from "@/pages/adr/ADRDetail";
@@ -20,6 +23,7 @@ import ClosedActions from "@/pages/actions/ClosedActions";
 import ActionSettings from "@/pages/actions/ActionSettings";
 import NewAction from "@/pages/actions/NewAction";
 import ActionDetail from "@/pages/actions/ActionDetail";
+import SettingsPage from "@/pages/settings/SettingsPage";
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/lib/supabase";
@@ -70,7 +74,7 @@ function App() {
         </Route>
 
         <Route path="/app" element={<DashboardLayout />}>
-          <Route index element={<div className="text-gray-600">Panele Hoşgeldiniz! Modül seçmek için menüyü kullanın.</div>} />
+          <Route index element={<Dashboard />} />
           <Route path="evrak-takip" element={<DocumentTrackingPage />} />
           <Route path="ekipman-takip" element={<EquipmentTrackingPage />} />
           <Route path="adr">
@@ -86,6 +90,8 @@ function App() {
             <Route path="new" element={<NewAction />} />
             <Route path=":id" element={<ActionDetail />} />
           </Route>
+
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
 
         <Route path="/qr/:token" element={<QRScanPage />} />
@@ -94,12 +100,14 @@ function App() {
         <Route path="/admin" element={<DashboardLayout />}>
           <Route path="companies" element={<CompaniesPage />} />
           <Route path="modules" element={<ModulesPage />} />
+          <Route path="announcements" element={<SystemAnnouncementsPage />} />
           <Route index element={<Navigate to="/admin/companies" replace />} />
         </Route>
 
         {/* Manager Routes */}
         <Route path="/manager" element={<DashboardLayout />}>
           <Route path="team" element={<TeamPage />} />
+          <Route path="announcements" element={<ManagerAnnouncementsPage />} />
           <Route index element={<Navigate to="/manager/team" replace />} />
         </Route>
       </Routes>

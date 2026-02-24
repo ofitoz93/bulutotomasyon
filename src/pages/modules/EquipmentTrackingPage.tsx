@@ -32,6 +32,7 @@ interface Equipment {
     last_inspection_date?: string | null;
     next_inspection_date?: string | null;
     maintenance_required: boolean;
+    is_damaged?: boolean;
 }
 interface Inspection {
     id: string;
@@ -76,11 +77,16 @@ export default function EquipmentTrackingPage() {
     const [definitions, setDefinitions] = useState<EquipmentDefinition[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // Filter state for equipments
+    const [filterDamaged, setFilterDamaged] = useState(false);
+
     // Detail modal (row click)
     const [selectedEquip, setSelectedEquip] = useState<Equipment | null>(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailInspections, setDetailInspections] = useState<Inspection[]>([]);
     const [locationHistory, setLocationHistory] = useState<LocationHistory[]>([]);
+    // Fetch fault reports
+    const [faultReports, setFaultReports] = useState<any[]>([]);
     const [detailTab, setDetailTab] = useState<"overview" | "maintenance" | "location">("overview");
     const [showInlineInsp, setShowInlineInsp] = useState(false);
 
@@ -200,15 +206,57 @@ export default function EquipmentTrackingPage() {
     const openDetail = async (eq: Equipment) => {
         setSelectedEquip(eq);
         setDetailTab("overview");
-        const [inspRes, locRes] = await Promise.all([
+        const [inspRes, locRes, faultRes] = await Promise.all([
             supabase.from("equipment_inspections").select("*, equipment_inspectors(name)").eq("equipment_id", eq.id).order("inspection_date", { ascending: false }),
             supabase.from("equipment_locations").select("*").eq("equipment_id", eq.id).order("created_at", { ascending: false }),
+            supabase.from("equipment_fault_reports").select("*").eq("equipment_id", eq.id).order("created_at", { ascending: false }),
         ]);
         setDetailInspections((inspRes.data || []) as Inspection[]);
         setLocationHistory((locRes.data || []) as LocationHistory[]);
+        setFaultReports(faultRes.data || []);
         setShowInlineInsp(false);
         setInspForm({ ...defaultInspForm(), equipment_id: eq.id });
         setShowDetailModal(true);
+    };
+
+    const resolveFault = async (faultId: string) => {
+        if (!window.confirm("Bu arıza/hasar kaydını çözüldü olarak işaretlemek istiyor musunuz?")) return;
+        try {
+            // Update fault report status
+            await supabase.from("equipment_fault_reports").update({
+                status: 'resolved',
+                resolved_at: new Date().toISOString(),
+                resolved_by: user!.id
+            }).eq("id", faultId);
+
+            // Check if there are any other open faults for this equipment
+            const { data: otherFaults } = await supabase.from("equipment_fault_reports")
+                .select("id")
+                .eq("equipment_id", selectedEquip!.id)
+                .eq("status", "open")
+                .neq("id", faultId);
+
+            if (!otherFaults || otherFaults.length === 0) {
+                // If no other open faults, mark equipment as not damaged
+                await supabase.from("equipments").update({
+                    is_damaged: false,
+                    updated_at: new Date().toISOString()
+                }).eq("id", selectedEquip!.id);
+                setSelectedEquip({ ...selectedEquip!, is_damaged: false } as Equipment);
+                setEquipments(equipments.map(e => e.id === selectedEquip!.id ? { ...e, is_damaged: false } as Equipment : e));
+            }
+
+            // Refresh faults list
+            const { data: newFaults } = await supabase.from("equipment_fault_reports")
+                .select("*")
+                .eq("equipment_id", selectedEquip!.id)
+                .order("created_at", { ascending: false });
+            setFaultReports(newFaults || []);
+
+        } catch (e: any) {
+            console.error(e);
+            alert("İşlem sırasında bir hata oluştu: " + e.message);
+        }
     };
 
     const getInspStatus = (days: number | null) => {
@@ -370,15 +418,44 @@ export default function EquipmentTrackingPage() {
             </div>
 
             {/* Search & Tabs */}
+            {/* Search & Tabs */}
             <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4 border-b border-gray-200 pb-1">
-                <div className="flex gap-1">
+                <div className="flex gap-1 overflow-x-auto max-w-full pb-1">
                     <button className={tabClass("dashboard")} onClick={() => setActiveTab("dashboard")}>Dashboard</button>
                     <button className={tabClass("equipments")} onClick={() => setActiveTab("equipments")}>
                         Ekipmanlar {equipments.length > 0 && <span className="ml-1 bg-indigo-100 text-indigo-700 text-xs px-1.5 py-0.5 rounded-full">{equipments.length}</span>}
                     </button>
                     <button className={tabClass("inspectors")} onClick={() => setActiveTab("inspectors")}>Yetkili Kuruluşlar</button>
                 </div>
-                {(activeTab === "equipments" || activeTab === "inspectors") && (
+                {(activeTab === "equipments") && (
+                    <div className="flex items-center gap-3">
+                        <label className="flex items-center gap-1.5 cursor-pointer bg-red-50 text-red-700 px-3 py-1.5 rounded-full text-sm font-medium border border-red-200 hover:bg-red-100 transition">
+                            <input type="checkbox" checked={filterDamaged} onChange={e => setFilterDamaged(e.target.checked)} className="rounded text-red-600 focus:ring-red-500 bg-white" />
+                            <span>⚠️ Sadece Hasarlılar</span>
+                        </label>
+                        <div className="relative w-full sm:w-64 mb-1">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span className="text-gray-400">🔍</span>
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Ara..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-10 pr-4 py-1.5 w-full border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery("")}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+                {(activeTab === "inspectors") && (
                     <div className="relative w-full sm:w-64 mb-1">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span className="text-gray-400">🔍</span>
@@ -497,6 +574,7 @@ export default function EquipmentTrackingPage() {
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {equipments.filter(eq => {
+                                        if (filterDamaged && !eq.is_damaged) return false;
                                         if (!searchQuery) return true;
                                         const q = searchQuery.toLowerCase();
                                         return (
@@ -512,8 +590,13 @@ export default function EquipmentTrackingPage() {
                                         const st = eq.maintenance_required ? getInspStatus(days) : { label: "Gerekmiyor", color: "bg-gray-100 text-gray-400 border-gray-200" };
                                         const lastDate = eq.last_inspection_date || eq.purchase_date;
                                         return (
-                                            <tr key={eq.id} className="hover:bg-gray-50">
-                                                <td className="px-3 py-3 text-xs font-mono text-gray-600">{eq.code}</td>
+                                            <tr key={eq.id} className={`hover:bg-gray-50 ${eq.is_damaged ? "bg-red-50/30" : ""}`}>
+                                                <td className="px-3 py-3 text-xs font-mono text-gray-600">
+                                                    <div className="flex items-center gap-1">
+                                                        {eq.is_damaged && <span className="text-red-500" title="Hasarlı/Arızalı">⚠️</span>}
+                                                        {eq.code}
+                                                    </div>
+                                                </td>
                                                 <td className="px-3 py-3 text-sm font-medium text-gray-900">{eq.name}</td>
                                                 <td className="px-3 py-3 text-sm text-gray-500">{eq.type || "—"}</td>
                                                 <td className="px-3 py-3">
@@ -830,21 +913,25 @@ export default function EquipmentTrackingPage() {
                     <div className="w-full max-w-md bg-white h-full shadow-xl overflow-y-auto flex flex-col animate-slide-in-right">
                         <div className="p-4 border-b flex justify-between items-start bg-gray-50 sticky top-0 z-10">
                             <div>
-                                <h2 className="text-lg font-bold text-gray-900">{selectedEquip.name}</h2>
+                                <div className="flex items-center gap-2">
+                                    <h2 className="text-lg font-bold text-gray-900">{selectedEquip.name}</h2>
+                                    {selectedEquip.is_damaged && <span className="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full font-bold">HASARLI</span>}
+                                </div>
                                 <p className="text-sm font-mono text-gray-500">{selectedEquip.code}</p>
                             </div>
                             <button onClick={() => setShowDetailModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
                         </div>
 
-                        <div className="flex border-b border-gray-200 sticky top-[73px] bg-white z-10">
+                        <div className="flex border-b border-gray-200 sticky top-[73px] bg-white z-10 overflow-x-auto">
                             {[
                                 { id: "overview", label: "Genel Bakış" },
                                 { id: "maintenance", label: "Bakım Geçmişi" },
+                                { id: "faults", label: `Hasarlar ${faultReports.length > 0 ? `(${faultReports.length})` : ""}` },
                                 { id: "location", label: "Konum Geçmişi" }
                             ].map(tab => (
                                 <button key={tab.id}
                                     onClick={() => setDetailTab(tab.id as any)}
-                                    className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${detailTab === tab.id ? "text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/50" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"}`}>
+                                    className={`flex-none px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${detailTab === tab.id ? "text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/50" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"}`}>
                                     {tab.label}
                                 </button>
                             ))}
@@ -987,6 +1074,59 @@ export default function EquipmentTrackingPage() {
                                             ))
                                         )}
                                     </div>
+                                </div>
+                            )}
+
+                            {detailTab === ("faults" as any) && (
+                                <div className="space-y-4 animate-fade-in">
+                                    <h3 className="font-semibold text-gray-900 border-b pb-2 flex items-center gap-2">
+                                        <span>⚠️</span> Hasar & Arıza Bildirimleri
+                                    </h3>
+
+                                    {faultReports.length === 0 ? (
+                                        <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                            <div className="text-4xl mb-2">✅</div>
+                                            <p className="text-sm text-gray-600 font-medium mb-1">Hasar kaydı bulunmamaktadır.</p>
+                                            <p className="text-xs text-gray-400">Bu ekipman için sahadan bildirilmiş bir arıza yok.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {faultReports.map((report) => (
+                                                <div key={report.id} className={`p-4 rounded-xl border shadow-sm ${report.status === 'open' ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${report.status === 'open' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                                                            {report.status === 'open' ? 'AÇIK ARIZA' : 'ÇÖZÜLDÜ'}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500 font-medium">
+                                                            {new Date(report.created_at).toLocaleDateString('tr-TR')}
+                                                        </span>
+                                                    </div>
+
+                                                    <p className="text-sm text-gray-800 font-medium mb-3">
+                                                        "{report.description}"
+                                                    </p>
+
+                                                    <div className="text-xs text-gray-500 space-y-1 mb-3">
+                                                        <div className="flex items-center gap-1"><span>👤</span> Bildiren: {report.reported_by_name || "Bilinmiyor"}</div>
+                                                        <div className="flex items-center gap-1"><span>📍</span> Konum: {report.location || "Bilinmiyor"}</div>
+                                                    </div>
+
+                                                    {report.status === 'open' ? (
+                                                        <button
+                                                            onClick={() => resolveFault(report.id)}
+                                                            className="w-full bg-white border border-gray-300 text-gray-700 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition shadow-sm"
+                                                        >
+                                                            Aksiyon Alındı / Çözüldü İşaretle
+                                                        </button>
+                                                    ) : (
+                                                        <div className="bg-white border text-center border-green-200 text-green-700 py-1.5 rounded-lg text-xs font-medium bg-opacity-50">
+                                                            Çözüldü Olarak İşaretlendi ({new Date(report.resolved_at).toLocaleDateString('tr-TR')})
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
