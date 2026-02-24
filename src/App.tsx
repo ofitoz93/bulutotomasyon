@@ -15,7 +15,14 @@ import Dashboard from "@/pages/Dashboard";
 import ADRDashboard from "@/pages/adr/ADRDashboard";
 import NewADRForm from "@/pages/adr/NewADRForm";
 import ADRDetail from "@/pages/adr/ADRDetail";
-
+import OrganizationChartPage from "@/pages/modules/OrganizationChartPage";
+import WorkPermitsLayout from "@/pages/work-permits/WorkPermitsLayout";
+import WorkPermitsList from "@/pages/work-permits/WorkPermitsList";
+import NewWorkPermit from "@/pages/work-permits/NewWorkPermit";
+import WorkPermitDetail from "@/pages/work-permits/WorkPermitDetail";
+import WorkPermitSettings from "@/pages/work-permits/WorkPermitSettings";
+import QuickPermitApprove from "@/pages/auth/QuickPermitApprove";
+import PublicWorkPermitForm from "@/pages/auth/PublicWorkPermitForm";
 // Action Tracking
 import ActionLayout from "@/pages/actions/ActionLayout";
 import ActionDashboard from "@/pages/actions/ActionDashboard";
@@ -71,16 +78,26 @@ function App() {
         <Route path="/auth" element={<AuthLayout />}>
           <Route path="login" element={<Login />} />
           <Route path="update-password" element={<UpdatePassword />} />
+          <Route path="quick-permit-approve" element={<QuickPermitApprove />} />
+          <Route path="public-work-permit" element={<PublicWorkPermitForm />} />
         </Route>
 
         <Route path="/app" element={<DashboardLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="evrak-takip" element={<DocumentTrackingPage />} />
           <Route path="ekipman-takip" element={<EquipmentTrackingPage />} />
+          <Route path="org-chart" element={<OrganizationChartPage />} />
           <Route path="adr">
             <Route index element={<ADRDashboard />} />
             <Route path="new" element={<NewADRForm />} />
             <Route path=":id" element={<ADRDetail />} />
+          </Route>
+
+          <Route path="work-permits" element={<WorkPermitsLayout />}>
+            <Route index element={<WorkPermitsList />} />
+            <Route path="new" element={<NewWorkPermit />} />
+            <Route path="settings" element={<WorkPermitSettings />} />
+            <Route path=":id" element={<WorkPermitDetail />} />
           </Route>
 
           <Route path="aksiyon-takip" element={<ActionLayout />}>

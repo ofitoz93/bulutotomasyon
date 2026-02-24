@@ -8,6 +8,8 @@ interface Profile {
     first_name: string | null
     last_name: string | null
     phone_number?: string | null
+    tc_no?: string | null
+    company_employee_no?: string | null
     role: 'system_admin' | 'company_manager' | 'employee'
     tenant_id: string | null
 }
@@ -21,9 +23,11 @@ interface AuthState {
     setProfile: (profile: Profile | null) => void
     updateUserProfile: (updates: Partial<Profile>) => void
     signOut: () => Promise<void>
+    isCompanyManager: () => boolean
+    isSystemAdmin: () => boolean
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
     session: null,
     user: null,
     profile: null,
@@ -37,4 +41,12 @@ export const useAuthStore = create<AuthState>((set) => ({
         await supabase.auth.signOut()
         set({ session: null, user: null, profile: null })
     },
+    isCompanyManager: () => {
+        const profile = get().profile;
+        return profile?.role === 'company_manager';
+    },
+    isSystemAdmin: () => {
+        const profile = get().profile;
+        return profile?.role === 'system_admin';
+    }
 }))

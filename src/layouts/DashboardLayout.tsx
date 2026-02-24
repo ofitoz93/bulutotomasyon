@@ -2,6 +2,7 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import ProfileCompletion from "@/pages/auth/ProfileCompletion";
 
 interface ActiveModule {
     module_key: string;
@@ -15,6 +16,7 @@ export default function DashboardLayout() {
     const location = useLocation();
     const [companyName, setCompanyName] = useState<string>("");
     const [activeModules, setActiveModules] = useState<ActiveModule[]>([]);
+    const [showProfileCompletion, setShowProfileCompletion] = useState(false);
 
     useEffect(() => {
         if (!loading) {
@@ -22,9 +24,13 @@ export default function DashboardLayout() {
                 navigate("/auth/login");
             } else if (user.user_metadata?.force_password_change) {
                 navigate("/auth/update-password");
+            } else if (profile && (!profile.first_name || !profile.last_name || !profile.tc_no)) {
+                setShowProfileCompletion(true);
+            } else {
+                setShowProfileCompletion(false);
             }
         }
-    }, [user, loading, navigate]);
+    }, [user, loading, navigate, profile]);
 
     useEffect(() => {
         if (!user || !profile) return;
@@ -125,6 +131,8 @@ export default function DashboardLayout() {
         ekipman_takip: "/app/ekipman-takip",
         adr: "/app/adr",
         aksiyon_takip: "/app/aksiyon-takip",
+        org_chart: "/app/org-chart",
+        work_permits: "/app/work-permits",
     };
 
     const getRoleLabel = () => {
@@ -214,6 +222,11 @@ export default function DashboardLayout() {
                     <Outlet />
                 </div>
             </main>
+
+            {/* Profil Tamamlama Zorunluluğu */}
+            {showProfileCompletion && (
+                <ProfileCompletion onComplete={() => setShowProfileCompletion(false)} />
+            )}
         </div>
     );
 }

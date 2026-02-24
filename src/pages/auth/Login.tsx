@@ -97,6 +97,23 @@ export default function Login() {
                     {loading ? "Giriş Yapılıyor..." : "Giriş Yap"}
                 </button>
             </div>
+
+            <div className="mt-4 flex flex-col space-y-2 text-center">
+                <button
+                    type="button"
+                    onClick={() => navigate('/auth/quick-permit-approve')}
+                    className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                >
+                    Hızlı İş İzni Onay Merkezi
+                </button>
+                <button
+                    type="button"
+                    onClick={() => navigate('/auth/public-work-permit')}
+                    className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                >
+                    Yeni İş İzni Başvurusu
+                </button>
+            </div>
         </form>
     );
 }

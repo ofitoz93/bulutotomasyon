@@ -10,6 +10,8 @@ interface TeamMember {
     role: string;
     is_active: boolean;
     created_at: string;
+    tc_no: string | null;
+    company_employee_no: string | null;
 }
 
 interface CompanyModule {
@@ -39,6 +41,12 @@ export default function TeamPage() {
     // Personel arama & modül yönetimi
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+
+    // Modül atama ve düzenleme modalı
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editMember, setEditMember] = useState<TeamMember | null>(null);
+    const [tempEmployeeNo, setTempEmployeeNo] = useState("");
+    const [savingEmployeeNo, setSavingEmployeeNo] = useState(false);
 
     useEffect(() => {
         if (profile?.tenant_id) fetchAll();
@@ -149,11 +157,33 @@ export default function TeamPage() {
         try {
             await supabase.from("user_module_access").delete()
                 .eq("user_id", member.id).eq("tenant_id", profile!.tenant_id);
-            await supabase.from("profiles").update({ tenant_id: null, role: "employee" }).eq("id", member.id);
+            await supabase.from("profiles").update({ tenant_id: null, role: "employee", company_employee_no: null }).eq("id", member.id);
             alert("Kullanıcı şirketten çıkarıldı.");
             if (selectedMember?.id === member.id) setSelectedMember(null);
             fetchAll();
         } catch (error: any) { alert("Hata: " + error.message); }
+    };
+
+    const handleSaveEmployeeNo = async () => {
+        if (!editMember) return;
+        setSavingEmployeeNo(true);
+        try {
+            const val = tempEmployeeNo.trim() || null;
+            const { error } = await supabase.from("profiles").update({ company_employee_no: val }).eq("id", editMember.id);
+            if (error) throw error;
+
+            setShowEditModal(false);
+            setEditMember(null);
+            fetchAll();
+        } catch (e: any) {
+            if (e.message?.includes("unique_company_employee_no_per_tenant") || e.message?.includes("duplicate key")) {
+                alert("Bu şirket sicil numarası zaten başka bir personelde kullanılıyor.");
+            } else {
+                alert("Hata: " + e.message);
+            }
+        } finally {
+            setSavingEmployeeNo(false);
+        }
     };
 
     // Seçili personelin modül sayısı
@@ -269,6 +299,7 @@ export default function TeamPage() {
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ad Soyad</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">E-posta</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sicil No / TC</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Modüller</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kayıt</th>
@@ -286,10 +317,16 @@ export default function TeamPage() {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {member.first_name || ""} {member.last_name || ""}
                                         {!member.first_name && !member.last_name && (
-                                            <span className="text-gray-400 italic">İsim belirtilmemiş</span>
+                                            <span className="text-gray-400 italic">Eksik Profil</span>
                                         )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.email}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <div className="flex flex-col">
+                                            <span><span className="text-xs text-gray-400">Sicil:</span> {member.company_employee_no || <span className="text-red-400 italic">Atanmamış</span>}</span>
+                                            {member.tc_no && <span className="text-xs text-gray-400 mt-0.5">TC: ***{member.tc_no.slice(-3)}</span>}
+                                        </div>
+                                    </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                                         <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${member.role === "company_manager" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}`}>
                                             {member.role === "company_manager" ? "Yönetici" : "Çalışan"}
@@ -309,10 +346,12 @@ export default function TeamPage() {
                                         {new Date(member.created_at).toLocaleDateString("tr-TR")}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        {member.role !== "company_manager" ? (
+                                        <button onClick={() => { setEditMember(member); setTempEmployeeNo(member.company_employee_no || ""); setShowEditModal(true); }}
+                                            className="text-indigo-600 hover:text-indigo-900 mr-3">Düzenle</button>
+                                        {member.role !== "company_manager" && (
                                             <button onClick={() => handleRemoveMember(member)}
                                                 className="text-red-600 hover:text-red-900">Çıkar</button>
-                                        ) : <span className="text-gray-300">—</span>}
+                                        )}
                                     </td>
                                 </tr>
                             ))
@@ -354,6 +393,35 @@ export default function TeamPage() {
                             <button onClick={handleInviteMember} disabled={createLoading || !email}
                                 className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
                                 {createLoading ? "Gönderiliyor..." : "Davet Gönder"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Düzenleme Modal (Sicil No) */}
+            {showEditModal && editMember && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg max-w-sm w-full p-6 space-y-4">
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900">Personel Düzenle</h3>
+                            <p className="text-sm text-gray-500 mt-1">{editMember.first_name || ""} {editMember.last_name || ""} ({editMember.email})</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Şirket Sicil Numarası</label>
+                            <input type="text" value={tempEmployeeNo} onChange={(e) => setTempEmployeeNo(e.target.value)}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Örn: 2024-1234" />
+                            <p className="text-xs text-gray-500 mt-1.5">Şirket içindeki benzersiz personel takip numarası.</p>
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-4">
+                            <button onClick={() => { setShowEditModal(false); setEditMember(null); }}
+                                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">İptal</button>
+                            <button onClick={handleSaveEmployeeNo} disabled={savingEmployeeNo}
+                                className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
+                                {savingEmployeeNo ? "Kaydediliyor..." : "Kaydet"}
                             </button>
                         </div>
                     </div>
