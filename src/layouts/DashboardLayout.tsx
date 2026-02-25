@@ -138,6 +138,7 @@ export default function DashboardLayout() {
         aksiyon_takip: "/app/aksiyon-takip",
         org_chart: "/app/org-chart",
         work_permits: "/app/work-permits",
+        education: "/app/education",
     };
 
     const getRoleLabel = () => {

@@ -31,6 +31,15 @@ import ActionSettings from "@/pages/actions/ActionSettings";
 import NewAction from "@/pages/actions/NewAction";
 import ActionDetail from "@/pages/actions/ActionDetail";
 import SettingsPage from "@/pages/settings/SettingsPage";
+import EducationLayout from "@/pages/education/EducationLayout";
+import ActiveCourses from "@/pages/education/ActiveCourses";
+import EducationSettings from "@/pages/education/EducationSettings";
+import CourseManagement from "@/pages/education/CourseManagement";
+import NewCourseForm from "@/pages/education/NewCourseForm";
+import CourseDetail from "@/pages/education/CourseDetail";
+import CoursePlayer from "@/pages/education/CoursePlayer";
+import CourseExamPlayer from "@/pages/education/CourseExamPlayer";
+import PublicExamPage from "@/pages/education/PublicExamPage";
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/lib/supabase";
@@ -108,10 +117,21 @@ function App() {
             <Route path=":id" element={<ActionDetail />} />
           </Route>
 
+          <Route path="education" element={<EducationLayout />}>
+            <Route index element={<ActiveCourses />} />
+            <Route path="settings" element={<EducationSettings />} />
+            <Route path="manage" element={<CourseManagement />} />
+            <Route path="manage/new" element={<NewCourseForm />} />
+            <Route path="manage/:id" element={<CourseDetail />} />
+            <Route path="course/:id" element={<CoursePlayer />} />
+            <Route path="course/:id/exam" element={<CourseExamPlayer />} />
+          </Route>
+
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 
         <Route path="/qr/:token" element={<QRScanPage />} />
+        <Route path="/public/exam/:id" element={<PublicExamPage />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<DashboardLayout />}>
