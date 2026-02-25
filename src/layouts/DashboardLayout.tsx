@@ -17,6 +17,7 @@ export default function DashboardLayout() {
     const [companyName, setCompanyName] = useState<string>("");
     const [activeModules, setActiveModules] = useState<ActiveModule[]>([]);
     const [showProfileCompletion, setShowProfileCompletion] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
         if (!loading) {
@@ -120,6 +121,10 @@ export default function DashboardLayout() {
     if (loading) return <div className="p-10">Yükleniyor...</div>;
 
     const isActive = (path: string) => location.pathname === path;
+    const handleNavigation = () => {
+        setIsSidebarOpen(false); // Close sidebar on mobile when navigating
+    };
+
     const linkClass = (path: string) =>
         `block px-4 py-2 text-sm rounded transition ${isActive(path)
             ? "bg-indigo-50 text-indigo-700 font-medium"
@@ -153,29 +158,44 @@ export default function DashboardLayout() {
     const sortedCategories = Object.keys(groupedModules).sort();
 
     return (
-        <div className="min-h-screen flex bg-gray-100">
-            <aside className="w-64 bg-white shadow-md hidden md:flex md:flex-col">
-                <div className="p-6 border-b">
-                    <h1 className="text-xl font-bold text-gray-800">Panel</h1>
-                    {profile && (
-                        <div className="mt-1">
-                            <p className="text-xs text-gray-400">{getRoleLabel()}</p>
-                            {companyName && profile.role !== "system_admin" && (
-                                <p className="text-xs font-medium text-indigo-600 mt-0.5">{companyName}</p>
-                            )}
-                        </div>
-                    )}
+        <div className="min-h-screen flex bg-gray-100 print:bg-white relative">
+            {/* Mobile Overlay */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
+            <aside className={`w-64 bg-white shadow-md print:hidden fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 md:relative md:translate-x-0 flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className="p-6 border-b flex justify-between items-center">
+                    <div>
+                        <h1 className="text-xl font-bold text-gray-800">Panel</h1>
+                        {profile && (
+                            <div className="mt-1">
+                                <p className="text-xs text-gray-400">{getRoleLabel()}</p>
+                                {companyName && profile.role !== "system_admin" && (
+                                    <p className="text-xs font-medium text-indigo-600 mt-0.5">{companyName}</p>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                    <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none">
+                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
                 <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
-                    <a href="/app" className={linkClass("/app")}>Ana Sayfa</a>
+                    <a href="/app" onClick={handleNavigation} className={linkClass("/app")}>Ana Sayfa</a>
 
                     {/* Admin */}
                     {profile?.role === "system_admin" && (
                         <>
                             <div className="text-gray-400 text-xs uppercase font-semibold mt-4 mb-2 px-4">Yönetim</div>
-                            <a href="/admin/companies" className={linkClass("/admin/companies")}>Şirket Yönetimi</a>
-                            <a href="/admin/modules" className={linkClass("/admin/modules")}>Modül Yönetimi</a>
-                            <a href="/admin/announcements" className={linkClass("/admin/announcements")}>Sistem Duyuruları</a>
+                            <a href="/admin/companies" onClick={handleNavigation} className={linkClass("/admin/companies")}>Şirket Yönetimi</a>
+                            <a href="/admin/modules" onClick={handleNavigation} className={linkClass("/admin/modules")}>Modül Yönetimi</a>
+                            <a href="/admin/announcements" onClick={handleNavigation} className={linkClass("/admin/announcements")}>Sistem Duyuruları</a>
                         </>
                     )}
 
@@ -183,8 +203,8 @@ export default function DashboardLayout() {
                     {profile?.role === "company_manager" && (
                         <>
                             <div className="text-gray-400 text-xs uppercase font-semibold mt-4 mb-2 px-4">Şirket İşlemleri</div>
-                            <a href="/manager/team" className={linkClass("/manager/team")}>Alt Hesap Daveti</a>
-                            <a href="/manager/announcements" className={linkClass("/manager/announcements")}>Şirket Duyuruları</a>
+                            <a href="/manager/team" onClick={handleNavigation} className={linkClass("/manager/team")}>Alt Hesap Daveti</a>
+                            <a href="/manager/announcements" onClick={handleNavigation} className={linkClass("/manager/announcements")}>Şirket Duyuruları</a>
                         </>
                     )}
 
@@ -194,7 +214,7 @@ export default function DashboardLayout() {
                             <div className="text-gray-400 text-xs uppercase font-semibold mt-4 mb-1 px-4">{category}</div>
                             {groupedModules[category].map(mod => {
                                 const route = moduleRoutes[mod.module_key] || `/app/${mod.module_key}`;
-                                return <a key={mod.module_key} href={route} className={linkClass(route)}>{mod.name}</a>
+                                return <a key={mod.module_key} href={route} onClick={handleNavigation} className={linkClass(route)}>{mod.name}</a>
                             })}
                         </div>
                     ))}
@@ -208,9 +228,19 @@ export default function DashboardLayout() {
                 </div>
             </aside>
 
-            <main className="flex-1 flex flex-col">
-                <header className="h-16 bg-white shadow-sm flex items-center justify-between px-6">
-                    <div className="text-lg font-medium">Hoşgeldiniz</div>
+            <main className="flex-1 flex flex-col print:block w-full md:w-auto">
+                <header className="h-16 bg-white shadow-sm flex items-center justify-between px-4 sm:px-6 print:hidden">
+                    <div className="flex items-center">
+                        <button
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                            className="mr-3 md:hidden text-gray-500 hover:text-gray-700 focus:outline-none"
+                        >
+                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                        <div className="text-lg font-medium hidden sm:block">Hoşgeldiniz</div>
+                    </div>
                     <div className="flex items-center space-x-4">
                         <span className="text-sm text-gray-600">{user?.email}</span>
                         <a href="/app/settings" className="text-sm text-indigo-600 hover:text-indigo-800 font-medium bg-indigo-50 px-3 py-1.5 rounded-md">
@@ -218,7 +248,7 @@ export default function DashboardLayout() {
                         </a>
                     </div>
                 </header>
-                <div className="p-6 overflow-auto flex-1">
+                <div className="p-6 overflow-auto flex-1 print:p-0 print:overflow-visible">
                     <Outlet />
                 </div>
             </main>

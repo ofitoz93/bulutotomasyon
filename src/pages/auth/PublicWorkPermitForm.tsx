@@ -172,7 +172,7 @@ export default function PublicWorkPermitForm() {
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Başarılı!</h2>
                     <p className="text-gray-600 mb-6">{successMessage}</p>
-                    <button onClick={() => navigate('/login')} className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md font-medium hover:bg-indigo-700">
+                    <button onClick={() => navigate('/auth/login')} className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md font-medium hover:bg-indigo-700">
                         Ana Sayfaya Dön
                     </button>
                 </div>

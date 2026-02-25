@@ -49,4 +49,14 @@ export interface WorkPermit {
         name: string;
     };
     coworkers?: WorkPermitCoworker[];
+    engineer_profile?: {
+        first_name: string | null;
+        last_name: string | null;
+        tc_no: string | null;
+    };
+    isg_profile?: {
+        first_name: string | null;
+        last_name: string | null;
+        tc_no: string | null;
+    };
 }
