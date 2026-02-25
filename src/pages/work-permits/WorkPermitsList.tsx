@@ -108,9 +108,28 @@ export default function WorkPermitsList() {
                                         {getStatusBadge(p.status)}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <Link to={`/app/work-permits/${p.id}`} className="text-indigo-600 hover:text-indigo-900 border border-indigo-200 px-3 py-1.5 rounded bg-indigo-50">
-                                            Görüntüle
-                                        </Link>
+                                        <div className="flex items-center justify-end space-x-3">
+                                            <Link to={`/app/work-permits/${p.id}`} className="text-indigo-600 hover:text-indigo-900 border border-indigo-200 px-3 py-1.5 rounded bg-indigo-50">
+                                                Görüntüle
+                                            </Link>
+                                            {isCompanyManager() && (
+                                                <button
+                                                    onClick={async () => {
+                                                        if (window.confirm("Bu iş iznini ve ona bağlı tüm kayıtları silmek istediğinize emin misiniz?")) {
+                                                            const { error } = await supabase.from('work_permits').delete().eq('id', p.id);
+                                                            if (!error) {
+                                                                setPermits(permits.filter(permit => permit.id !== p.id));
+                                                            } else {
+                                                                alert("Silinirken bir hata oluştu: " + error.message);
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="text-red-600 hover:text-red-900 border border-red-200 px-3 py-1.5 rounded bg-red-50"
+                                                >
+                                                    Sil
+                                                </button>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
