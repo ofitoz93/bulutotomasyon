@@ -132,11 +132,11 @@ export default function TeamPage() {
             const tempSupabase = createClient(
                 import.meta.env.VITE_SUPABASE_URL,
                 import.meta.env.VITE_SUPABASE_ANON_KEY,
-                { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
+                { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, flowType: 'implicit' } }
             );
             const { data: authData, error: authError } = await tempSupabase.auth.signUp({
                 email: email.trim(), password: tempPassword,
-                options: { data: { first_name: firstName.trim() || "Çalışan", last_name: lastName.trim() || "", force_password_change: true } },
+                options: { emailRedirectTo: `${window.location.origin}/auth/login`, data: { first_name: firstName.trim() || "Çalışan", last_name: lastName.trim() || "", force_password_change: true, temp_password: tempPassword } },
             });
             if (authError) throw authError;
             if (authData.user) {

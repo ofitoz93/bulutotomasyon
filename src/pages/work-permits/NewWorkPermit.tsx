@@ -9,6 +9,11 @@ interface Project {
     name: string;
 }
 
+interface Subcontractor {
+    id: string;
+    name: string;
+}
+
 export default function NewWorkPermit() {
     const navigate = useNavigate();
     const { user, profile } = useAuthStore();
@@ -22,6 +27,7 @@ export default function NewWorkPermit() {
 
     // Remote Data
     const [projects, setProjects] = useState<Project[]>([]);
+    const [subcontractors, setSubcontractors] = useState<Subcontractor[]>([]);
     const [loadingProjects, setLoadingProjects] = useState(true);
 
     // Arrays & Others
@@ -48,16 +54,16 @@ export default function NewWorkPermit() {
 
     useEffect(() => {
         if (!profile?.tenant_id) return;
-        const fetchProjects = async () => {
-            const { data, error } = await supabase
-                .from('action_projects')
-                .select('id, name')
-                .eq('company_id', profile.tenant_id)
-                .order('name');
-            if (data) setProjects(data);
+        const fetchData = async () => {
+            const [projRes, subRes] = await Promise.all([
+                supabase.from('action_projects').select('id, name').eq('company_id', profile.tenant_id).order('name'),
+                supabase.from('subcontractors').select('id, name').eq('parent_company_id', profile.tenant_id).eq('is_active', true).order('name'),
+            ]);
+            if (projRes.data) setProjects(projRes.data);
+            if (subRes.data) setSubcontractors(subRes.data);
             setLoadingProjects(false);
         };
-        fetchProjects();
+        fetchData();
     }, [profile]);
 
     const handleCheckboxToggle = (list: string[], setList: React.Dispatch<React.SetStateAction<string[]>>, item: string) => {
@@ -122,7 +128,8 @@ export default function NewWorkPermit() {
                     tenant_id: profile.tenant_id,
                     created_by: user!.id,
                     department: department || null,
-                    company_name: companyName || null,
+                    company_name: companyName ? (subcontractors.find(s => s.id === companyName)?.name || null) : null,
+                    subcontractor_id: companyName || null,
                     work_date: workDate,
                     estimated_hours: estimatedHours ? parseFloat(estimatedHours) : null,
                     project_id: projectId || null,
@@ -206,8 +213,13 @@ export default function NewWorkPermit() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Firma</label>
-                            <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-md text-sm" placeholder="Taşeron veya kendi firmanız" />
+                            <select value={companyName} onChange={e => setCompanyName(e.target.value)}
+                                className="w-full px-3 py-2 border rounded-md text-sm">
+                                <option value="">Kendi Firmam</option>
+                                {subcontractors.map(s => (
+                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                ))}
+                            </select>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Departman</label>

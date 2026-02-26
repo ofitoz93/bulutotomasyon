@@ -11,13 +11,14 @@ export default function ProfileCompletion({ onComplete }: ProfileCompletionProps
     const [firstName, setFirstName] = useState(profile?.first_name || "");
     const [lastName, setLastName] = useState(profile?.last_name || "");
     const [tcNo, setTcNo] = useState(profile?.tc_no || "");
+    const [phoneNumber, setPhoneNumber] = useState(profile?.phone_number || "");
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!firstName.trim() || !lastName.trim() || !tcNo.trim()) {
+        if (!firstName.trim() || !lastName.trim() || !tcNo.trim() || !phoneNumber.trim()) {
             setError("Lütfen tüm alanları doldurun.");
             return;
         }
@@ -36,7 +37,8 @@ export default function ProfileCompletion({ onComplete }: ProfileCompletionProps
                 .update({
                     first_name: firstName,
                     last_name: lastName,
-                    tc_no: tcNo
+                    tc_no: tcNo,
+                    phone_number: phoneNumber
                 })
                 .eq('id', user?.id);
 
@@ -123,6 +125,19 @@ export default function ProfileCompletion({ onComplete }: ProfileCompletionProps
                             required
                         />
                         <p className="text-xs text-gray-400 mt-1">Sistem modüllerindeki atama ve doğrulama işlemleri için gereklidir.</p>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Telefon Numaranız *</label>
+                        <input
+                            type="tel"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            className="w-full px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            placeholder="Örn: 0555 555 55 55"
+                            required
+                        />
+                        <p className="text-xs text-gray-400 mt-1">Acil durumlar ve iletişim işlemleri için gereklidir.</p>
                     </div>
 
                     <button

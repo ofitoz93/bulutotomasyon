@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { Plus, Trash2, CheckCircle2, QrCode } from "lucide-react";
+import { Plus, Trash2, CheckCircle2, QrCode, Download } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 
 export default function CourseExam({ courseId }: { courseId: string }) {
@@ -65,6 +65,40 @@ export default function CourseExam({ courseId }: { courseId: string }) {
             printWindow.print();
             printWindow.close();
         }, 500);
+    };
+
+    const handleDownloadQRCode = () => {
+        const svgElement = printRef.current?.querySelector('svg');
+        if (!svgElement) return;
+
+        const clonedSvg = svgElement.cloneNode(true) as SVGElement;
+        clonedSvg.setAttribute('width', '1024');
+        clonedSvg.setAttribute('height', '1024');
+
+        const svgData = new XMLSerializer().serializeToString(clonedSvg);
+        const img = new Image();
+
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+
+            const pngUrl = canvas.toDataURL("image/png");
+            const downloadLink = document.createElement("a");
+            downloadLink.href = pngUrl;
+            downloadLink.download = `Sinav_QR_${courseId}.png`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        };
+
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
     };
 
     const fetchExamData = async () => {
@@ -253,13 +287,18 @@ export default function CourseExam({ courseId }: { courseId: string }) {
                     {exam && examLink && (
                         <div className="flex items-center gap-4 bg-white p-3 rounded border border-gray-200 shadow-sm">
                             <div ref={printRef} className="bg-white p-1 rounded">
-                                <QRCodeSVG value={examLink} size={64} />
+                                <QRCodeSVG value={examLink} size={80} />
                             </div>
                             <div>
-                                <p className="text-xs font-semibold text-gray-800 mb-1">Dış Sınav Linki (QR)</p>
-                                <button type="button" onClick={handlePrintQRCode} className="text-indigo-600 hover:text-indigo-800 text-xs flex items-center bg-indigo-50 px-2 py-1 rounded">
-                                    <QrCode className="w-3 h-3 mr-1" /> QR Yazdır
-                                </button>
+                                <p className="text-xs font-semibold text-gray-800 mb-2">Dış Sınav Linki (QR)</p>
+                                <div className="flex gap-2">
+                                    <button type="button" onClick={handlePrintQRCode} className="text-indigo-600 hover:text-indigo-800 text-xs flex items-center bg-indigo-50 px-2 py-1 rounded">
+                                        <QrCode className="w-3 h-3 mr-1" /> Yazdır
+                                    </button>
+                                    <button type="button" onClick={handleDownloadQRCode} className="text-emerald-600 hover:text-emerald-800 text-xs flex items-center bg-emerald-50 px-2 py-1 rounded">
+                                        <Download className="w-3 h-3 mr-1" /> Büyük Halini İndir
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}

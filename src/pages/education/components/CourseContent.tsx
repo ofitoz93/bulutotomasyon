@@ -20,6 +20,7 @@ export default function CourseContent({ courseId }: { courseId: string }) {
     const [newTitle, setNewTitle] = useState("");
     const [newType, setNewType] = useState<'pdf' | 'video'>('pdf');
     const [newUrl, setNewUrl] = useState("");
+    const [newFile, setNewFile] = useState<File | null>(null);
     const [newMinDuration, setNewMinDuration] = useState(0);
 
     useEffect(() => {
@@ -46,18 +47,48 @@ export default function CourseContent({ courseId }: { courseId: string }) {
 
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        let finalUrl = newUrl;
+
+        if (!newFile && !newUrl) {
+            alert("Lütfen ya bir dosya yükleyin ya da bir bağlantı (URL) girin.");
+            return;
+        }
+
         setAdding(true);
 
-        const newOrderNum = materials.length > 0 ? Math.max(...materials.map(m => m.order_num)) + 1 : 1;
-
         try {
+            // Upload file if selected
+            if (newFile) {
+                const fileExt = newFile.name.split('.').pop();
+                const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+                const filePath = `${courseId}/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('education_materials')
+                    .upload(filePath, newFile, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (uploadError) throw uploadError;
+
+                const { data } = supabase.storage
+                    .from('education_materials')
+                    .getPublicUrl(filePath);
+
+                finalUrl = data.publicUrl;
+            }
+
+            const newOrderNum = materials.length > 0 ? Math.max(...materials.map(m => m.order_num)) + 1 : 1;
+
             const { error } = await supabase
                 .from("course_materials")
                 .insert([{
                     course_id: courseId,
                     title: newTitle,
                     content_type: newType,
-                    file_url: newUrl,
+                    file_url: finalUrl,
                     min_duration_minutes: newMinDuration,
                     order_num: newOrderNum
                 }]);
@@ -66,6 +97,7 @@ export default function CourseContent({ courseId }: { courseId: string }) {
 
             setNewTitle("");
             setNewUrl("");
+            setNewFile(null);
             setNewMinDuration(0);
             fetchMaterials();
         } catch (error) {
@@ -162,13 +194,30 @@ export default function CourseContent({ courseId }: { courseId: string }) {
                     </div>
 
                     <div className="md:col-span-2">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Dosya veya Video Linki (URL)</label>
-                        <input
-                            type="url" required value={newUrl} onChange={e => setNewUrl(e.target.value)}
-                            placeholder="https://..."
-                            className="w-full px-3 py-2 text-sm border rounded focus:ring-indigo-500 focus:border-indigo-500"
-                        />
-                        <p className="text-[10px] text-gray-500 mt-0.5">Not: İleride doğrudan dosya yükleme özelliği (Storage) de eklenebilir, şu an Dışsal Link kabul edilmektedir.</p>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Dışsal Link (URL) VEYA Dosya Yükle</label>
+                        <div className="flex flex-col gap-2">
+                            <input
+                                type="url" value={newUrl} onChange={e => { setNewUrl(e.target.value); setNewFile(null); }}
+                                placeholder="Dışsal URL (Örn: YouTube veya Drive linki)"
+                                className="w-full px-3 py-2 text-sm border rounded focus:ring-indigo-500 focus:border-indigo-500"
+                                disabled={!!newFile}
+                            />
+                            <div className="flex items-center">
+                                <span className="text-xs text-gray-500 mr-2">YA DA</span>
+                                <input
+                                    type="file"
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files.length > 0) {
+                                            setNewFile(e.target.files[0]);
+                                            setNewUrl("");
+                                        }
+                                    }}
+                                    className="text-sm file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                    disabled={!!newUrl}
+                                />
+                            </div>
+                        </div>
+                        <p className="text-[10px] text-gray-500 mt-1">Lütfen sadece birini kullanın. Bilgisayardan dosya (PDF, MP4) seçerseniz sistem otomatik yükleyecektir.</p>
                     </div>
                 </div>
 

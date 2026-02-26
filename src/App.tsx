@@ -7,6 +7,7 @@ import CompaniesPage from "@/pages/admin/CompaniesPage";
 import ModulesPage from "@/pages/admin/ModulesPage";
 import SystemAnnouncementsPage from "@/pages/admin/AnnouncementsPage";
 import TeamPage from "@/pages/manager/TeamPage";
+import SubcontractorsPage from "@/pages/manager/SubcontractorsPage";
 import ManagerAnnouncementsPage from "@/pages/manager/ManagerAnnouncementsPage";
 import DocumentTrackingPage from "@/pages/modules/DocumentTrackingPage";
 import EquipmentTrackingPage from "@/pages/modules/EquipmentTrackingPage";
@@ -40,6 +41,7 @@ import CourseDetail from "@/pages/education/CourseDetail";
 import CoursePlayer from "@/pages/education/CoursePlayer";
 import CourseExamPlayer from "@/pages/education/CourseExamPlayer";
 import PublicExamPage from "@/pages/education/PublicExamPage";
+import PhysicalExams from "@/pages/education/PhysicalExams";
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { supabase } from "@/lib/supabase";
@@ -120,6 +122,7 @@ function App() {
           <Route path="education" element={<EducationLayout />}>
             <Route index element={<ActiveCourses />} />
             <Route path="settings" element={<EducationSettings />} />
+            <Route path="physical-exams" element={<PhysicalExams />} />
             <Route path="manage" element={<CourseManagement />} />
             <Route path="manage/new" element={<NewCourseForm />} />
             <Route path="manage/:id" element={<CourseDetail />} />
@@ -144,6 +147,7 @@ function App() {
         {/* Manager Routes */}
         <Route path="/manager" element={<DashboardLayout />}>
           <Route path="team" element={<TeamPage />} />
+          <Route path="subcontractors" element={<SubcontractorsPage />} />
           <Route path="announcements" element={<ManagerAnnouncementsPage />} />
           <Route index element={<Navigate to="/manager/team" replace />} />
         </Route>

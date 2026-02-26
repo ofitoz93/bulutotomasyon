@@ -25,7 +25,7 @@ export default function DashboardLayout() {
                 navigate("/auth/login");
             } else if (user.user_metadata?.force_password_change) {
                 navigate("/auth/update-password");
-            } else if (profile && (!profile.first_name || !profile.last_name || !profile.tc_no)) {
+            } else if (profile && (!profile.first_name || !profile.last_name || !profile.tc_no || !profile.phone_number)) {
                 setShowProfileCompletion(true);
             } else {
                 setShowProfileCompletion(false);
@@ -77,15 +77,8 @@ export default function DashboardLayout() {
                         category: m.category_override || m.modules?.category || "Genel"
                     })));
                 }
-            } else if (profile.role === "employee" && profile.tenant_id) {
-                // Çalışan: kendisine açılan modülleri görür (kategori bilgisi için önce module access, sonra company module join gerekir veya basitçe module tablosundan)
-                // Daha doğru yapı: user_module_access -> modules (category)
-                // Ancak şirket override'ını da gözetmek istersek query karmaşıklaşır.
-                // Basitlik için şimdilik modülün default kategorisini alalım.
-                // Eğer şirket override'ı önemliyse: user_module_access -> module_key.
-                // Sonra bu key'leri company_modules'den sorgulayıp override'ı alabiliriz.
-
-                // 1. Kullanıcının erişim izni olan modül key'lerini al
+            } else if ((profile.role === "employee" || profile.role === "subcontractor_manager") && profile.tenant_id) {
+                // Çalışan / Taşeron: kendisine açılan modülleri görür
                 const { data: accessData } = await supabase
                     .from("user_module_access")
                     .select("module_key")
@@ -94,14 +87,12 @@ export default function DashboardLayout() {
 
                 if (accessData && accessData.length > 0) {
                     const keys = accessData.map(a => a.module_key);
-
-                    // 2. Bu modüllerin detaylarını company_modules (override için) ve modules (default için) tablolarından al
                     const { data: moduleDetails } = await supabase
                         .from("company_modules")
                         .select("module_key, category_override, modules(name, category)")
                         .eq("company_id", profile.tenant_id)
                         .in("module_key", keys)
-                        .eq("is_active", true); // Şirkette de aktif olmalı
+                        .eq("is_active", true);
 
                     if (moduleDetails) {
                         setActiveModules(moduleDetails.map((m: any) => ({
@@ -144,6 +135,7 @@ export default function DashboardLayout() {
     const getRoleLabel = () => {
         if (profile?.role === "system_admin") return "Sistem Yöneticisi";
         if (profile?.role === "company_manager") return "Şirket Yöneticisi";
+        if (profile?.role === "subcontractor_manager") return "Alt Taşeron Firma";
         return "Çalışan";
     };
 
@@ -206,6 +198,9 @@ export default function DashboardLayout() {
                             <div className="text-gray-400 text-xs uppercase font-semibold mt-4 mb-2 px-4">Şirket İşlemleri</div>
                             <a href="/manager/team" onClick={handleNavigation} className={linkClass("/manager/team")}>Alt Hesap Daveti</a>
                             <a href="/manager/announcements" onClick={handleNavigation} className={linkClass("/manager/announcements")}>Şirket Duyuruları</a>
+                            {activeModules.some(m => m.module_key === 'alt_taseron') && (
+                                <a href="/manager/subcontractors" onClick={handleNavigation} className={linkClass("/manager/subcontractors")}>Alt Taşeron Yönetimi</a>
+                            )}
                         </>
                     )}
 

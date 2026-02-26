@@ -6,7 +6,7 @@ import * as z from "zod";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/authStore";
 import ActionFileUploader from "@/components/actions/ActionFileUploader";
-import { ArrowLeft, Save, Users, Building2, Plus, X } from "lucide-react";
+import { ArrowLeft, Save, Users, Building2, Plus, Mail } from "lucide-react";
 
 const formSchema = z.object({
     subject_id: z.string().min(1, "Konu seçimi zorunludur"),
@@ -25,17 +25,22 @@ export default function NewAction() {
     // Dropdown Data
     const [subjects, setSubjects] = useState<{ id: string, name: string }[]>([]);
     const [projects, setProjects] = useState<{ id: string, name: string }[]>([]);
-    const [contractors, setContractors] = useState<{ id: string, name: string, email: string }[]>([]);
+    const [subcontractors, setSubcontractors] = useState<{ id: string, name: string, email: string }[]>([]);
     const [allUsers, setAllUsers] = useState<{ id: string, first_name: string, last_name: string, email: string }[]>([]);
 
-    // Selections
-    const [selectedUsers, setSelectedUsers] = useState<string[]>([]); // user_id
-    const [selectedContractors, setSelectedContractors] = useState<string[]>([]); // contractor_id
-    const [selectedCCUsers, setSelectedCCUsers] = useState<string[]>([]); // user_id
+    // Firma seçimi (opsiyonel)
+    const [selectedSubcontractorId, setSelectedSubcontractorId] = useState<string>("");
+
+    // Kişi seçimleri
+    const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+    const [selectedCCUsers, setSelectedCCUsers] = useState<string[]>([]);
 
     // Manual Emails
     const [externalEmails, setExternalEmails] = useState<string[]>([]);
     const [newEmail, setNewEmail] = useState("");
+
+    // Geçerlilik Tarihi
+    const [deadlineDate, setDeadlineDate] = useState<string>("");
 
     // Files
     const [files, setFiles] = useState<{ url: string, name: string }[]>([]);
@@ -43,12 +48,23 @@ export default function NewAction() {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 
-    const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
+    const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            total_days: 1
+            total_days: 30
         }
     });
+
+    const totalDays = watch("total_days");
+
+    // total_days değiştiğinde deadline_date'i otomatik hesapla
+    useEffect(() => {
+        if (totalDays && totalDays > 0) {
+            const d = new Date();
+            d.setDate(d.getDate() + totalDays);
+            setDeadlineDate(d.toISOString().split('T')[0]);
+        }
+    }, [totalDays]);
 
     useEffect(() => {
         if (profile?.tenant_id) fetchData();
@@ -57,17 +73,17 @@ export default function NewAction() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [subjRes, projRes, contRes, usersRes] = await Promise.all([
+            const [subjRes, projRes, usersRes, subRes] = await Promise.all([
                 supabase.from("action_subjects").select("id, name").eq("company_id", profile?.tenant_id),
                 supabase.from("action_projects").select("id, name").eq("company_id", profile?.tenant_id),
-                supabase.from("action_contractors").select("id, name, email").eq("company_id", profile?.tenant_id),
-                supabase.from("profiles").select("id, first_name, last_name, email").eq("tenant_id", profile?.tenant_id)
+                supabase.from("profiles").select("id, first_name, last_name, email").eq("tenant_id", profile?.tenant_id),
+                supabase.from("subcontractors").select("id, name, email").eq("parent_company_id", profile?.tenant_id).eq("is_active", true),
             ]);
 
             setSubjects(subjRes.data || []);
             setProjects(projRes.data || []);
-            setContractors(contRes.data || []);
             setAllUsers(usersRes.data || []);
+            setSubcontractors(subRes.data || []);
         } catch (error) {
             console.error(error);
         } finally {
@@ -95,7 +111,8 @@ export default function NewAction() {
     const onSubmit = async (data: FormValues) => {
         if (!profile?.tenant_id || !profile?.id) return;
 
-        if (selectedUsers.length === 0 && selectedContractors.length === 0 && externalEmails.length === 0) {
+        // En az bir alıcı olmalı
+        if (selectedUsers.length === 0 && !selectedSubcontractorId && externalEmails.length === 0) {
             alert("Lütfen aksiyon alacak en az bir kişi, firma veya harici email seçin.");
             return;
         }
@@ -108,6 +125,8 @@ export default function NewAction() {
                 subject_id: data.subject_id,
                 project_id: data.project_id,
                 total_days: data.total_days,
+                deadline_date: deadlineDate || null,
+                subcontractor_id: selectedSubcontractorId || null,
                 action_description: data.action_description,
                 nonconformity_description: data.nonconformity_description,
                 status: 'open',
@@ -116,36 +135,60 @@ export default function NewAction() {
 
             if (actionError) throw actionError;
             const actionId = actionData.id;
+            const trackingNumber = actionData.tracking_number;
 
-            // 2. Insert Assignees (Users)
+            // 2. Kişilere Atama
             if (selectedUsers.length > 0) {
                 await supabase.from("action_assignee_users").insert(
                     selectedUsers.map(u => ({ action_id: actionId, user_id: u }))
                 );
             }
 
-            // 3. Insert Assignees (Contractors)
-            if (selectedContractors.length > 0) {
-                await supabase.from("action_assignee_contractors").insert(
-                    selectedContractors.map(c => ({ action_id: actionId, contractor_id: c }))
-                );
-            }
-
-            // 4. Insert Assignees (External)
+            // 3. Harici e-postalar
             if (externalEmails.length > 0) {
                 await supabase.from("action_assignee_external").insert(
                     externalEmails.map(e => ({ action_id: actionId, email: e }))
                 );
             }
 
-            // 5. Insert CC Users
+            // 4. Firmaya atama (action_contractors tablosuna da kaydedilir)
+            if (selectedSubcontractorId) {
+                const selectedSub = subcontractors.find(s => s.id === selectedSubcontractorId);
+                if (selectedSub) {
+                    let contractorId: string;
+                    const { data: existingContractor } = await supabase
+                        .from("action_contractors")
+                        .select("id")
+                        .eq("company_id", profile.tenant_id)
+                        .eq("email", selectedSub.email)
+                        .single();
+
+                    if (existingContractor) {
+                        contractorId = existingContractor.id;
+                    } else {
+                        const { data: newContractor } = await supabase.from("action_contractors").insert({
+                            company_id: profile.tenant_id,
+                            name: selectedSub.name,
+                            email: selectedSub.email,
+                        }).select("id").single();
+                        contractorId = newContractor!.id;
+                    }
+
+                    await supabase.from("action_assignee_contractors").insert({
+                        action_id: actionId,
+                        contractor_id: contractorId,
+                    });
+                }
+            }
+
+            // 5. CC Users
             if (selectedCCUsers.length > 0) {
                 await supabase.from("action_cc_users").insert(
                     selectedCCUsers.map(u => ({ action_id: actionId, user_id: u }))
                 );
             }
 
-            // 6. Insert Files
+            // 6. Files
             if (files.length > 0) {
                 await supabase.from("action_files").insert(
                     files.map(f => ({
@@ -205,10 +248,49 @@ export default function NewAction() {
                             {errors.project_id && <span className="text-red-500 text-xs mt-1 block">{errors.project_id.message}</span>}
                         </div>
 
+                        {/* Firma Seçimi */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Teslim Süresi (Tüm Gün Sayısı)</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                                <Building2 className="w-4 h-4 text-gray-400" /> Firma (Opsiyonel)
+                            </label>
+                            <select
+                                value={selectedSubcontractorId}
+                                onChange={e => setSelectedSubcontractorId(e.target.value)}
+                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2"
+                            >
+                                <option value="">Firma seçilmedi</option>
+                                {subcontractors.map(s => (
+                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                ))}
+                            </select>
+                            {selectedSubcontractorId && (
+                                <span className="flex items-center gap-1 text-xs text-orange-600 mt-1">
+                                    <Mail className="w-3 h-3" /> {subcontractors.find(s => s.id === selectedSubcontractorId)?.email} adresine bildirim gönderilecek
+                                </span>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Teslim Süresi (Gün)</label>
                             <input type="number" {...register("total_days", { valueAsNumber: true })} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2" />
                             {errors.total_days && <span className="text-red-500 text-xs mt-1 block">{errors.total_days.message}</span>}
+                        </div>
+
+                        {/* Geçerlilik Tarihi */}
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Geçerlilik Tarihi (Son Tarih)</label>
+                            <input
+                                type="date"
+                                value={deadlineDate}
+                                onChange={e => {
+                                    setDeadlineDate(e.target.value);
+                                    // Gün sayısını da güncelle
+                                    const diff = Math.ceil((new Date(e.target.value).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                                    if (diff > 0) setValue("total_days", diff);
+                                }}
+                                className="w-full md:w-1/2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2"
+                            />
+                            <p className="text-xs text-gray-400 mt-1">Gün sayısını değiştirirseniz otomatik hesaplanır veya direkt tarih seçebilirsiniz.</p>
                         </div>
                     </div>
 
@@ -218,7 +300,6 @@ export default function NewAction() {
                             <textarea {...register("nonconformity_description")} rows={3} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2" placeholder="Tespit edilen problemi veya uygunsuzluğu net bir şekilde tanımlayın..."></textarea>
                             {errors.nonconformity_description && <span className="text-red-500 text-xs mt-1 block">{errors.nonconformity_description.message}</span>}
                         </div>
-
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Alınacak Aksiyon / Öneri</label>
                             <textarea {...register("action_description")} rows={3} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2" placeholder="Uygunsuzluğun giderilmesi için yapılması gereken işlemi veya öneriyi yazın..."></textarea>
@@ -241,32 +322,23 @@ export default function NewAction() {
                                 {allUsers.map(u => (
                                     <label key={`assign-${u.id}`} className="flex items-center p-2 hover:bg-white rounded cursor-pointer transition-colors border border-transparent hover:border-gray-200">
                                         <input type="checkbox" checked={selectedUsers.includes(u.id)} onChange={() => toggleSelection(u.id, selectedUsers, setSelectedUsers)} className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                                        <span className="ml-2 text-sm text-gray-700">{u.first_name} {u.last_name}</span>
+                                        <div className="ml-2">
+                                            <span className="text-sm text-gray-700">{u.first_name} {u.last_name}</span>
+                                            <span className="text-xs text-gray-400 ml-1">({u.email})</span>
+                                        </div>
                                     </label>
                                 ))}
                             </div>
+                            {selectedUsers.length > 0 && (
+                                <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                                    <Mail className="w-3 h-3" /> Seçilen {selectedUsers.length} kişiye bildirim e-postası gönderilecek
+                                </p>
+                            )}
                         </div>
 
-                        {/* Firmalar */}
+                        {/* Harici Email */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1"><Building2 className="w-4 h-4 text-gray-400" /> Alt İşveren / Firmalar (Aksiyon Alan)</label>
-                            <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-md p-2 space-y-1 bg-gray-50">
-                                {contractors.map(c => (
-                                    <label key={`cont-${c.id}`} className="flex items-center p-2 hover:bg-white rounded cursor-pointer transition-colors border border-transparent hover:border-gray-200">
-                                        <input type="checkbox" checked={selectedContractors.includes(c.id)} onChange={() => toggleSelection(c.id, selectedContractors, setSelectedContractors)} className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                                        <span className="ml-2 text-sm text-gray-700 flex flex-col">
-                                            <span>{c.name}</span>
-                                            <span className="text-xs text-gray-400">{c.email}</span>
-                                        </span>
-                                    </label>
-                                ))}
-                                {contractors.length === 0 && <div className="p-2 text-xs text-gray-500">Kayıtlı firma yok. Ayarlardan ekleyebilirsiniz.</div>}
-                            </div>
-                        </div>
-
-                        {/* Harici / Özel Email */}
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Harici E-postalar (Aksiyon Alan veya Bilgi)</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Harici E-postalar</label>
                             <div className="flex gap-2 mb-2">
                                 <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="ornek@firma.com" className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border" onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddEmail(); } }} />
                                 <button type="button" onClick={handleAddEmail} className="bg-gray-800 text-white px-3 py-2 rounded text-sm hover:bg-gray-700"><Plus className="w-4 h-4" /></button>
@@ -280,10 +352,10 @@ export default function NewAction() {
                             </div>
                         </div>
 
-                        {/* CC Personel */}
-                        <div>
+                        {/* CC */}
+                        <div className="md:col-span-2">
                             <label className="block text-sm font-semibold text-gray-700 mb-2">Bilgi Verilecekler (CC - Şirket İçi)</label>
-                            <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-md p-2 space-y-1 bg-gray-50">
+                            <div className="max-h-36 overflow-y-auto border border-gray-200 rounded-md p-2 space-y-1 bg-gray-50">
                                 {allUsers.map(u => (
                                     <label key={`cc-${u.id}`} className="flex items-center p-2 hover:bg-white rounded cursor-pointer transition-colors border border-transparent hover:border-gray-200">
                                         <input type="checkbox" checked={selectedCCUsers.includes(u.id)} onChange={() => toggleSelection(u.id, selectedCCUsers, setSelectedCCUsers)} className="rounded border-gray-300 text-gray-600 focus:ring-gray-500" />
@@ -292,7 +364,6 @@ export default function NewAction() {
                                 ))}
                             </div>
                         </div>
-
                     </div>
                 </div>
 

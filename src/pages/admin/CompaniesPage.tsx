@@ -113,6 +113,7 @@ export default function CompaniesPage() {
                             persistSession: false,
                             autoRefreshToken: false,
                             detectSessionInUrl: false,
+                            flowType: 'implicit'
                         },
                     }
                 );
@@ -121,10 +122,12 @@ export default function CompaniesPage() {
                     email: managerEmail,
                     password: tempPassword,
                     options: {
+                        emailRedirectTo: `${window.location.origin}/auth/login`,
                         data: {
                             first_name: "Şirket",
                             last_name: "Yöneticisi",
                             force_password_change: true,
+                            temp_password: tempPassword
                         },
                     },
                 });
@@ -221,6 +224,7 @@ export default function CompaniesPage() {
                             persistSession: false,
                             autoRefreshToken: false,
                             detectSessionInUrl: false,
+                            flowType: 'implicit'
                         },
                     }
                 );
@@ -229,10 +233,12 @@ export default function CompaniesPage() {
                     email: newManagerEmail.trim(),
                     password: tempPassword,
                     options: {
+                        emailRedirectTo: `${window.location.origin}/auth/login`,
                         data: {
                             first_name: "Şirket",
                             last_name: "Yöneticisi",
                             force_password_change: true,
+                            temp_password: tempPassword
                         },
                     },
                 });

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Clock, CheckCircle, AlertCircle, Award, User, ShieldCheck } from "lucide-react";
 
@@ -25,6 +25,7 @@ export default function PublicExamPage() {
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
     const [result, setResult] = useState<any>(null);
+    const [agreed, setAgreed] = useState(false);
 
     useEffect(() => {
         if (id) fetchExamData();
@@ -56,8 +57,23 @@ export default function PublicExamPage() {
             }
             setExam(eData);
 
-            const { data: cData } = await supabase.from("courses").select("id, title, passing_score").eq("id", eData.course_id).single();
+            const { data: cData } = await supabase.from("courses").select("id, title, passing_score, start_date").eq("id", eData.course_id).single();
             setCourse(cData);
+
+            // Check expiration
+            if (cData?.start_date && eData.exam_type === 'physical_only') {
+                const examDate = new Date(cData.start_date);
+                // We add 24 hours to the start_date to allow users to take it until end of day/next day.
+                const expiryDate = new Date(examDate.getTime() + 24 * 60 * 60 * 1000);
+                if (new Date() > expiryDate) {
+                    setTcError("Bu sınavın tarihi geçmiştir. Sınava katılım süresi dolmuştur.");
+                    // Keep loading false but we can render an error screen instead of login.
+                    // For now, setting tcError will show it on the login screen.
+                    // To completely block, maybe set step to a new error step, but setting tcError and clearing questions is enough.
+                    setQuestions([]);
+                    return;
+                }
+            }
 
             const { data: qData } = await supabase
                 .from("exam_questions")
@@ -85,6 +101,20 @@ export default function PublicExamPage() {
         }
 
         try {
+            // Check if user already took this exam
+            const { data: existingResult } = await supabase
+                .from("user_exam_results")
+                .select("id")
+                .eq("exam_id", exam.id)
+                .eq("tc_no", tcNo)
+                .limit(1)
+                .single();
+
+            if (existingResult) {
+                setTcError("Bu sınava daha önce katıldınız. Yeni bir sınava girmek için farklı bir tarihli oturuma kaydolmalısınız.");
+                return;
+            }
+
             // Arama yap:
             const { data: profileData } = await supabase
                 .from("profiles")
@@ -154,7 +184,7 @@ export default function PublicExamPage() {
                 full_name: fullName,
                 score: score,
                 status: status,
-                agreed: false
+                agreed: true // We enforce agreement before starting now
             };
 
             const { data, error } = await supabase.from("user_exam_results").insert([newResult]).select("*").single();
@@ -171,15 +201,8 @@ export default function PublicExamPage() {
         }
     };
 
-    const handleAgree = async () => {
-        try {
-            await supabase.from("user_exam_results").update({ agreed: true }).eq("id", result.id);
-            setResult({ ...result, agreed: true });
-            alert("Taahhütname başarıyla onaylandı.");
-        } catch (error) {
-            console.error(error);
-        }
-    };
+    // Deprecated: Agreement is now handled before start
+    const handleAgree = async () => { };
 
     if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><p className="text-gray-500">Yükleniyor...</p></div>;
     if (!exam || !course) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><p className="text-gray-500">Sınav bulunamadı.</p></div>;
@@ -252,7 +275,29 @@ export default function PublicExamPage() {
                             </ul>
                         </div>
 
-                        <button onClick={handleStart} className="px-8 py-4 bg-indigo-600 text-white text-lg font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition w-full sm:w-auto">
+                        {exam?.agreement_text && (
+                            <div className="bg-yellow-50 border border-yellow-200 p-6 rounded-xl text-left mb-8">
+                                <h3 className="font-bold text-yellow-800 flex items-center mb-3">
+                                    <AlertCircle className="w-5 h-5 mr-2" /> Taahhütname
+                                </h3>
+                                <p className="text-gray-700 italic text-sm mb-4">"{exam.agreement_text}"</p>
+                                <label className="flex items-start gap-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={agreed}
+                                        onChange={(e) => setAgreed(e.target.checked)}
+                                        className="mt-1 w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                    />
+                                    <span className="text-sm font-medium text-gray-800">Yukarıdaki taahhütnameyi okudum, anladım ve kabul ediyorum.</span>
+                                </label>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={handleStart}
+                            disabled={!!exam?.agreement_text && !agreed}
+                            className="px-8 py-4 bg-indigo-600 text-white text-lg font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
                             Sınavı Şimdi Başlat
                         </button>
                     </div>
@@ -341,24 +386,9 @@ export default function PublicExamPage() {
                                 </div>
                             </div>
 
-                            {!result.agreed && exam?.agreement_text && result.status === 'passed' && (
-                                <div className="bg-indigo-50 p-8 rounded-xl border border-indigo-100 mb-6 text-left shadow-inner">
-                                    <h4 className="font-bold text-indigo-900 mb-3 flex items-center text-lg"><AlertCircle className="w-6 h-6 mr-2 text-indigo-600" /> Sınav Taahhütnamesi</h4>
-                                    <p className="text-gray-700 italic mb-6 leading-relaxed bg-white p-4 rounded border border-indigo-50">"{exam.agreement_text}"</p>
-                                    <button
-                                        onClick={handleAgree}
-                                        className="w-full px-6 py-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-md hover:bg-indigo-700 transition"
-                                    >
-                                        Okudum, Kesin Olarak Onaylıyorum
-                                    </button>
-                                </div>
-                            )}
-
-                            {(result.agreed || !exam?.agreement_text || result.status !== 'passed') && (
-                                <div className="text-green-600 font-medium flex justify-center items-center p-4 bg-green-50 rounded-lg">
-                                    <CheckCircle className="w-5 h-5 mr-2" /> İşlem tamamlanmıştır, sayfayı kapatabilirsiniz.
-                                </div>
-                            )}
+                            <div className="text-green-600 font-medium flex justify-center items-center p-4 bg-green-50 rounded-lg">
+                                <CheckCircle className="w-5 h-5 mr-2" /> İşlem tamamlanmıştır, sayfayı kapatabilirsiniz.
+                            </div>
                         </div>
                     </div>
                 )}

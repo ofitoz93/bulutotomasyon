@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
@@ -10,6 +10,19 @@ export default function Login() {
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
     const setSession = useAuthStore((state) => state.setSession);
+    const session = useAuthStore((state) => state.session);
+    const profile = useAuthStore((state) => state.profile);
+
+    // Eğer kullanıcı linke tıklayarak (token ile) girdiyse ve oturum açıldıysa yönlendir
+    useEffect(() => {
+        if (session) {
+            if (profile?.role === 'system_admin') {
+                navigate("/admin/companies");
+            } else if (profile) {
+                navigate("/app");
+            }
+        }
+    }, [session, profile, navigate]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();

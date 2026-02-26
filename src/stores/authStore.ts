@@ -10,7 +10,7 @@ interface Profile {
     phone_number?: string | null
     tc_no?: string | null
     company_employee_no?: string | null
-    role: 'system_admin' | 'company_manager' | 'employee'
+    role: 'system_admin' | 'company_manager' | 'employee' | 'subcontractor_manager'
     tenant_id: string | null
 }
 

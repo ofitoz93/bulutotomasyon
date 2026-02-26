@@ -20,6 +20,12 @@ export default function EducationSettings() {
     const [types, setTypes] = useState<EducationType[]>([]);
     const [classes, setClasses] = useState<EducationClass[]>([]);
 
+    // Manager Assign States
+    const [users, setUsers] = useState<any[]>([]);
+    const [managers, setManagers] = useState<any[]>([]);
+    const [selectedManagerId, setSelectedManagerId] = useState("");
+    const [assigningManager, setAssigningManager] = useState(false);
+
     // Form States
     const [newTypeName, setNewTypeName] = useState("");
     const [addingType, setAddingType] = useState(false);
@@ -59,6 +65,21 @@ export default function EducationSettings() {
 
             if (classesError) throw classesError;
             setClasses(classesData || []);
+
+            // Fetch users for manager assignment
+            const { data: usersData } = await supabase
+                .from("profiles")
+                .select("id, first_name, last_name, email")
+                .eq("tenant_id", profile?.tenant_id)
+                .order("first_name", { ascending: true });
+            setUsers(usersData || []);
+
+            // Fetch education managers
+            const { data: managersData } = await supabase
+                .from("education_managers")
+                .select("id, user_id, profiles(first_name, last_name, email)")
+                .eq("tenant_id", profile?.tenant_id);
+            setManagers(managersData || []);
 
         } catch (error) {
             console.error("Error fetching education settings:", error);
@@ -136,7 +157,39 @@ export default function EducationSettings() {
         }
     };
 
+    const handleAssignManager = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedManagerId || !profile?.tenant_id) return;
+        setAssigningManager(true);
+        try {
+            const { error } = await supabase.from("education_managers").insert([{
+                tenant_id: profile.tenant_id,
+                user_id: selectedManagerId
+            }]);
+            if (error) throw error;
+            setSelectedManagerId("");
+            fetchSettings();
+        } catch (error) {
+            console.error(error);
+            alert("Yönetici atanırken hata oluştu (zaten ekli olabilir).");
+        } finally {
+            setAssigningManager(false);
+        }
+    };
+
+    const handleRemoveManager = async (id: string) => {
+        if (!confirm("Bu kişinin eğitim yöneticisi yetkisini kaldırmak istediğinize emin misiniz?")) return;
+        try {
+            await supabase.from("education_managers").delete().eq("id", id);
+            fetchSettings();
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     if (loading) return <div className="text-gray-500">Kayıtlar yükleniyor...</div>;
+
+    const isSystemAdminOrCompanyManager = profile?.role === "system_admin" || profile?.role === "company_manager";
 
     return (
         <div className="space-y-6">
@@ -261,6 +314,62 @@ export default function EducationSettings() {
                 </div>
 
             </div>
+
+            {/* Education Managers Panel (Only for Company Managers) */}
+            {isSystemAdminOrCompanyManager && (
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4 hover:text-orange-600 transition">Eğitim Yöneticileri</h2>
+                    <p className="text-xs text-gray-500 mb-4">Bu yetkiye sahip personeller modülün yönetimine sınırsız erişebilir (Kurs açma, atama yapma vb.).</p>
+
+                    <form onSubmit={handleAssignManager} className="flex gap-2 mb-6">
+                        <select
+                            required
+                            value={selectedManagerId}
+                            onChange={(e) => setSelectedManagerId(e.target.value)}
+                            className="flex-1 px-3 py-2 border rounded-md text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 bg-gray-50"
+                        >
+                            <option value="">-- Personel Seçin --</option>
+                            {users.map(u => <option key={u.id} value={u.id}>{u.first_name} {u.last_name}</option>)}
+                        </select>
+                        <button
+                            type="submit"
+                            disabled={assigningManager}
+                            className="bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-700 disabled:opacity-50"
+                        >
+                            {assigningManager ? "..." : "Yetki Ver"}
+                        </button>
+                    </form>
+
+                    <div className="mt-4 border rounded-md max-h-64 overflow-y-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ad Soyad</th>
+                                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {managers.length === 0 ? (
+                                    <tr><td colSpan={2} className="px-4 py-3 text-center text-sm text-gray-500">Henüz yönetici atanmamış. Şirket yöneticileri varsayılan olarak her şeye yetkilidir.</td></tr>
+                                ) : (
+                                    managers.map((m) => (
+                                        <tr key={m.id} className="hover:bg-gray-50">
+                                            <td className="px-4 py-3 text-sm font-medium text-gray-900 border-l-4 border-l-orange-500">
+                                                {m.profiles?.first_name} {m.profiles?.last_name}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-right">
+                                                <button onClick={() => handleRemoveManager(m.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded-md hover:bg-red-100 transition" title="Sil">
+                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

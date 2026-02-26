@@ -20,7 +20,7 @@ export default function CourseExamPlayer() {
     const [submitting, setSubmitting] = useState(false);
 
     const [result, setResult] = useState<any>(null);
-    const agreed = false;
+    const [agreed, setAgreed] = useState(false);
 
     useEffect(() => {
         if (id && profile?.id) fetchData();
@@ -53,7 +53,7 @@ export default function CourseExamPlayer() {
             // Need to match exam_id, so we must find it first.
 
             // Get Course & Exam
-            const { data: cData } = await supabase.from("courses").select("id, title, passing_score").eq("id", id).single();
+            const { data: cData } = await supabase.from("courses").select("id, title, passing_score, start_date").eq("id", id).single();
             setCourse(cData);
 
             const { data: eData } = await supabase.from("course_exams").select("*").eq("course_id", id).single();
@@ -64,10 +64,23 @@ export default function CourseExamPlayer() {
             }
             setExam(eData);
 
+            // Check expiration
+            if (cData?.start_date && eData.exam_type === 'physical_only') {
+                const examDate = new Date(cData.start_date);
+                // We add 24 hours to the start_date to allow users to take it until end of day/next day.
+                const expiryDate = new Date(examDate.getTime() + 24 * 60 * 60 * 1000);
+                if (new Date() > expiryDate) {
+                    alert("Bu sınavın tarihi geçmiştir. Sınava katılım süresi dolmuştur.");
+                    navigate(`/app/education`);
+                    return;
+                }
+            }
+
             // Now check previous result properly
             const pRes = previousResult?.find(r => r.exam_id === eData.id);
             if (pRes) {
-                setResult(pRes);
+                alert("Bu sınava daha önce katıldınız. Yeni bir sınava girmek için farklı bir tarihli oturuma kaydolmalısınız.");
+                navigate(`/app/education`);
                 return; // Already completed
             }
 
@@ -134,7 +147,7 @@ export default function CourseExamPlayer() {
                 full_name: `${profile!.first_name} ${profile!.last_name}`,
                 score: score,
                 status: status,
-                agreed: agreed, // Can be updated later if agreement is a separate step post-exam
+                agreed: true, // we enforce agreement before start
             };
 
             const { data, error } = await supabase
@@ -151,16 +164,6 @@ export default function CourseExamPlayer() {
             alert("Sonuç kaydedilirken hata oluştu.");
         } finally {
             setSubmitting(false);
-        }
-    };
-
-    const handleAgree = async () => {
-        try {
-            await supabase.from("user_exam_results").update({ agreed: true }).eq("id", result.id);
-            setResult({ ...result, agreed: true });
-            alert("Taahhütname onaylandı.");
-        } catch (error) {
-            console.error(error);
         }
     };
 
@@ -190,24 +193,10 @@ export default function CourseExamPlayer() {
                             <p className="text-sm text-gray-500 uppercase tracking-wide">Geçme Notu</p>
                             <p className="text-3xl font-bold text-gray-800">{course?.passing_score}</p>
                         </div>
+                        <Link to="/app/education" className="text-indigo-600 hover:text-indigo-800 font-medium">
+                            &larr; Eğitimlerim Sayfasına Dön
+                        </Link>
                     </div>
-
-                    {!result.agreed && exam?.agreement_text && (
-                        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-6 text-left">
-                            <h4 className="font-semibold text-gray-900 mb-2 flex items-center"><AlertCircle className="w-5 h-5 mr-2 text-indigo-600" /> Lütfen Onaylayın</h4>
-                            <p className="text-sm text-gray-700 italic mb-4">"{exam.agreement_text}"</p>
-                            <button
-                                onClick={handleAgree}
-                                className="w-full px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
-                            >
-                                Okudum, Onaylıyorum
-                            </button>
-                        </div>
-                    )}
-
-                    <Link to="/app/education" className="text-indigo-600 hover:text-indigo-800 font-medium">
-                        &larr; Eğitimlerim Sayfasına Dön
-                    </Link>
                 </div>
             </div>
         );
@@ -229,9 +218,29 @@ export default function CourseExamPlayer() {
                         </p>
                     )}
                 </div>
+
+                {exam?.agreement_text && (
+                    <div className="bg-yellow-50 border border-yellow-200 p-6 rounded-xl text-left mb-8">
+                        <h3 className="font-bold text-yellow-800 flex items-center mb-3">
+                            <AlertCircle className="w-5 h-5 mr-2" /> Taahhütname
+                        </h3>
+                        <p className="text-gray-700 italic text-sm mb-4">"{exam.agreement_text}"</p>
+                        <label className="flex items-start gap-3 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={agreed}
+                                onChange={(e) => setAgreed(e.target.checked)}
+                                className="mt-1 w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                            />
+                            <span className="text-sm font-medium text-gray-800">Yukarıdaki taahhütnameyi okudum, anladım ve kabul ediyorum.</span>
+                        </label>
+                    </div>
+                )}
+
                 <button
                     onClick={handleStart}
-                    className="px-8 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition"
+                    disabled={!!exam?.agreement_text && !agreed}
+                    className="px-8 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Sınava Başla
                 </button>
