@@ -7,7 +7,6 @@ export default function EducationLayout() {
     const { profile } = useAuthStore();
     const location = useLocation();
 
-    // Check if user is manager or admin to show certain tabs
     const [isEduManager, setIsEduManager] = useState(false);
     const isCompanyManager = profile?.role === "company_manager" || profile?.role === "system_admin";
 
@@ -27,73 +26,65 @@ export default function EducationLayout() {
         checkEduManager();
     }, [profile, isCompanyManager]);
 
+    const tabClass = (isActive: boolean) =>
+        `pb-2.5 px-1 text-sm font-medium border-b-2 transition-colors ${isActive
+            ? "border-indigo-500 text-indigo-400"
+            : "border-transparent text-slate-500 hover:text-slate-300 hover:border-slate-600"
+        }`;
+
     return (
-        <div className="p-6">
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Eğitim Modülü</h1>
-                <p className="text-sm text-gray-500 mt-1">Eğitimlerinizi, sınavlarınızı ve kursiyerleri yönetin.</p>
+        <div className="space-y-6">
+            {/* Page Header */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-white tracking-tight">Eğitim Modülü</h1>
+                    <p className="text-sm text-slate-400 mt-1">Eğitimlerinizi, sınavlarınızı ve kursiyerleri yönetin.</p>
+                </div>
             </div>
 
-            <div className="mb-6 flex space-x-4 border-b">
-                <NavLink
-                    to="/app/education"
-                    end
-                    className={({ isActive }) =>
-                        `pb-2 px-1 text-sm font-medium border-b-2 transition ${isActive
-                            ? "border-indigo-500 text-indigo-600"
-                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                        }`
-                    }
-                >
-                    Aktif Kurslar
-                </NavLink>
-
-                {isEduManager && (
+            {/* Tab Bar */}
+            <div className="border-b border-slate-800">
+                <nav className="-mb-px flex space-x-6 overflow-x-auto">
                     <NavLink
-                        to="/app/education/manage"
-                        className={({ isActive }) =>
-                            `pb-2 px-1 text-sm font-medium border-b-2 transition ${isActive || location.pathname.includes('/manage')
-                                ? "border-indigo-500 text-indigo-600"
-                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                            }`
-                        }
+                        to="/app/education"
+                        end
+                        className={({ isActive }) => tabClass(isActive)}
                     >
-                        Eğitim Yönetimi
+                        Aktif Kurslar
                     </NavLink>
-                )}
 
-                {isEduManager && (
-                    <NavLink
-                        to="/app/education/physical-exams"
-                        className={({ isActive }) =>
-                            `pb-2 px-1 text-sm font-medium border-b-2 transition ${isActive || location.pathname.includes('/physical-exams')
-                                ? "border-indigo-500 text-indigo-600"
-                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                            }`
-                        }
-                    >
-                        Fiziki Sınıf Sınavları
-                    </NavLink>
-                )}
+                    {isEduManager && (
+                        <NavLink
+                            to="/app/education/manage"
+                            className={({ isActive }) => tabClass(isActive || location.pathname.includes('/manage'))}
+                        >
+                            Eğitim Yönetimi
+                        </NavLink>
+                    )}
 
-                {isEduManager && (
-                    <NavLink
-                        to="/app/education/settings"
-                        className={({ isActive }) =>
-                            `pb-2 px-1 text-sm font-medium border-b-2 transition ${isActive
-                                ? "border-indigo-500 text-indigo-600"
-                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                            }`
-                        }
-                    >
-                        Eğitim Ayarları
-                    </NavLink>
-                )}
+                    {isEduManager && (
+                        <NavLink
+                            to="/app/education/physical-exams"
+                            className={({ isActive }) => tabClass(isActive || location.pathname.includes('/physical-exams'))}
+                        >
+                            Fiziki Sınıf Sınavları
+                        </NavLink>
+                    )}
+
+                    {isEduManager && (
+                        <NavLink
+                            to="/app/education/settings"
+                            className={({ isActive }) => tabClass(isActive)}
+                        >
+                            Eğitim Ayarları
+                        </NavLink>
+                    )}
+                </nav>
             </div>
 
             <main>
                 <Outlet />
             </main>
-        </div >
+        </div>
     );
 }

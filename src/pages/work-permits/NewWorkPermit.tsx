@@ -192,29 +192,29 @@ export default function NewWorkPermit() {
         <div className="max-w-4xl mx-auto pb-24">
             <div className="mb-6 flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Yeni İş İzni Oluştur</h1>
-                    <p className="text-sm text-gray-500 mt-1">Lütfen aşağıdaki formu eksiksiz doldurun ve taahhüde onay verin.</p>
+                    <h1 className="text-2xl font-bold text-white">Yeni İş İzni Oluştur</h1>
+                    <p className="text-sm text-slate-500 mt-1">Lütfen aşağıdaki formu eksiksiz doldurun ve taahhüde onay verin.</p>
                 </div>
-                <button onClick={() => navigate("/app/work-permits")} className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                <button onClick={() => navigate("/app/work-permits")} className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
                     İptal Et
                 </button>
             </div>
 
             {error && (
-                <div className="mb-6 p-4 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
+                <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm shadow-lg shadow-rose-500/10">
                     {error}
                 </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-8">
                 {/* 1. Genel Bilgiler */}
-                <div className="bg-white shadow rounded-lg p-6">
-                    <h2 className="text-lg font-semibold text-gray-800 border-b pb-3 mb-4">1. Genel Bilgiler</h2>
+                <div className="bg-slate-900 border border-slate-800 shadow-xl rounded-2xl p-6">
+                    <h2 className="text-lg font-bold text-white border-b border-slate-800 pb-3 mb-4">1. Genel Bilgiler</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Firma</label>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Firma</label>
                             <select value={companyName} onChange={e => setCompanyName(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-md text-sm">
+                                className="w-full bg-slate-800 border-slate-700 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border placeholder-slate-500">
                                 <option value="">Kendi Firmam</option>
                                 {subcontractors.map(s => (
                                     <option key={s.id} value={s.id}>{s.name}</option>
@@ -222,24 +222,24 @@ export default function NewWorkPermit() {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Departman</label>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Departman</label>
                             <input type="text" value={department} onChange={e => setDepartment(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-md text-sm" placeholder="Örn: Bakım, Üretim" />
+                                className="w-full bg-slate-800 border-slate-700 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border placeholder-slate-500" placeholder="Örn: Bakım, Üretim" />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Tarih *</label>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Tarih *</label>
                             <input type="date" required value={workDate} onChange={e => setWorkDate(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-md text-sm" />
+                                className="w-full bg-slate-800 border-slate-700 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border" />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Tahmini Çalışma Saati (Saat) *</label>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Tahmini Çalışma Saati (Saat) *</label>
                             <input type="number" required step="0.5" min="0.5" value={estimatedHours} onChange={e => setEstimatedHours(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-md text-sm" placeholder="Örn: 4.5" />
+                                className="w-full bg-slate-800 border-slate-700 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border placeholder-slate-500" placeholder="Örn: 4.5" />
                         </div>
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Proje / Lokasyon (Opsiyonel)</label>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Proje / Lokasyon (Opsiyonel)</label>
                             <select value={projectId} onChange={e => setProjectId(e.target.value)} disabled={loadingProjects}
-                                className="w-full px-3 py-2 border rounded-md text-sm disabled:bg-gray-100">
+                                className="w-full bg-slate-800 border-slate-700 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border disabled:bg-slate-800/50 disabled:text-slate-500">
                                 <option value="">Proje Seçiniz...</option>
                                 {projects.map(p => (
                                     <option key={p.id} value={p.id}>{p.name}</option>
@@ -250,149 +250,149 @@ export default function NewWorkPermit() {
                 </div>
 
                 {/* 2. İş Tipleri */}
-                <div className="bg-white shadow rounded-lg p-6">
-                    <h2 className="text-lg font-semibold text-gray-800 border-b pb-3 mb-4 flex items-center justify-between">
-                        2. İş Tipleri (En az 1 seçim zorunlu)
-                        <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{jobTypes.length} seçildi</span>
+                <div className="bg-slate-900 border border-slate-800 shadow-xl rounded-2xl p-6">
+                    <h2 className="text-lg font-bold text-white border-b border-slate-800 pb-3 mb-4 flex items-center justify-between">
+                        2. İş Tipleri
+                        <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-full border border-indigo-500/20 uppercase tracking-widest">{jobTypes.length} SEÇİLDİ</span>
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {JOB_TYPES.map(type => (
-                            <label key={type} className="flex items-start space-x-2 cursor-pointer p-2 rounded hover:bg-gray-50 border border-transparent hover:border-gray-200">
-                                <input type="checkbox" className="mt-1 rounded text-indigo-600"
+                            <label key={type} className="flex items-start space-x-3 cursor-pointer p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all group">
+                                <input type="checkbox" className="mt-1 rounded border-slate-600 bg-slate-700 text-indigo-600 focus:ring-indigo-500/50"
                                     checked={jobTypes.includes(type)}
                                     onChange={() => handleCheckboxToggle(jobTypes, setJobTypes, type)}
                                 />
-                                <span className="text-sm text-gray-700 leading-snug">{type}</span>
+                                <span className={`text-sm leading-snug transition-colors ${jobTypes.includes(type) ? 'text-white font-medium' : 'text-slate-400 group-hover:text-slate-300'}`}>{type}</span>
                             </label>
                         ))}
                     </div>
                     {jobTypes.includes("Diğer") && (
-                        <div className="mt-4 pt-3 border-t">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Diğer İş Tipi Açıklaması *</label>
+                        <div className="mt-4 pt-4 border-t border-slate-800">
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Diğer İş Tipi Açıklaması *</label>
                             <input type="text" required value={jobTypeOther} onChange={e => setJobTypeOther(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-md text-sm focus:ring-1 focus:ring-indigo-500" placeholder="Lütfen belirtiniz..." />
+                                className="w-full bg-slate-800 border-slate-700 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border placeholder-slate-500" placeholder="Lütfen belirtiniz..." />
                         </div>
                     )}
                 </div>
 
                 {/* 3. Tehlikelerin Belirlenmesi */}
-                <div className="bg-white shadow rounded-lg p-6">
-                    <h2 className="text-lg font-semibold text-gray-800 border-b pb-3 mb-4 flex items-center justify-between">
-                        3. Tehlikelerin Belirlenmesi (En az 1 seçim zorunlu)
-                        <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{hazards.length} seçildi</span>
+                <div className="bg-slate-900 border border-slate-800 shadow-xl rounded-2xl p-6">
+                    <h2 className="text-lg font-bold text-white border-b border-slate-800 pb-3 mb-4 flex items-center justify-between">
+                        3. Tehlikelerin Belirlenmesi
+                        <span className="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-1 rounded-full border border-rose-500/20 uppercase tracking-widest">{hazards.length} SEÇİLDİ</span>
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {HAZARDS.map(item => (
-                            <label key={item} className="flex items-start space-x-2 cursor-pointer p-2 rounded hover:bg-gray-50 border border-transparent hover:border-gray-200">
-                                <input type="checkbox" className="mt-1 rounded text-red-600"
+                            <label key={item} className="flex items-start space-x-3 cursor-pointer p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all group">
+                                <input type="checkbox" className="mt-1 rounded border-slate-600 bg-slate-700 text-rose-500 focus:ring-rose-500/50"
                                     checked={hazards.includes(item)}
                                     onChange={() => handleCheckboxToggle(hazards, setHazards, item)}
                                 />
-                                <span className="text-sm text-gray-700 leading-snug">{item}</span>
+                                <span className={`text-sm leading-snug transition-colors ${hazards.includes(item) ? 'text-white font-medium' : 'text-slate-400 group-hover:text-slate-300'}`}>{item}</span>
                             </label>
                         ))}
                     </div>
                     {hazards.includes("Diğer") && (
-                        <div className="mt-4 pt-3 border-t">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Diğer Tehlike Açıklaması *</label>
+                        <div className="mt-4 pt-4 border-t border-slate-800">
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Diğer Tehlike Açıklaması *</label>
                             <input type="text" required value={hazardOther} onChange={e => setHazardOther(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-md text-sm" placeholder="Lütfen belirtiniz..." />
+                                className="w-full bg-slate-800 border-slate-700 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border placeholder-slate-500" placeholder="Lütfen belirtiniz..." />
                         </div>
                     )}
                 </div>
 
                 {/* 4. Kişisel Koruyucu Donanımlar */}
-                <div className="bg-white shadow rounded-lg p-6">
-                    <h2 className="text-lg font-semibold text-gray-800 border-b pb-3 mb-4 flex items-center justify-between">
-                        4. Kişisel Koruyucu Donanımlar (En az 1 seçim zorunlu)
-                        <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{ppes.length} seçildi</span>
+                <div className="bg-slate-900 border border-slate-800 shadow-xl rounded-2xl p-6">
+                    <h2 className="text-lg font-bold text-white border-b border-slate-800 pb-3 mb-4 flex items-center justify-between">
+                        4. Kişisel Koruyucu Donanımlar
+                        <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-full border border-indigo-500/20 uppercase tracking-widest">{ppes.length} SEÇİLDİ</span>
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {PPE_REQUIREMENTS.map(item => (
-                            <label key={item} className="flex items-start space-x-2 cursor-pointer p-2 rounded hover:bg-gray-50 border border-transparent hover:border-gray-200">
-                                <input type="checkbox" className="mt-1 rounded text-blue-600"
+                            <label key={item} className="flex items-start space-x-3 cursor-pointer p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all group">
+                                <input type="checkbox" className="mt-1 rounded border-slate-600 bg-slate-700 text-indigo-400 focus:ring-indigo-500/50"
                                     checked={ppes.includes(item)}
                                     onChange={() => handleCheckboxToggle(ppes, setPpes, item)}
                                 />
-                                <span className="text-sm text-gray-700 leading-snug">{item}</span>
+                                <span className={`text-sm leading-snug transition-colors ${ppes.includes(item) ? 'text-white font-medium' : 'text-slate-400 group-hover:text-slate-300'}`}>{item}</span>
                             </label>
                         ))}
                     </div>
                     {ppes.includes("Diğer") && (
-                        <div className="mt-4 pt-3 border-t">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Diğer KKD Açıklaması *</label>
+                        <div className="mt-4 pt-4 border-t border-slate-800">
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Diğer KKD Açıklaması *</label>
                             <input type="text" required value={ppeOther} onChange={e => setPpeOther(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-md text-sm" placeholder="Lütfen belirtiniz..." />
+                                className="w-full bg-slate-800 border-slate-700 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border placeholder-slate-500" placeholder="Lütfen belirtiniz..." />
                         </div>
                     )}
                 </div>
 
                 {/* 5. Alınması Gereken Önlemler */}
-                <div className="bg-white shadow rounded-lg p-6">
-                    <h2 className="text-lg font-semibold text-gray-800 border-b pb-3 mb-4 flex items-center justify-between">
+                <div className="bg-slate-900 border border-slate-800 shadow-xl rounded-2xl p-6">
+                    <h2 className="text-lg font-bold text-white border-b border-slate-800 pb-3 mb-4 flex items-center justify-between">
                         5. Alınması Gereken Önlemler / Kontroller
-                        <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{precautions.length} seçildi</span>
+                        <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20 uppercase tracking-widest">{precautions.length} SEÇİLDİ</span>
                     </h2>
 
                     {showGasWarning && (
-                        <div className="mb-4 bg-orange-50 border border-orange-200 text-orange-800 p-3 rounded-md flex items-start text-sm">
-                            <svg className="w-5 h-5 mr-2 shrink-0 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span><strong>Dikkat:</strong> Kapalı alanda sıcak işlem veya iç mahallerde boya uygulaması gerçekleştiriliyorsa mutlaka gaz ölçümü alınarak kayıt tutulmalıdır!</span>
+                        <div className="mb-6 bg-amber-500/10 border border-amber-500/20 text-amber-400 p-4 rounded-xl flex items-start text-sm shadow-lg shadow-amber-500/5">
+                            <svg className="w-5 h-5 mr-3 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span><strong className="text-amber-300 font-bold block mb-1">Önemli Uyarı:</strong> Kapalı alanda sıcak işlem veya iç mahallerde boya uygulaması gerçekleştiriliyorsa mutlaka gaz ölçümü alınarak kayıt tutulmalıdır!</span>
                         </div>
                     )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {PRECAUTIONS.map(item => (
-                            <label key={item} className="flex items-start space-x-2 cursor-pointer p-2 rounded hover:bg-gray-50 border border-transparent hover:border-gray-200">
-                                <input type="checkbox" className="mt-1 rounded text-emerald-600"
+                            <label key={item} className="flex items-start space-x-3 cursor-pointer p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all group">
+                                <input type="checkbox" className="mt-1 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500/50"
                                     checked={precautions.includes(item)}
                                     onChange={() => handleCheckboxToggle(precautions, setPrecautions, item)}
                                 />
-                                <span className="text-sm text-gray-700 leading-snug">{item}</span>
+                                <span className={`text-sm leading-snug transition-colors ${precautions.includes(item) ? 'text-white font-medium' : 'text-slate-400 group-hover:text-slate-300'}`}>{item}</span>
                             </label>
                         ))}
                     </div>
                     {precautions.includes("Diğer") && (
-                        <div className="mt-4 pt-3 border-t">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Diğer Önlem Açıklaması *</label>
+                        <div className="mt-4 pt-4 border-t border-slate-800">
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Diğer Önlem Açıklaması *</label>
                             <input type="text" required value={precautionOther} onChange={e => setPrecautionOther(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-md text-sm" placeholder="Lütfen belirtiniz..." />
+                                className="w-full bg-slate-800 border-slate-700 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border placeholder-slate-500" placeholder="Lütfen belirtiniz..." />
                         </div>
                     )}
                 </div>
 
                 {/* 6. Beraber Çalışacağı Personeller */}
-                <div className="bg-white shadow rounded-lg p-6">
-                    <div className="flex items-center justify-between border-b pb-3 mb-4">
-                        <h2 className="text-lg font-semibold text-gray-800">6. Beraber Çalışılan Personeller (Opsiyonel)</h2>
-                        <button type="button" onClick={addCoworker} className="text-sm bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-md font-medium hover:bg-indigo-100 flex items-center">
-                            <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+                <div className="bg-slate-900 border border-slate-800 shadow-xl rounded-2xl p-6">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-6">
+                        <h2 className="text-lg font-bold text-white">6. Beraber Çalışılan Personeller (Opsiyonel)</h2>
+                        <button type="button" onClick={addCoworker} className="text-xs bg-indigo-500/10 text-indigo-400 px-3 py-2 rounded-lg font-bold hover:bg-indigo-500/20 flex items-center transition-colors border border-indigo-500/20">
+                            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
                             Personel Ekle
                         </button>
                     </div>
 
                     {coworkers.length === 0 ? (
-                        <p className="text-sm text-gray-500 italic text-center py-4">Eklenmiş personel yok. Yanınızda çalışan biri varsa yukarıdan ekleyebilirsiniz.</p>
+                        <p className="text-sm text-slate-500 italic text-center py-8 bg-slate-800/20 rounded-xl border border-dashed border-slate-800">Eklenmiş personel yok. Yanınızda çalışan biri varsa yukarıdan ekleyebilirsiniz.</p>
                     ) : (
                         <div className="space-y-4">
                             {coworkers.map((cw, idx) => (
-                                <div key={idx} className="bg-gray-50 p-4 rounded-md border flex flex-col md:flex-row gap-4 items-start md:items-end">
-                                    <div className="flex-1 w-full">
-                                        <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Ad Soyad *</label>
+                                <div key={idx} className="bg-slate-800/40 p-5 rounded-xl border border-slate-700/50 flex flex-col md:flex-row gap-5 items-start md:items-end group relative hover:border-slate-600 transition-colors">
+                                    <div className="flex-1 w-full text-xs">
+                                        <label className="block font-bold text-slate-500 uppercase mb-2 tracking-wider">Ad Soyad *</label>
                                         <input type="text" required value={cw.fullName} onChange={e => updateCoworker(idx, 'fullName', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="Ahmet Yılmaz" />
+                                            className="w-full bg-slate-900 border-slate-700 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border" placeholder="Ahmet Yılmaz" />
                                     </div>
-                                    <div className="flex-1 w-full">
-                                        <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Lokasyon</label>
+                                    <div className="flex-1 w-full text-xs">
+                                        <label className="block font-bold text-slate-500 uppercase mb-2 tracking-wider">Lokasyon</label>
                                         <input type="text" value={cw.location} onChange={e => updateCoworker(idx, 'location', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="Örn: Kat 2 Alan B" />
+                                            className="w-full bg-slate-900 border-slate-700 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border" placeholder="Örn: Kat 2 Alan B" />
                                     </div>
-                                    <div className="flex-1 w-full">
-                                        <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Sicil / TC No *</label>
+                                    <div className="flex-1 w-full text-xs">
+                                        <label className="block font-bold text-slate-500 uppercase mb-2 tracking-wider">Sicil / TC No *</label>
                                         <input type="text" required value={cw.sicilTc} onChange={e => updateCoworker(idx, 'sicilTc', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="Onay için gereklidir" />
+                                            className="w-full bg-slate-900 border-slate-700 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 border" placeholder="Onay için gereklidir" />
                                     </div>
-                                    <button type="button" onClick={() => removeCoworker(idx)} className="p-2 text-red-500 hover:bg-red-50 rounded-md">
+                                    <button type="button" onClick={() => removeCoworker(idx)} className="p-2 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors border border-transparent hover:border-rose-500/20">
                                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>
                                 </div>
@@ -402,30 +402,30 @@ export default function NewWorkPermit() {
                 </div>
 
                 {/* 7. Taahhütname & Gönderim */}
-                <div className="bg-indigo-50 shadow rounded-lg p-6 border border-indigo-100">
-                    <h2 className="text-lg font-semibold text-indigo-900 border-b border-indigo-200 pb-3 mb-4">7. Çalışan Taahhütnamesi & Onay</h2>
+                <div className="bg-indigo-950/20 shadow-xl rounded-2xl p-8 border border-indigo-500/20">
+                    <h2 className="text-lg font-bold text-indigo-400 border-b border-indigo-500/20 pb-4 mb-6">7. Çalışan Taahhütnamesi & Onay</h2>
 
-                    <div className="bg-white p-4 rounded-md text-sm text-gray-700 leading-relaxed mb-5 shadow-sm border border-gray-200">
+                    <div className="bg-slate-900/60 p-6 rounded-xl text-sm text-slate-300 leading-relaxed mb-8 shadow-inner border border-slate-800 italic">
                         "Çalışma öncesinde belirlenen ve bu formda belirtilen tüm tedbirlere tam olarak uyacağımı, çalışma esnasında ortaya çıkabilecek diğer risk ve tedbirler için ustabaşına ve İSG personeline danışacağımı, tereddüt oluşturan riskli faaliyetleri yerine getirmeyeceğimi, tarafıma temin edilen kişisel koruyucu donanımlarımı yaptığım işe uygun ve eksiksiz olarak kullanacağımı, tebliğ edilen ilgili çalışma talimatlarında ki gerekliliklere harfiyen uyacağımı beyan ederim."
                     </div>
 
-                    <div className="bg-white p-5 rounded-md shadow-sm border border-indigo-100 flex flex-col md:flex-row items-center gap-4">
-                        <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900 mb-1">Taahhütnamenin Onayı İçin Sicil/TC Kimlik Giriniz:</p>
-                            <p className="text-xs text-gray-500 mb-3">Bu işlem elektronik ıslak imza yerine geçer.</p>
+                    <div className="bg-slate-900/80 p-6 rounded-xl shadow-lg border border-slate-800 flex flex-col md:flex-row items-center gap-6">
+                        <div className="flex-1 w-full">
+                            <p className="text-sm font-bold text-slate-200 mb-1">Elektronik İmzalı Onay</p>
+                            <p className="text-xs text-slate-500 mb-4">Onaylamak için Profildeki Sicil veya TC Kimlik numaranızı giriniz.</p>
                             <input
                                 type="text"
                                 required
                                 value={creatorTcOrSicil}
                                 onChange={e => setCreatorTcOrSicil(e.target.value)}
-                                className="w-full max-w-sm px-4 py-2 border-2 border-indigo-200 rounded-lg focus:outline-none focus:border-indigo-500"
+                                className="w-full max-w-sm px-4 py-3 bg-slate-800 border-2 border-slate-700 rounded-xl focus:outline-none focus:border-indigo-500 text-white placeholder-slate-600 transition-colors"
                                 placeholder="Sicil veya TC Numarası"
                             />
                         </div>
                         <button
                             type="submit"
                             disabled={saving}
-                            className="w-full md:w-auto mt-4 md:mt-0 px-8 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition disabled:opacity-50"
+                            className="w-full md:w-auto px-10 py-4 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 transition-all disabled:opacity-50 active:scale-95"
                         >
                             {saving ? 'Gönderiliyor...' : 'TAAHHÜDÜ ONAYLA VE FORMU GÖNDER'}
                         </button>

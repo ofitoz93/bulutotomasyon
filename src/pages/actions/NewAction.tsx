@@ -135,7 +135,6 @@ export default function NewAction() {
 
             if (actionError) throw actionError;
             const actionId = actionData.id;
-            const trackingNumber = actionData.tracking_number;
 
             // 2. Kişilere Atama
             if (selectedUsers.length > 0) {
@@ -211,52 +210,56 @@ export default function NewAction() {
         }
     };
 
-    if (loading) return <div className="p-8 text-gray-500">Yükleniyor...</div>;
+    if (loading) return <div className="p-8 text-slate-500">Yükleniyor...</div>;
+
+    const inputClass = "w-full bg-slate-800 border-slate-700 text-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2 placeholder-slate-500";
+    const labelClass = "block text-sm font-medium text-slate-300 mb-1";
+    const cardClass = "bg-slate-900 shadow-sm rounded-xl p-6 border border-slate-800 space-y-6";
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
-            <div className="flex items-center gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                <button onClick={() => navigate(-1)} className="text-gray-500 hover:text-gray-900">
+            <div className="flex items-center gap-4 bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-800">
+                <button onClick={() => navigate(-1)} className="text-slate-400 hover:text-white transition-colors">
                     <ArrowLeft className="w-5 h-5" />
                 </button>
-                <h1 className="text-xl font-bold text-gray-900 flex-1">Yeni Aksiyon Aç</h1>
+                <h1 className="text-xl font-bold text-white flex-1">Yeni Aksiyon Aç</h1>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
                 {/* Genel Bilgiler */}
-                <div className="bg-white shadow rounded-lg p-6 border border-gray-100 space-y-6">
-                    <h2 className="text-lg font-bold text-gray-800 border-b pb-2">Genel Bilgiler</h2>
+                <div className={cardClass}>
+                    <h2 className="text-lg font-bold text-white border-b border-slate-800 pb-2">Genel Bilgiler</h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Konu</label>
-                            <select {...register("subject_id")} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2">
+                            <label className={labelClass}>Konu</label>
+                            <select {...register("subject_id")} className={inputClass}>
                                 <option value="">Seçiniz...</option>
                                 {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                             </select>
-                            {errors.subject_id && <span className="text-red-500 text-xs mt-1 block">{errors.subject_id.message}</span>}
-                            {subjects.length === 0 && <span className="text-orange-500 text-xs mt-1 block">Sistemde kayıtlı konu yok. Lütfen Ayarlar'dan ekleyin.</span>}
+                            {errors.subject_id && <span className="text-rose-400 text-xs mt-1 block">{errors.subject_id.message}</span>}
+                            {subjects.length === 0 && <span className="text-amber-400 text-xs mt-1 block">Sistemde kayıtlı konu yok. Lütfen Ayarlar'dan ekleyin.</span>}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Proje / Lokasyon</label>
-                            <select {...register("project_id")} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2">
+                            <label className={labelClass}>Proje / Lokasyon</label>
+                            <select {...register("project_id")} className={inputClass}>
                                 <option value="">Seçiniz...</option>
                                 {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                             </select>
-                            {errors.project_id && <span className="text-red-500 text-xs mt-1 block">{errors.project_id.message}</span>}
+                            {errors.project_id && <span className="text-rose-400 text-xs mt-1 block">{errors.project_id.message}</span>}
                         </div>
 
                         {/* Firma Seçimi */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
-                                <Building2 className="w-4 h-4 text-gray-400" /> Firma (Opsiyonel)
+                            <label className={`${labelClass} flex items-center gap-1`}>
+                                <Building2 className="w-4 h-4 text-slate-500" /> Firma (Opsiyonel)
                             </label>
                             <select
                                 value={selectedSubcontractorId}
                                 onChange={e => setSelectedSubcontractorId(e.target.value)}
-                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2"
+                                className={inputClass}
                             >
                                 <option value="">Firma seçilmedi</option>
                                 {subcontractors.map(s => (
@@ -264,21 +267,21 @@ export default function NewAction() {
                                 ))}
                             </select>
                             {selectedSubcontractorId && (
-                                <span className="flex items-center gap-1 text-xs text-orange-600 mt-1">
+                                <span className="flex items-center gap-1 text-xs text-amber-400/80 mt-1">
                                     <Mail className="w-3 h-3" /> {subcontractors.find(s => s.id === selectedSubcontractorId)?.email} adresine bildirim gönderilecek
                                 </span>
                             )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Teslim Süresi (Gün)</label>
-                            <input type="number" {...register("total_days", { valueAsNumber: true })} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2" />
-                            {errors.total_days && <span className="text-red-500 text-xs mt-1 block">{errors.total_days.message}</span>}
+                            <label className={labelClass}>Teslim Süresi (Gün)</label>
+                            <input type="number" {...register("total_days", { valueAsNumber: true })} className={inputClass} />
+                            {errors.total_days && <span className="text-rose-400 text-xs mt-1 block">{errors.total_days.message}</span>}
                         </div>
 
                         {/* Geçerlilik Tarihi */}
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Geçerlilik Tarihi (Son Tarih)</label>
+                            <label className={labelClass}>Geçerlilik Tarihi (Son Tarih)</label>
                             <input
                                 type="date"
                                 value={deadlineDate}
@@ -288,49 +291,49 @@ export default function NewAction() {
                                     const diff = Math.ceil((new Date(e.target.value).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
                                     if (diff > 0) setValue("total_days", diff);
                                 }}
-                                className="w-full md:w-1/2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2"
+                                className={`${inputClass} md:w-1/2`}
                             />
-                            <p className="text-xs text-gray-400 mt-1">Gün sayısını değiştirirseniz otomatik hesaplanır veya direkt tarih seçebilirsiniz.</p>
+                            <p className="text-xs text-slate-500 mt-1">Gün sayısını değiştirirseniz otomatik hesaplanır veya direkt tarih seçebilirsiniz.</p>
                         </div>
                     </div>
 
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Tespit Edilen Uygunsuzluk</label>
-                            <textarea {...register("nonconformity_description")} rows={3} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2" placeholder="Tespit edilen problemi veya uygunsuzluğu net bir şekilde tanımlayın..."></textarea>
-                            {errors.nonconformity_description && <span className="text-red-500 text-xs mt-1 block">{errors.nonconformity_description.message}</span>}
+                            <label className={labelClass}>Tespit Edilen Uygunsuzluk</label>
+                            <textarea {...register("nonconformity_description")} rows={3} className={inputClass} placeholder="Tespit edilen problemi veya uygunsuzluğu net bir şekilde tanımlayın..."></textarea>
+                            {errors.nonconformity_description && <span className="text-rose-400 text-xs mt-1 block">{errors.nonconformity_description.message}</span>}
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Alınacak Aksiyon / Öneri</label>
-                            <textarea {...register("action_description")} rows={3} className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2" placeholder="Uygunsuzluğun giderilmesi için yapılması gereken işlemi veya öneriyi yazın..."></textarea>
-                            {errors.action_description && <span className="text-red-500 text-xs mt-1 block">{errors.action_description.message}</span>}
+                            <label className={labelClass}>Alınacak Aksiyon / Öneri</label>
+                            <textarea {...register("action_description")} rows={3} className={inputClass} placeholder="Uygunsuzluğun giderilmesi için yapılması gereken işlemi veya öneriyi yazın..."></textarea>
+                            {errors.action_description && <span className="text-rose-400 text-xs mt-1 block">{errors.action_description.message}</span>}
                         </div>
                     </div>
                 </div>
 
                 {/* Atamalar */}
-                <div className="bg-white shadow rounded-lg p-6 border border-gray-100 space-y-6">
-                    <h2 className="text-lg font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
-                        <Users className="w-5 h-5 text-indigo-500" /> Aksiyon Alacaklar & Bildirimler
+                <div className={cardClass}>
+                    <h2 className="text-lg font-bold text-white border-b border-slate-800 pb-2 flex items-center gap-2">
+                        <Users className="w-5 h-5 text-indigo-400" /> Aksiyon Alacaklar & Bildirimler
                     </h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Şirket Personeli */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Şirket Personeli (Aksiyon Alan)</label>
-                            <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-md p-2 space-y-1 bg-gray-50">
+                            <label className="block text-sm font-semibold text-slate-300 mb-2">Şirket Personeli (Aksiyon Alan)</label>
+                            <div className="max-h-48 overflow-y-auto border border-slate-700 rounded-lg p-2 space-y-1 bg-slate-800/50">
                                 {allUsers.map(u => (
-                                    <label key={`assign-${u.id}`} className="flex items-center p-2 hover:bg-white rounded cursor-pointer transition-colors border border-transparent hover:border-gray-200">
-                                        <input type="checkbox" checked={selectedUsers.includes(u.id)} onChange={() => toggleSelection(u.id, selectedUsers, setSelectedUsers)} className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                                    <label key={`assign-${u.id}`} className="flex items-center p-2 hover:bg-slate-800 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-slate-700">
+                                        <input type="checkbox" checked={selectedUsers.includes(u.id)} onChange={() => toggleSelection(u.id, selectedUsers, setSelectedUsers)} className="rounded border-slate-600 bg-slate-800 text-indigo-600 focus:ring-indigo-500/50" />
                                         <div className="ml-2">
-                                            <span className="text-sm text-gray-700">{u.first_name} {u.last_name}</span>
-                                            <span className="text-xs text-gray-400 ml-1">({u.email})</span>
+                                            <span className="text-sm text-slate-200">{u.first_name} {u.last_name}</span>
+                                            <span className="text-xs text-slate-500 ml-1">({u.email})</span>
                                         </div>
                                     </label>
                                 ))}
                             </div>
                             {selectedUsers.length > 0 && (
-                                <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                                <p className="text-xs text-emerald-400 mt-2 flex items-center gap-1">
                                     <Mail className="w-3 h-3" /> Seçilen {selectedUsers.length} kişiye bildirim e-postası gönderilecek
                                 </p>
                             )}
@@ -338,15 +341,15 @@ export default function NewAction() {
 
                         {/* Harici Email */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Harici E-postalar</label>
+                            <label className="block text-sm font-semibold text-slate-300 mb-2">Harici E-postalar</label>
                             <div className="flex gap-2 mb-2">
-                                <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="ornek@firma.com" className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border" onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddEmail(); } }} />
-                                <button type="button" onClick={handleAddEmail} className="bg-gray-800 text-white px-3 py-2 rounded text-sm hover:bg-gray-700"><Plus className="w-4 h-4" /></button>
+                                <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="ornek@firma.com" className={inputClass} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddEmail(); } }} />
+                                <button type="button" onClick={handleAddEmail} className="bg-slate-700 text-white px-3 py-2 rounded-lg hover:bg-slate-600 transition-colors"><Plus className="w-4 h-4" /></button>
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {externalEmails.map(email => (
-                                    <span key={email} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                                        {email} <button type="button" onClick={() => setExternalEmails(externalEmails.filter(e => e !== email))} className="text-blue-500 hover:text-blue-800">&times;</button>
+                                    <span key={email} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-sm font-medium bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
+                                        {email} <button type="button" onClick={() => setExternalEmails(externalEmails.filter(e => e !== email))} className="text-indigo-300 hover:text-white">&times;</button>
                                     </span>
                                 ))}
                             </div>
@@ -354,12 +357,12 @@ export default function NewAction() {
 
                         {/* CC */}
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Bilgi Verilecekler (CC - Şirket İçi)</label>
-                            <div className="max-h-36 overflow-y-auto border border-gray-200 rounded-md p-2 space-y-1 bg-gray-50">
+                            <label className="block text-sm font-semibold text-slate-300 mb-2">Bilgi Verilecekler (CC - Şirket İçi)</label>
+                            <div className="max-h-36 overflow-y-auto border border-slate-700 rounded-lg p-2 space-y-1 bg-slate-800/50">
                                 {allUsers.map(u => (
-                                    <label key={`cc-${u.id}`} className="flex items-center p-2 hover:bg-white rounded cursor-pointer transition-colors border border-transparent hover:border-gray-200">
-                                        <input type="checkbox" checked={selectedCCUsers.includes(u.id)} onChange={() => toggleSelection(u.id, selectedCCUsers, setSelectedCCUsers)} className="rounded border-gray-300 text-gray-600 focus:ring-gray-500" />
-                                        <span className="ml-2 text-sm text-gray-700">{u.first_name} {u.last_name}</span>
+                                    <label key={`cc-${u.id}`} className="flex items-center p-2 hover:bg-slate-800 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-slate-700">
+                                        <input type="checkbox" checked={selectedCCUsers.includes(u.id)} onChange={() => toggleSelection(u.id, selectedCCUsers, setSelectedCCUsers)} className="rounded border-slate-600 bg-slate-800 text-slate-500 focus:ring-slate-500/50" />
+                                        <span className="ml-2 text-sm text-slate-300">{u.first_name} {u.last_name}</span>
                                     </label>
                                 ))}
                             </div>
@@ -368,7 +371,7 @@ export default function NewAction() {
                 </div>
 
                 {/* Dosyalar */}
-                <div className="bg-white shadow rounded-lg p-6 border border-gray-100">
+                <div className="bg-slate-900 shadow-sm rounded-xl p-6 border border-slate-800 shadow-lg shadow-indigo-500/5">
                     <ActionFileUploader
                         currentFiles={files}
                         onUpload={(url, name) => setFiles([...files, { url, name }])}
@@ -376,11 +379,11 @@ export default function NewAction() {
                     />
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4">
-                    <button type="button" onClick={() => navigate(-1)} className="bg-white text-gray-700 px-6 py-2 border border-gray-300 rounded-md font-medium hover:bg-gray-50">
+                <div className="flex justify-end gap-3 pt-6">
+                    <button type="button" onClick={() => navigate(-1)} className="bg-slate-900 text-slate-300 px-6 py-2 border border-slate-700 rounded-lg font-medium hover:bg-slate-800 transition-colors">
                         İptal
                     </button>
-                    <button type="submit" disabled={submitting} className="bg-indigo-600 text-white px-8 py-2 rounded-md font-medium hover:bg-indigo-700 shadow flex items-center gap-2">
+                    <button type="submit" disabled={submitting} className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-2 rounded-lg font-medium shadow-lg shadow-indigo-500/20 flex items-center gap-2 transition-all active:scale-[0.98]">
                         {submitting ? "Kaydediliyor..." : <><Save className="w-5 h-5" /> Kaydet ve Aksiyon Aç</>}
                     </button>
                 </div>

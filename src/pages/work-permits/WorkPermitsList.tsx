@@ -31,9 +31,6 @@ export default function WorkPermitsList() {
                 .eq('tenant_id', profile.tenant_id)
                 .order('created_at', { ascending: false });
 
-            // Everyone in the tenant can see all permits according to the RLS policies.
-            // No additional filtering needed here based on the user's role.
-
             if (filter !== 'all') {
                 query = query.eq('status', filter);
             }
@@ -50,66 +47,79 @@ export default function WorkPermitsList() {
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case 'approved': return <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">Onaylandı</span>;
-            case 'rejected': return <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full font-medium">Reddedildi</span>;
-            default: return <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full font-medium">Onay Bekliyor</span>;
+            case 'approved':
+                return <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs px-2 py-1 rounded-full font-medium">Onaylandı</span>;
+            case 'rejected':
+                return <span className="bg-rose-500/15 text-rose-400 border border-rose-500/30 text-xs px-2 py-1 rounded-full font-medium">Reddedildi</span>;
+            default:
+                return <span className="bg-amber-500/15 text-amber-400 border border-amber-500/30 text-xs px-2 py-1 rounded-full font-medium">Onay Bekliyor</span>;
         }
     };
 
+    const filterBtn = (value: 'all' | 'pending' | 'approved', label: string, activeColor: string) => (
+        <button
+            onClick={() => setFilter(value)}
+            className={`px-3 py-1.5 text-sm rounded-lg font-medium transition-colors ${filter === value
+                    ? `${activeColor} text-white`
+                    : "bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700"
+                }`}
+        >
+            {label}
+        </button>
+    );
+
     return (
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-            <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
-                <div className="flex space-x-2">
-                    <button onClick={() => setFilter('all')} className={`px-3 py-1.5 text-sm rounded-md font-medium ${filter === 'all' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 border'}`}>
-                        Tümü
-                    </button>
-                    <button onClick={() => setFilter('pending')} className={`px-3 py-1.5 text-sm rounded-md font-medium ${filter === 'pending' ? 'bg-amber-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 border'}`}>
-                        Onay Bekleyenler
-                    </button>
-                    <button onClick={() => setFilter('approved')} className={`px-3 py-1.5 text-sm rounded-md font-medium ${filter === 'approved' ? 'bg-green-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 border'}`}>
-                        Onaylananlar
-                    </button>
-                </div>
+        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            {/* Filter header */}
+            <div className="px-4 py-3 border-b border-slate-800 flex items-center gap-2">
+                {filterBtn('all', 'Tümü', 'bg-slate-600')}
+                {filterBtn('pending', 'Onay Bekleyenler', 'bg-amber-600')}
+                {filterBtn('approved', 'Onaylananlar', 'bg-emerald-600')}
             </div>
 
             {loading ? (
-                <div className="p-12 text-center text-gray-500">Yükleniyor...</div>
+                <div className="flex items-center justify-center gap-3 p-12">
+                    <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-slate-500 text-sm">Yükleniyor...</span>
+                </div>
             ) : permits.length === 0 ? (
-                <div className="p-12 text-center text-gray-500">Listelenecek iş izni bulunamadı.</div>
+                <div className="p-12 text-center text-slate-500 text-sm">Listelenecek iş izni bulunamadı.</div>
             ) : (
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-slate-800">
+                        <thead className="bg-slate-800/50">
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Firma / Departman</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proje</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oluşturan</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Eylem</th>
+                                {["Tarih", "Firma / Departman", "Proje", "Oluşturan", "Durum", "Eylem"].map(h => (
+                                    <th key={h} scope="col" className={`px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider ${h === "Eylem" ? "text-right" : "text-left"}`}>
+                                        {h}
+                                    </th>
+                                ))}
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="divide-y divide-slate-800">
                             {permits.map((p) => (
-                                <tr key={p.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                                <tr key={p.id} className="hover:bg-slate-800/60 transition-colors group">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-200 font-medium">
                                         {new Date(p.work_date).toLocaleDateString("tr-TR")}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {p.company_name || "-"} / {p.department || "-"}
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                                        {p.company_name || "—"} / {p.department || "—"}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {p.action_projects?.name || "-"}
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                                        {p.action_projects?.name || "—"}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
                                         {p.profiles?.first_name} {p.profiles?.last_name}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td className="px-6 py-4 whitespace-nowrap">
                                         {getStatusBadge(p.status)}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div className="flex items-center justify-end space-x-3">
-                                            <Link to={`/app/work-permits/${p.id}`} className="text-indigo-600 hover:text-indigo-900 border border-indigo-200 px-3 py-1.5 rounded bg-indigo-50">
+                                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <Link
+                                                to={`/app/work-permits/${p.id}`}
+                                                className="text-indigo-400 hover:text-indigo-300 border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                                            >
                                                 Görüntüle
                                             </Link>
                                             {isCompanyManager() && (
@@ -124,7 +134,7 @@ export default function WorkPermitsList() {
                                                             }
                                                         }
                                                     }}
-                                                    className="text-red-600 hover:text-red-900 border border-red-200 px-3 py-1.5 rounded bg-red-50"
+                                                    className="text-rose-400 hover:text-rose-300 border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                                                 >
                                                     Sil
                                                 </button>

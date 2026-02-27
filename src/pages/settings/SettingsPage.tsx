@@ -73,20 +73,23 @@ export default function SettingsPage() {
     return (
         <div className="max-w-2xl mx-auto space-y-6">
             <div className="mb-6">
-                <h1 className="text-2xl font-bold tracking-tight text-gray-900">Ayarlar</h1>
-                <p className="text-sm text-gray-500 mt-1">
+                <h1 className="text-2xl font-bold tracking-tight text-white">Ayarlar</h1>
+                <p className="text-sm text-slate-400 mt-1">
                     Profil ve hesap bilgilerinizi bu sayfadan güncelleyebilirsiniz.
                 </p>
             </div>
 
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-                <div className="px-6 py-4 border-b bg-gray-50">
-                    <h2 className="text-sm font-semibold text-gray-700 uppercase">Kişisel Bilgiler</h2>
+            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-800 bg-slate-800/50">
+                    <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Kişisel Bilgiler</h2>
                 </div>
 
                 <div className="p-6">
                     {message.text && (
-                        <div className={`mb-6 p-4 rounded-md text-sm ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+                        <div className={`mb-6 p-4 rounded-lg text-sm border ${message.type === 'success'
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                            }`}>
                             {message.text}
                         </div>
                     )}
@@ -94,82 +97,45 @@ export default function SettingsPage() {
                     <form onSubmit={handleSave} className="space-y-5">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Ad
-                                </label>
-                                <input
-                                    type="text"
-                                    value={firstName}
-                                    onChange={(e) => setFirstName(e.target.value)}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                                    placeholder="Adınız"
-                                />
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Ad</label>
+                                <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)}
+                                    className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-slate-500"
+                                    placeholder="Adınız" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Soyad
-                                </label>
-                                <input
-                                    type="text"
-                                    value={lastName}
-                                    onChange={(e) => setLastName(e.target.value)}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                                    placeholder="Soyadınız"
-                                />
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Soyad</label>
+                                <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)}
+                                    className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-slate-500"
+                                    placeholder="Soyadınız" />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Telefon Numarası
-                            </label>
-                            <input
-                                type="tel"
-                                value={phoneNumber}
-                                onChange={(e) => setPhoneNumber(e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                                placeholder="+90 53X XXX XX XX"
-                            />
+                            <label className="block text-sm font-medium text-slate-300 mb-1.5">Telefon Numarası</label>
+                            <input type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)}
+                                className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-slate-500"
+                                placeholder="+90 53X XXX XX XX" />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                E-posta Adresi
-                            </label>
-                            <input
-                                type="email"
-                                value={profile?.email || ""}
-                                disabled
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-500 cursor-not-allowed text-sm"
-                                title="E-posta adresi değiştirilemez"
-                            />
-                            <p className="mt-1 text-xs text-gray-400">
-                                Kayıtlı e-posta adresiniz güvenlik sebebiyle değiştirilemez.
-                            </p>
+                            <label className="block text-sm font-medium text-slate-300 mb-1.5">E-posta Adresi</label>
+                            <input type="email" value={profile?.email || ""} disabled
+                                className="w-full bg-slate-950 border border-slate-700 text-slate-500 rounded-lg px-3 py-2 cursor-not-allowed text-sm"
+                                title="E-posta adresi değiştirilemez" />
+                            <p className="mt-1 text-xs text-slate-600">Kayıtlı e-posta adresiniz güvenlik sebebiyle değiştirilemez.</p>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Sicil Numarası
-                            </label>
-                            <input
-                                type="text"
-                                value={profile?.company_employee_no || "Atanmadı"}
-                                disabled
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-500 cursor-not-allowed text-sm font-mono"
-                                title="Sicil Numarası yalnızca yöneticiniz tarafından veya otomatik atanabilir"
-                            />
-                            <p className="mt-1 text-xs text-gray-400">
-                                Sicil numaranız şirket içi kayıtlarda ve iş izni onaylarında kullanılır.
-                            </p>
+                            <label className="block text-sm font-medium text-slate-300 mb-1.5">Sicil Numarası</label>
+                            <input type="text" value={profile?.company_employee_no || "Atanmadı"} disabled
+                                className="w-full bg-slate-950 border border-slate-700 text-slate-500 rounded-lg px-3 py-2 cursor-not-allowed text-sm font-mono"
+                                title="Sicil Numarası yalnızca yöneticiniz tarafından veya otomatik atanabilir" />
+                            <p className="mt-1 text-xs text-slate-600">Sicil numaranız şirket içi kayıtlarda ve iş izni onaylarında kullanılır.</p>
                         </div>
 
-                        <div className="pt-4 border-t flex justify-end">
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="bg-indigo-600 text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-colors"
-                            >
+                        <div className="pt-4 border-t border-slate-800 flex justify-end">
+                            <button type="submit" disabled={loading}
+                                className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
                                 {loading ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
                             </button>
                         </div>

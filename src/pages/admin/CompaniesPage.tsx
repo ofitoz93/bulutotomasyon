@@ -279,72 +279,84 @@ export default function CompaniesPage() {
         }
     };
 
+    const inputClass = "w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-slate-500";
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold tracking-tight">Şirketler</h1>
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-white">Şirketler</h1>
+                    <p className="text-sm text-slate-400 mt-1">Sisteme kayıtlı tüm şirketler.</p>
+                </div>
                 {profile?.role === "system_admin" && (
                     <button
                         onClick={() => setShowModal(true)}
-                        className="bg-slate-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-slate-800"
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg shadow-indigo-500/20"
                     >
-                        Yeni Şirket Ekle
+                        + Yeni Şirket Ekle
                     </button>
                 )}
             </div>
 
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                <table className="min-w-full divide-y divide-slate-800">
+                    <thead className="bg-slate-800/50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Şirket Adı</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Oluşturulma Tarihi</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Şirket Adı</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Durum</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Oluşturulma Tarihi</th>
                             {profile?.role === "system_admin" && (
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlemler</th>
+                                <th className="px-6 py-3 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">İşlemler</th>
                             )}
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-slate-800">
                         {loading ? (
                             <tr>
-                                <td colSpan={4} className="px-6 py-12 text-center">Yükleniyor...</td>
+                                <td colSpan={4} className="px-6 py-12 text-center">
+                                    <div className="flex items-center justify-center gap-3">
+                                        <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                                        <span className="text-slate-500 text-sm">Yükleniyor...</span>
+                                    </div>
+                                </td>
                             </tr>
                         ) : companies.length === 0 ? (
                             <tr>
-                                <td colSpan={4} className="px-6 py-12 text-center text-gray-500">Henüz hiç şirket yok.</td>
+                                <td colSpan={4} className="px-6 py-12 text-center text-slate-500 text-sm">Henüz hiç şirket yok.</td>
                             </tr>
                         ) : (
                             companies.map((company) => (
-                                <tr key={company.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <tr key={company.id} className="hover:bg-slate-800/60 transition-colors">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-200">
                                         {company.name}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${company.subscription_status === "active"
-                                            ? "bg-green-100 text-green-800"
-                                            : "bg-red-100 text-red-800"
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full border ${company.subscription_status === "active"
+                                                ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                                                : "bg-rose-500/15 text-rose-400 border-rose-500/30"
                                             }`}>
                                             {company.subscription_status === "active" ? "Aktif" : "Pasif"}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
                                         {new Date(company.created_at).toLocaleDateString("tr-TR")}
                                     </td>
                                     {profile?.role === "system_admin" && (
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                                            <button
-                                                onClick={() => openEditModal(company)}
-                                                className="text-indigo-600 hover:text-indigo-900"
-                                            >
-                                                Düzenle
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteCompany(company.id)}
-                                                className="text-red-600 hover:text-red-900"
-                                            >
-                                                Sil
-                                            </button>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => openEditModal(company)}
+                                                    className="text-indigo-400 hover:text-indigo-300 border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg text-xs transition-colors"
+                                                >
+                                                    Düzenle
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteCompany(company.id)}
+                                                    className="text-rose-400 hover:text-rose-300 border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 rounded-lg text-xs transition-colors"
+                                                >
+                                                    Sil
+                                                </button>
+                                            </div>
                                         </td>
                                     )}
                                 </tr>
@@ -356,42 +368,42 @@ export default function CompaniesPage() {
 
             {/* Yeni Şirket Oluştur Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg max-w-md w-full p-6 space-y-4">
-                        <h3 className="text-lg font-bold">Yeni Şirket ve Yönetici Oluştur</h3>
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+                        <h3 className="text-lg font-bold text-white">Yeni Şirket ve Yönetici Oluştur</h3>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Şirket Adı</label>
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Şirket Adı</label>
                                 <input
                                     type="text"
                                     value={newCompanyName}
                                     onChange={(e) => setNewCompanyName(e.target.value)}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className={inputClass}
                                     placeholder="Örn: Acme A.Ş."
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Yönetici E-postası</label>
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Yönetici E-postası</label>
                                 <input
                                     type="email"
                                     value={managerEmail}
                                     onChange={(e) => setManagerEmail(e.target.value)}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className={inputClass}
                                     placeholder="yonetici@sirket.com"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">
+                                <p className="text-xs text-slate-500 mt-1.5">
                                     Yöneticiye doğrulama ve şifre belirleme bağlantısı gönderilecektir.
                                 </p>
                             </div>
                         </div>
                         <div className="flex justify-end gap-3 pt-2">
-                            <button onClick={() => setShowModal(false)} className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">
+                            <button onClick={() => setShowModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors">
                                 İptal
                             </button>
                             <button
                                 onClick={handleCreateCompany}
                                 disabled={createLoading || !newCompanyName || !managerEmail}
-                                className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                                className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors disabled:opacity-50"
                             >
                                 {createLoading ? "Oluşturuluyor..." : "Oluştur"}
                             </button>
@@ -402,33 +414,32 @@ export default function CompaniesPage() {
 
             {/* Yönetici Düzenle Modal */}
             {showEditModal && editingCompany && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg max-w-md w-full p-6 space-y-4">
-                        <h3 className="text-lg font-bold">Yönetici Düzenle</h3>
-                        <p className="text-sm text-gray-600">
-                            <strong>{editingCompany.name}</strong> şirketinin yöneticisini değiştirin.
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+                        <h3 className="text-lg font-bold text-white">Yönetici Düzenle</h3>
+                        <p className="text-sm text-slate-400">
+                            <span className="text-slate-200 font-medium">{editingCompany.name}</span> şirketinin yöneticisini değiştirin.
                         </p>
 
-                        {/* Mevcut Yönetici Bilgisi */}
-                        <div className="bg-gray-50 p-3 rounded-md">
-                            <p className="text-xs font-medium text-gray-500 mb-1">Mevcut Yönetici</p>
+                        <div className="bg-slate-800 border border-slate-700 p-3 rounded-lg">
+                            <p className="text-xs font-medium text-slate-500 mb-1">Mevcut Yönetici</p>
                             {currentManager ? (
-                                <p className="text-sm font-medium text-gray-900">{currentManager.email}</p>
+                                <p className="text-sm font-medium text-slate-200">{currentManager.email}</p>
                             ) : (
-                                <p className="text-sm text-gray-400">Yönetici bulunamadı</p>
+                                <p className="text-sm text-slate-500">Yönetici bulunamadı</p>
                             )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Yeni Yönetici E-postası</label>
+                            <label className="block text-sm font-medium text-slate-300 mb-1.5">Yeni Yönetici E-postası</label>
                             <input
                                 type="email"
                                 value={newManagerEmail}
                                 onChange={(e) => setNewManagerEmail(e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className={inputClass}
                                 placeholder="yeni.yonetici@sirket.com"
                             />
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-slate-500 mt-1.5">
                                 Eski yönetici normal üye statüsüne düşürülecektir.
                             </p>
                         </div>
@@ -436,14 +447,14 @@ export default function CompaniesPage() {
                         <div className="flex justify-end gap-3 pt-2">
                             <button
                                 onClick={() => { setShowEditModal(false); setEditingCompany(null); setCurrentManager(null); }}
-                                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                                className="px-4 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
                             >
                                 İptal
                             </button>
                             <button
                                 onClick={handleChangeManager}
                                 disabled={editLoading || !newManagerEmail}
-                                className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                                className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors disabled:opacity-50"
                             >
                                 {editLoading ? "Güncelleniyor..." : "Yöneticiyi Değiştir"}
                             </button>

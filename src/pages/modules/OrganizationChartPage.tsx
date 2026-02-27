@@ -175,7 +175,16 @@ export default function OrganizationChartPage() {
     };
 
 
-    if (loading) return <div className="p-8">Yükleniyor...</div>;
+    const inputClass = "w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500";
+    const selectClass = `${inputClass} cursor-pointer`;
+    const btnClass = "px-4 py-2 border border-slate-700 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors";
+
+    if (loading) return (
+        <div className="flex items-center justify-center gap-3 p-12">
+            <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-slate-500 text-sm">Yükleniyor...</span>
+        </div>
+    );
 
     const getHierarchicalDepartments = (deps: Department[], parentId: string | null = null, level = 0): (Department & { level: number })[] => {
         let result: (Department & { level: number })[] = [];
@@ -193,9 +202,9 @@ export default function OrganizationChartPage() {
         if (children.length === 0) return null;
 
         return (
-            <div className={`flex flex-wrap gap-4 justify-center ${depId ? "mt-4 pt-4 border-t-2 border-gray-200 relative" : ""}`}>
+            <div className={`flex flex-wrap gap-4 justify-center ${depId ? "mt-4 pt-4 border-t-2 border-slate-700 relative" : ""}`}>
                 {depId && (
-                    <div className="absolute top-0 left-1/2 w-0.5 h-4 bg-gray-200 -translate-x-1/2 -mt-4"></div>
+                    <div className="absolute top-0 left-1/2 w-0.5 h-4 bg-slate-700 -translate-x-1/2 -mt-4"></div>
                 )}
                 {children.map(dep => {
                     const depMembers = members.filter(m => m.department_id === dep.id).sort((a, b) => {
@@ -207,24 +216,24 @@ export default function OrganizationChartPage() {
                     return (
                         <div key={dep.id} className="flex flex-col items-center">
                             {/* Card */}
-                            <div className="bg-white border rounded-lg shadow-sm w-64 p-4 text-center z-10 hover:shadow-md transition">
-                                <h3 className="font-bold text-indigo-900 mb-1">{dep.name}</h3>
+                            <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-md w-64 p-4 text-center z-10 hover:border-indigo-500/40 hover:shadow-indigo-500/10 hover:shadow-lg transition-all">
+                                <h3 className="font-bold text-indigo-400 mb-1">{dep.name}</h3>
                                 {depMembers.length > 0 ? (
                                     <div className="mt-3 space-y-2 text-left">
                                         {depMembers.map(m => (
-                                            <div key={m.id} className="text-sm bg-gray-50 p-2 rounded border flex items-center">
-                                                <div className="flex-shrink-0 h-8 w-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold text-xs">
+                                            <div key={m.id} className="text-sm bg-slate-800 border border-slate-700 p-2 rounded-lg flex items-center">
+                                                <div className="flex-shrink-0 h-8 w-8 bg-indigo-500/20 border border-indigo-500/30 rounded-full flex items-center justify-center text-indigo-300 font-bold text-xs">
                                                     {m.profiles?.first_name?.charAt(0) || "U"}
                                                 </div>
                                                 <div className="ml-3">
-                                                    <div className="text-sm font-medium text-gray-900">
+                                                    <div className="text-sm font-medium text-slate-200">
                                                         {(m.profiles?.first_name || "") + " " + (m.profiles?.last_name || "")}
                                                     </div>
-                                                    <div className="text-xs text-gray-500">
+                                                    <div className="text-xs text-slate-500">
                                                         {m.profiles?.company_employee_no ? `Sicil: ${m.profiles.company_employee_no}` : "Sicil No Yok"}
                                                         {m.profiles?.tc_no && ` | TC: ***${m.profiles.tc_no.slice(-3)}`}
                                                     </div>
-                                                    <span className="text-xs text-indigo-600 font-medium">
+                                                    <span className="text-xs text-indigo-400 font-medium">
                                                         {m.org_roles?.name || "Personel"} {m.is_manager ? "(Yönetici)" : ""}
                                                     </span>
                                                 </div>
@@ -232,14 +241,14 @@ export default function OrganizationChartPage() {
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-xs text-gray-400 mt-2 italic">Personel Yok</p>
+                                    <p className="text-xs text-slate-600 mt-2 italic">Personel Yok</p>
                                 )}
                             </div>
 
                             {/* Recursive Children Render */}
                             <div className="flex flex-col items-center relative">
                                 {departments.filter(d => d.parent_id === dep.id).length > 0 && (
-                                    <div className="w-0.5 h-4 bg-gray-200"></div>
+                                    <div className="w-0.5 h-4 bg-slate-700"></div>
                                 )}
                                 {renderNode(dep.id)}
                             </div>
@@ -251,28 +260,28 @@ export default function OrganizationChartPage() {
     };
 
     return (
-        <div className="container mx-auto p-4 max-w-7xl animate-fade-in pb-12">
-            <div className="flex justify-between items-center mb-6">
+        <div className="space-y-6 pb-12">
+            <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">Organizasyon Şeması</h1>
-                    <p className="text-gray-500 text-sm">Şirketinizin departman hiyerarşisi ve personel yapısı</p>
+                    <h1 className="text-2xl font-bold text-white">Organizasyon Şeması</h1>
+                    <p className="text-slate-400 text-sm mt-1">Şirketinizin departman hiyerarşisi ve personel yapısı</p>
                 </div>
             </div>
 
             {isManager && (
-                <div className="flex gap-2 mb-6 overflow-x-auto">
-                    <button onClick={() => setActiveTab("chart")} className={`px-4 py-2 text-sm font-medium rounded-lg transition ${activeTab === "chart" ? "bg-indigo-600 text-white" : "bg-white text-gray-600 hover:bg-gray-50 border"}`}>Görünüm (Şema)</button>
-                    <button onClick={() => setActiveTab("manage_deps")} className={`px-4 py-2 text-sm font-medium rounded-lg transition ${activeTab === "manage_deps" ? "bg-indigo-600 text-white" : "bg-white text-gray-600 hover:bg-gray-50 border"}`}>Departman Yönetimi</button>
-                    <button onClick={() => setActiveTab("manage_roles")} className={`px-4 py-2 text-sm font-medium rounded-lg transition ${activeTab === "manage_roles" ? "bg-indigo-600 text-white" : "bg-white text-gray-600 hover:bg-gray-50 border"}`}>Unvan/Rol Yönetimi</button>
-                    <button onClick={() => setActiveTab("manage_members")} className={`px-4 py-2 text-sm font-medium rounded-lg transition ${activeTab === "manage_members" ? "bg-indigo-600 text-white" : "bg-white text-gray-600 hover:bg-gray-50 border"}`}>Personel Atamaları</button>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                    <button onClick={() => setActiveTab("chart")} className={`px-4 py-2 text-sm font-medium rounded-lg transition whitespace-nowrap ${activeTab === "chart" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700"}`}>Görünüm (Şema)</button>
+                    <button onClick={() => setActiveTab("manage_deps")} className={`px-4 py-2 text-sm font-medium rounded-lg transition whitespace-nowrap ${activeTab === "manage_deps" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700"}`}>Departman Yönetimi</button>
+                    <button onClick={() => setActiveTab("manage_roles")} className={`px-4 py-2 text-sm font-medium rounded-lg transition whitespace-nowrap ${activeTab === "manage_roles" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700"}`}>Unvan/Rol Yönetimi</button>
+                    <button onClick={() => setActiveTab("manage_members")} className={`px-4 py-2 text-sm font-medium rounded-lg transition whitespace-nowrap ${activeTab === "manage_members" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700"}`}>Personel Atamaları</button>
                 </div>
             )}
 
             {/* ŞEMA GÖRÜNÜMÜ */}
             {activeTab === "chart" && (
-                <div className="bg-gray-50 p-8 rounded-xl border overflow-x-auto min-h-[500px]">
+                <div className="bg-slate-950 border border-slate-800 p-8 rounded-xl overflow-x-auto min-h-[500px]">
                     {departments.length === 0 ? (
-                        <div className="text-center py-10 text-gray-500">
+                        <div className="text-center py-10 text-slate-500">
                             Henüz yapılandırılmış bir departman bulunmuyor.
                         </div>
                     ) : (
@@ -285,34 +294,36 @@ export default function OrganizationChartPage() {
 
             {/* DEPARTMAN YÖNETİMİ */}
             {activeTab === "manage_deps" && isManager && (
-                <div className="bg-white rounded-xl shadow-sm border p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-lg font-bold">Departmanlar</h2>
-                        <button onClick={() => { setDepForm({ id: "", name: "", description: "", parent_id: "" }); setShowDepModal(true); }} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">+ Departman Ekle</button>
+                <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+                        <h2 className="text-base font-bold text-white">Departmanlar</h2>
+                        <button onClick={() => { setDepForm({ id: "", name: "", description: "", parent_id: "" }); setShowDepModal(true); }} className="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">+ Departman Ekle</button>
                     </div>
-                    <table className="min-w-full divide-y divide-gray-200 border">
-                        <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-slate-800">
+                        <thead className="bg-slate-800/50">
                             <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Departman Adı</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Üst Departman</th>
-                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlem</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Departman Adı</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Üst Departman</th>
+                                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">İşlem</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="divide-y divide-slate-800">
                             {getHierarchicalDepartments(departments).map(d => (
-                                <tr key={d.id}>
-                                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                <tr key={d.id} className="hover:bg-slate-800/60 transition-colors">
+                                    <td className="px-4 py-3 text-sm font-medium text-slate-200">
                                         <div style={{ paddingLeft: `${d.level * 1.5}rem` }} className="flex items-center">
-                                            {d.level > 0 && <span className="text-gray-400 mr-2">└</span>}
+                                            {d.level > 0 && <span className="text-slate-600 mr-2">└</span>}
                                             {d.name}
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3 text-sm text-gray-500">
+                                    <td className="px-4 py-3 text-sm text-slate-400">
                                         {d.parent_id ? departments.find(x => x.id === d.parent_id)?.name : "Ana Departman (En Üst)"}
                                     </td>
                                     <td className="px-4 py-3 text-right text-sm">
-                                        <button onClick={() => { setDepForm({ id: d.id, name: d.name, description: d.description || "", parent_id: d.parent_id || "" }); setShowDepModal(true); }} className="text-indigo-600 hover:text-indigo-900 mr-3">Düzenle</button>
-                                        <button onClick={() => deleteDepartment(d.id)} className="text-red-600 hover:text-red-900">Sil</button>
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button onClick={() => { setDepForm({ id: d.id, name: d.name, description: d.description || "", parent_id: d.parent_id || "" }); setShowDepModal(true); }} className="text-indigo-400 hover:text-indigo-300 border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 rounded-lg text-xs transition-colors">Düzenle</button>
+                                            <button onClick={() => deleteDepartment(d.id)} className="text-rose-400 hover:text-rose-300 border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 rounded-lg text-xs transition-colors">Sil</button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -323,27 +334,29 @@ export default function OrganizationChartPage() {
 
             {/* UNVAN YÖNETİMİ */}
             {activeTab === "manage_roles" && isManager && (
-                <div className="bg-white rounded-xl shadow-sm border p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-lg font-bold">Unvanlar ve Roller</h2>
-                        <button onClick={() => { setRoleForm({ id: "", name: "", level_weight: 0 }); setShowRoleModal(true); }} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">+ Unvan Ekle</button>
+                <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+                        <h2 className="text-base font-bold text-white">Unvanlar ve Roller</h2>
+                        <button onClick={() => { setRoleForm({ id: "", name: "", level_weight: 0 }); setShowRoleModal(true); }} className="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">+ Unvan Ekle</button>
                     </div>
-                    <table className="min-w-full divide-y divide-gray-200 border">
-                        <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-slate-800">
+                        <thead className="bg-slate-800/50">
                             <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unvan Adı</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase" title="Büyük sayı üstte görünür">Görünüm Ağırlığı</th>
-                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlem</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Unvan Adı</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Görünüm Ağırlığı</th>
+                                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">İşlem</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="divide-y divide-slate-800">
                             {roles.map(r => (
-                                <tr key={r.id}>
-                                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{r.name}</td>
-                                    <td className="px-4 py-3 text-sm text-gray-500">{r.level_weight}</td>
-                                    <td className="px-4 py-3 text-right text-sm">
-                                        <button onClick={() => { setRoleForm({ id: r.id, name: r.name, level_weight: r.level_weight }); setShowRoleModal(true); }} className="text-indigo-600 hover:text-indigo-900 mr-3">Düzenle</button>
-                                        <button onClick={() => deleteRole(r.id)} className="text-red-600 hover:text-red-900">Sil</button>
+                                <tr key={r.id} className="hover:bg-slate-800/60 transition-colors">
+                                    <td className="px-4 py-3 text-sm font-medium text-slate-200">{r.name}</td>
+                                    <td className="px-4 py-3 text-sm text-slate-400">{r.level_weight}</td>
+                                    <td className="px-4 py-3 text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button onClick={() => { setRoleForm({ id: r.id, name: r.name, level_weight: r.level_weight }); setShowRoleModal(true); }} className="text-indigo-400 hover:text-indigo-300 border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 rounded-lg text-xs transition-colors">Düzenle</button>
+                                            <button onClick={() => deleteRole(r.id)} className="text-rose-400 hover:text-rose-300 border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 rounded-lg text-xs transition-colors">Sil</button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -354,35 +367,37 @@ export default function OrganizationChartPage() {
 
             {/* PERSONEL ATAMALARI */}
             {activeTab === "manage_members" && isManager && (
-                <div className="bg-white rounded-xl shadow-sm border p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-lg font-bold">Departman Personelleri</h2>
-                        <button onClick={() => { setMemberForm({ id: "", user_id: "", department_id: "", role_id: "", is_manager: false }); setShowMemberModal(true); }} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">+ Personel Ata</button>
+                <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+                        <h2 className="text-base font-bold text-white">Departman Personelleri</h2>
+                        <button onClick={() => { setMemberForm({ id: "", user_id: "", department_id: "", role_id: "", is_manager: false }); setShowMemberModal(true); }} className="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">+ Personel Ata</button>
                     </div>
-                    <table className="min-w-full divide-y divide-gray-200 border">
-                        <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-slate-800">
+                        <thead className="bg-slate-800/50">
                             <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Personel</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Departman</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unvan / Rol</th>
-                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlem</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Personel</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Departman</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Unvan / Rol</th>
+                                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">İşlem</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="divide-y divide-slate-800">
                             {members.map(m => (
-                                <tr key={m.id}>
-                                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                <tr key={m.id} className="hover:bg-slate-800/60 transition-colors">
+                                    <td className="px-4 py-3 text-sm font-medium text-slate-200">
                                         {(m.profiles?.first_name || "") + " " + (m.profiles?.last_name || "")}
-                                        <span className="block text-xs text-gray-400">{m.profiles?.email}</span>
+                                        <span className="block text-xs text-slate-500">{m.profiles?.email}</span>
                                     </td>
-                                    <td className="px-4 py-3 text-sm text-gray-500">{departments.find(d => d.id === m.department_id)?.name}</td>
-                                    <td className="px-4 py-3 text-sm text-gray-500">
+                                    <td className="px-4 py-3 text-sm text-slate-400">{departments.find(d => d.id === m.department_id)?.name}</td>
+                                    <td className="px-4 py-3 text-sm text-slate-400">
                                         {m.org_roles?.name || "Personel"}
-                                        {m.is_manager && <span className="ml-2 bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full font-medium">Birim Yöneticisi</span>}
+                                        {m.is_manager && <span className="ml-2 bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 text-xs px-2 py-0.5 rounded-full font-medium">Birim Yöneticisi</span>}
                                     </td>
-                                    <td className="px-4 py-3 text-right text-sm">
-                                        <button onClick={() => { setMemberForm({ id: m.id, user_id: m.user_id, department_id: m.department_id, role_id: m.role_id || "", is_manager: m.is_manager }); setShowMemberModal(true); }} className="text-indigo-600 hover:text-indigo-900 mr-3">Düzenle</button>
-                                        <button onClick={() => deleteMember(m.id)} className="text-red-600 hover:text-red-900">Kaldır</button>
+                                    <td className="px-4 py-3 text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button onClick={() => { setMemberForm({ id: m.id, user_id: m.user_id, department_id: m.department_id, role_id: m.role_id || "", is_manager: m.is_manager }); setShowMemberModal(true); }} className="text-indigo-400 hover:text-indigo-300 border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 rounded-lg text-xs transition-colors">Düzenle</button>
+                                            <button onClick={() => deleteMember(m.id)} className="text-rose-400 hover:text-rose-300 border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 rounded-lg text-xs transition-colors">Kaldır</button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -393,67 +408,64 @@ export default function OrganizationChartPage() {
 
 
             {/* MODALS */}
-            {/* Departman Modal */}
             {showDepModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-                        <h2 className="text-lg font-bold mb-4">{depForm.id ? "Departman Düzenle" : "Yeni Departman"}</h2>
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 w-full max-w-md">
+                        <h2 className="text-lg font-bold text-white mb-4">{depForm.id ? "Departman Düzenle" : "Yeni Departman"}</h2>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Departman Adı *</label>
-                                <input type="text" value={depForm.name} onChange={e => setDepForm({ ...depForm, name: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Departman Adı *</label>
+                                <input type="text" value={depForm.name} onChange={e => setDepForm({ ...depForm, name: e.target.value })} className={inputClass} />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Bağlı Olduğu Üst Departman (Opsiyonel)</label>
-                                <select value={depForm.parent_id} onChange={e => setDepForm({ ...depForm, parent_id: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Bağlı Olduğu Üst Departman (Opsiyonel)</label>
+                                <select value={depForm.parent_id} onChange={e => setDepForm({ ...depForm, parent_id: e.target.value })} className={selectClass}>
                                     <option value="">-- En Üst Seviye (Ana Departman) --</option>
                                     {getHierarchicalDepartments(departments.filter(d => d.id !== depForm.id)).map(d => (
                                         <option key={d.id} value={d.id}>{"\u00A0\u00A0\u00A0\u00A0".repeat(d.level) + (d.level > 0 ? "└ " : "") + d.name}</option>
                                     ))}
                                 </select>
                             </div>
-                            <div className="flex justify-end gap-2 pt-4">
-                                <button onClick={() => setShowDepModal(false)} className="px-4 py-2 border rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">İptal</button>
-                                <button onClick={saveDepartment} disabled={savingDep} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50">Kaydet</button>
+                            <div className="flex justify-end gap-2 pt-2">
+                                <button onClick={() => setShowDepModal(false)} className={btnClass}>İptal</button>
+                                <button onClick={saveDepartment} disabled={savingDep} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">Kaydet</button>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Unvan Modal */}
             {showRoleModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-                        <h2 className="text-lg font-bold mb-4">{roleForm.id ? "Unvan Düzenle" : "Yeni Unvan"}</h2>
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 w-full max-w-md">
+                        <h2 className="text-lg font-bold text-white mb-4">{roleForm.id ? "Unvan Düzenle" : "Yeni Unvan"}</h2>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Unvan Adı *</label>
-                                <input placeholder="Örn: Şef" type="text" value={roleForm.name} onChange={e => setRoleForm({ ...roleForm, name: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Unvan Adı *</label>
+                                <input placeholder="Örn: Şef" type="text" value={roleForm.name} onChange={e => setRoleForm({ ...roleForm, name: e.target.value })} className={inputClass} />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Ağırlık Puanı (Hiyerarşi) *</label>
-                                <input type="number" value={roleForm.level_weight} onChange={e => setRoleForm({ ...roleForm, level_weight: parseInt(e.target.value) || 0 })} className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
-                                <p className="text-xs text-gray-500 mt-1">Sayı ne kadar büyükse, listede o kadar üstte görünür. (Örn: Müdür 100, Uzman 50, Personel 10)</p>
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Ağırlık Puanı (Hiyerarşi) *</label>
+                                <input type="number" value={roleForm.level_weight} onChange={e => setRoleForm({ ...roleForm, level_weight: parseInt(e.target.value) || 0 })} className={inputClass} />
+                                <p className="text-xs text-slate-500 mt-1.5">Sayı ne kadar büyükse, listede o kadar üstte görünür. (Örn: Müdür 100, Uzman 50, Personel 10)</p>
                             </div>
-                            <div className="flex justify-end gap-2 pt-4">
-                                <button onClick={() => setShowRoleModal(false)} className="px-4 py-2 border rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">İptal</button>
-                                <button onClick={saveRole} disabled={savingRole} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50">Kaydet</button>
+                            <div className="flex justify-end gap-2 pt-2">
+                                <button onClick={() => setShowRoleModal(false)} className={btnClass}>İptal</button>
+                                <button onClick={saveRole} disabled={savingRole} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">Kaydet</button>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Personel Atama Modal */}
             {showMemberModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-                        <h2 className="text-lg font-bold mb-4">{memberForm.id ? "Atama Düzenle" : "Yeni Atama"}</h2>
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 w-full max-w-md">
+                        <h2 className="text-lg font-bold text-white mb-4">{memberForm.id ? "Atama Düzenle" : "Yeni Atama"}</h2>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Personel Seçimi *</label>
-                                <select disabled={!!memberForm.id} value={memberForm.user_id} onChange={e => setMemberForm({ ...memberForm, user_id: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none disabled:bg-gray-100">
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Personel Seçimi *</label>
+                                <select disabled={!!memberForm.id} value={memberForm.user_id} onChange={e => setMemberForm({ ...memberForm, user_id: e.target.value })} className={`${selectClass} disabled:opacity-50`}>
                                     <option value="">-- Personel Seçin --</option>
                                     {companyUsers.map(u => (
                                         <option key={u.id} value={u.id}>{(u.first_name || "") + " " + (u.last_name || "")} ({u.email})</option>
@@ -461,8 +473,8 @@ export default function OrganizationChartPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Departman *</label>
-                                <select value={memberForm.department_id} onChange={e => setMemberForm({ ...memberForm, department_id: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Departman *</label>
+                                <select value={memberForm.department_id} onChange={e => setMemberForm({ ...memberForm, department_id: e.target.value })} className={selectClass}>
                                     <option value="">-- Departman Seçin --</option>
                                     {getHierarchicalDepartments(departments).map(d => (
                                         <option key={d.id} value={d.id}>{"\u00A0\u00A0\u00A0\u00A0".repeat(d.level) + (d.level > 0 ? "└ " : "") + d.name}</option>
@@ -470,22 +482,21 @@ export default function OrganizationChartPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Unvan / Rol</label>
-                                <select value={memberForm.role_id} onChange={e => setMemberForm({ ...memberForm, role_id: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Unvan / Rol</label>
+                                <select value={memberForm.role_id} onChange={e => setMemberForm({ ...memberForm, role_id: e.target.value })} className={selectClass}>
                                     <option value="">-- Personel (Varsayılan) --</option>
                                     {roles.map(r => (
                                         <option key={r.id} value={r.id}>{r.name}</option>
                                     ))}
                                 </select>
                             </div>
-                            <div className="flex items-center gap-2 pt-2">
-                                <input type="checkbox" id="is_mgr" checked={memberForm.is_manager} onChange={e => setMemberForm({ ...memberForm, is_manager: e.target.checked })} className="rounded text-indigo-600 w-4 h-4 cursor-pointer" />
-                                <label htmlFor="is_mgr" className="text-sm font-medium text-gray-700 cursor-pointer">Bu departmanın yöneticisi mi?</label>
+                            <div className="flex items-center gap-2 pt-1">
+                                <input type="checkbox" id="is_mgr" checked={memberForm.is_manager} onChange={e => setMemberForm({ ...memberForm, is_manager: e.target.checked })} className="rounded text-indigo-600 w-4 h-4 cursor-pointer accent-indigo-500" />
+                                <label htmlFor="is_mgr" className="text-sm font-medium text-slate-300 cursor-pointer">Bu departmanın yöneticisi mi?</label>
                             </div>
-
-                            <div className="flex justify-end gap-2 pt-4">
-                                <button onClick={() => setShowMemberModal(false)} className="px-4 py-2 border rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">İptal</button>
-                                <button onClick={saveMember} disabled={savingMember} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50">Kaydet</button>
+                            <div className="flex justify-end gap-2 pt-2">
+                                <button onClick={() => setShowMemberModal(false)} className={btnClass}>İptal</button>
+                                <button onClick={saveMember} disabled={savingMember} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">Kaydet</button>
                             </div>
                         </div>
                     </div>

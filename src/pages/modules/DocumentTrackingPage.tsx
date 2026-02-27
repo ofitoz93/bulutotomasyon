@@ -511,9 +511,9 @@ export default function DocumentTrackingPage() {
     };
 
     const tabClass = (tab: TabView) =>
-        `px-4 py-2 text-sm font-medium rounded-t-md transition ${activeTab === tab
-            ? "bg-white text-indigo-700 border border-b-0 border-gray-200"
-            : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+        `px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === tab
+            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+            : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
         }`;
 
     const isTypeLocationLocked = modalMode === "renew";
@@ -523,20 +523,20 @@ export default function DocumentTrackingPage() {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Evrak Takip</h1>
-                    <p className="text-sm text-gray-500 mt-1">Belgelerinizi ekleyin, takip edin ve otomatik hatırlatma alın.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-white">Evrak Takip</h1>
+                    <p className="text-sm text-slate-400 mt-1">Belgelerinizi ekleyin, takip edin ve otomatik hatırlatma alın.</p>
                 </div>
                 <button onClick={openAddModal}
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">
+                    className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg shadow-indigo-500/20">
                     Yeni Belge Ekle
                 </button>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 border-b border-gray-200">
+            <div className="flex gap-2">
                 <button className={tabClass("dashboard")} onClick={() => setActiveTab("dashboard")}>Dashboard</button>
                 <button className={tabClass("documents")} onClick={() => setActiveTab("documents")}>
-                    Belgeler {documents.length > 0 && <span className="ml-1 bg-indigo-100 text-indigo-700 text-xs px-1.5 py-0.5 rounded-full">{documents.length}</span>}
+                    Belgeler {documents.length > 0 && <span className="ml-1 bg-indigo-500/20 text-indigo-300 text-xs px-1.5 py-0.5 rounded-full">{documents.length}</span>}
                 </button>
                 {isManager && (
                     <button className={tabClass("permissions")} onClick={() => setActiveTab("permissions")}>Yetkilendirme</button>
@@ -544,61 +544,61 @@ export default function DocumentTrackingPage() {
             </div>
 
             {loading ? (
-                <div className="p-12 text-center text-gray-400">Yükleniyor...</div>
+                <div className="p-12 text-center text-slate-500">Yükleniyor...</div>
             ) : (
                 <>
                     {/* ========== DASHBOARD ========== */}
                     {activeTab === "dashboard" && (
                         <div className="space-y-6">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="bg-white shadow rounded-lg p-4 border-l-4 border-indigo-500">
-                                    <p className="text-sm text-gray-500">Toplam Belge</p>
-                                    <p className="text-2xl font-bold text-indigo-700">{stats.total}</p>
+                                <div className="bg-slate-900 border border-indigo-500/30 rounded-xl p-4 border-l-4">
+                                    <p className="text-sm text-slate-400">Toplam Belge</p>
+                                    <p className="text-2xl font-bold text-indigo-400">{stats.total}</p>
                                 </div>
-                                <div className="bg-white shadow rounded-lg p-4 border-l-4 border-red-500">
-                                    <p className="text-sm text-gray-500">Süresi Dolmuş</p>
-                                    <p className="text-2xl font-bold text-red-700">{stats.expired}</p>
+                                <div className="bg-slate-900 border border-rose-500/30 rounded-xl p-4 border-l-4">
+                                    <p className="text-sm text-slate-400">Süresi Dolmuş</p>
+                                    <p className="text-2xl font-bold text-rose-400">{stats.expired}</p>
                                 </div>
-                                <div className="bg-white shadow rounded-lg p-4 border-l-4 border-yellow-500">
-                                    <p className="text-sm text-gray-500">Acil (7 gün)</p>
-                                    <p className="text-2xl font-bold text-yellow-700">{stats.urgent}</p>
+                                <div className="bg-slate-900 border border-amber-500/30 rounded-xl p-4 border-l-4">
+                                    <p className="text-sm text-slate-400">Acil (7 gün)</p>
+                                    <p className="text-2xl font-bold text-amber-400">{stats.urgent}</p>
                                 </div>
-                                <div className="bg-white shadow rounded-lg p-4 border-l-4 border-green-500">
-                                    <p className="text-sm text-gray-500">Güncel</p>
-                                    <p className="text-2xl font-bold text-green-700">{stats.ok}</p>
+                                <div className="bg-slate-900 border border-emerald-500/30 rounded-xl p-4 border-l-4">
+                                    <p className="text-sm text-slate-400">Güncel</p>
+                                    <p className="text-2xl font-bold text-emerald-400">{stats.ok}</p>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-white shadow rounded-lg p-5">
-                                    <h3 className="text-sm font-semibold text-gray-700 mb-3">Belge Dağılımı</h3>
+                                <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                                    <h3 className="text-sm font-semibold text-slate-300 mb-3">Belge Dağılımı</h3>
                                     <div className="space-y-2">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-sm text-gray-600">Kurumsal</span>
-                                            <span className="text-sm font-medium bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">{stats.corporate}</span>
+                                            <span className="text-sm text-slate-400">Kurumsal</span>
+                                            <span className="text-sm font-medium bg-purple-500/15 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full">{stats.corporate}</span>
                                         </div>
                                         <div className="flex justify-between items-center">
-                                            <span className="text-sm text-gray-600">Şahsi</span>
-                                            <span className="text-sm font-medium bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full">{stats.personal}</span>
+                                            <span className="text-sm text-slate-400">Şahsi</span>
+                                            <span className="text-sm font-medium bg-teal-500/15 text-teal-400 border border-teal-500/30 px-2 py-0.5 rounded-full">{stats.personal}</span>
                                         </div>
-                                        <div className="flex justify-between items-center border-t pt-2">
-                                            <span className="text-sm text-gray-600">Arşivlenmiş</span>
-                                            <span className="text-sm font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{stats.archived}</span>
+                                        <div className="flex justify-between items-center border-t border-slate-800 pt-2">
+                                            <span className="text-sm text-slate-400">Arşivlenmiş</span>
+                                            <span className="text-sm font-medium bg-slate-700 text-slate-400 px-2 py-0.5 rounded-full">{stats.archived}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="bg-white shadow rounded-lg p-5">
-                                    <h3 className="text-sm font-semibold text-gray-700 mb-3">Dikkat Gerektiren Belgeler</h3>
+                                <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                                    <h3 className="text-sm font-semibold text-slate-300 mb-3">Dikkat Gerektiren Belgeler</h3>
                                     {documents.filter(d => { const s = getDateStatus(d); return s.days <= 30 && s.days !== Infinity; }).length === 0 ? (
-                                        <p className="text-sm text-gray-400">Acil belge yok ✓</p>
+                                        <p className="text-sm text-slate-500">Acil belge yok ✓</p>
                                     ) : (
                                         <div className="space-y-2 max-h-48 overflow-y-auto">
                                             {documents.filter(d => { const s = getDateStatus(d); return s.days <= 30 && s.days !== Infinity; }).slice(0, 5).map(doc => {
                                                 const status = getDateStatus(doc);
                                                 return (
                                                     <div key={doc.id} className="flex items-center justify-between text-sm">
-                                                        <span className="text-gray-700 truncate max-w-[60%]">
+                                                        <span className="text-slate-300 truncate max-w-[60%]">
                                                             {doc.title || (doc.document_types as any)?.name || "Belge"}
                                                         </span>
                                                         <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${status.color}`}>{status.label}</span>
@@ -615,31 +615,31 @@ export default function DocumentTrackingPage() {
                     {/* ========== BELGELER (tıklanabilir satırlar + inline arşiv) ========== */}
                     {activeTab === "documents" && (
                         documents.length === 0 ? (
-                            <div className="bg-white shadow rounded-lg p-12 text-center text-gray-400">
-                                <svg className="mx-auto h-12 w-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center">
+                                <svg className="mx-auto h-12 w-12 mb-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
-                                <p className="text-lg font-medium text-gray-500">Henüz belge eklenmemiş</p>
+                                <p className="text-base font-medium text-slate-400">Henüz belge eklenmemiş</p>
                             </div>
                         ) : (
-                            <div className="bg-white shadow rounded-lg overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
+                            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-x-auto">
+                                <table className="min-w-full divide-y divide-slate-800">
+                                    <thead className="bg-slate-800/50">
                                         <tr>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kapsam</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Belge Türü</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lokasyon</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kullanıcı</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alınma</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bitiş</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Son Başvuru</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dosya</th>
-                                            <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlemler</th>
+                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Durum</th>
+                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Kapsam</th>
+                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Belge Türü</th>
+                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Lokasyon</th>
+                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Kullanıcı</th>
+                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Alınma</th>
+                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Bitiş</th>
+                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Son Başvuru</th>
+                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Dosya</th>
+                                            <th className="px-3 py-3 text-right text-xs font-medium text-slate-400 uppercase">İşlemler</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="bg-slate-900 divide-y divide-slate-800">
                                         {documents.map((doc) => {
                                             const status = getDateStatus(doc);
                                             const isOwner = doc.user_id === user?.id;
@@ -652,50 +652,50 @@ export default function DocumentTrackingPage() {
                                             return (
                                                 <React.Fragment key={doc.id}>{/* Ana satır */}
                                                     <tr
-                                                        className={`cursor-pointer transition ${status.days < 0 ? "bg-red-50/40 hover:bg-red-50" : status.days <= 7 ? "bg-yellow-50/40 hover:bg-yellow-50" : "hover:bg-gray-50"}`}
+                                                        className={`cursor-pointer transition-colors ${status.days < 0 ? "bg-rose-500/5 hover:bg-rose-500/10" : status.days <= 7 ? "bg-amber-500/5 hover:bg-amber-500/10" : "hover:bg-slate-800/50"}`}
                                                         onClick={() => setExpandedDocId(isExpanded ? null : doc.id)}>
                                                         <td className="px-3 py-3 whitespace-nowrap">
                                                             <div className="flex items-center gap-1">
-                                                                <span className={`transform transition text-gray-400 text-xs ${isExpanded ? "rotate-90" : ""}`}>▶</span>
+                                                                <span className={`transform transition text-slate-500 text-xs ${isExpanded ? "rotate-90" : ""}`}>▶</span>
                                                                 <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${status.color}`}>{status.label}</span>
                                                             </div>
                                                         </td>
                                                         <td className="px-3 py-3 whitespace-nowrap text-sm">
-                                                            <span className={`px-2 py-0.5 text-xs rounded-full ${doc.scope === "kurumsal" ? "bg-purple-100 text-purple-700" : "bg-teal-100 text-teal-700"}`}>
+                                                            <span className={`px-2 py-0.5 text-xs rounded-full border font-medium ${doc.scope === "kurumsal" ? "bg-purple-500/15 text-purple-400 border-purple-500/30" : "bg-teal-500/15 text-teal-400 border-teal-500/30"}`}>
                                                                 {doc.scope === "kurumsal" ? "Kurumsal" : "Şahsi"}
                                                             </span>
                                                         </td>
-                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-200">
                                                             {doc.title || (doc.document_types as any)?.name || "—"}
                                                         </td>
-                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{(doc.locations as any)?.name || "—"}</td>
-                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-400">{(doc.locations as any)?.name || "—"}</td>
+                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-400">
                                                             {(doc.profiles as any)?.first_name || ""} {(doc.profiles as any)?.last_name || (doc.profiles as any)?.email || ""}
                                                         </td>
-                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{formatDate(doc.acquisition_date)}</td>
-                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{doc.is_indefinite ? "Süresiz" : formatDate(doc.expiry_date)}</td>
-                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{doc.is_indefinite ? "—" : formatDate(doc.application_deadline)}</td>
+                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-400">{formatDate(doc.acquisition_date)}</td>
+                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-400">{doc.is_indefinite ? "Süresiz" : formatDate(doc.expiry_date)}</td>
+                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-400">{doc.is_indefinite ? "—" : formatDate(doc.application_deadline)}</td>
                                                         <td className="px-3 py-3 whitespace-nowrap text-sm">
                                                             {doc.file_url ? (
                                                                 <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
-                                                                    className="text-indigo-600 hover:text-indigo-800 underline text-xs"
+                                                                    className="text-indigo-400 hover:text-indigo-300 underline text-xs"
                                                                     onClick={(e) => e.stopPropagation()}>
                                                                     {doc.file_name?.substring(0, 15) || "Dosya"}
                                                                 </a>
-                                                            ) : <span className="text-gray-300">—</span>}
+                                                            ) : <span className="text-slate-700">—</span>}
                                                         </td>
                                                         <td className="px-3 py-3 whitespace-nowrap text-right text-sm space-x-2" onClick={(e) => e.stopPropagation()}>
                                                             {canEdit && (
                                                                 <button onClick={() => openEditModal(doc)}
-                                                                    className="text-gray-600 hover:text-gray-800">Düzenle</button>
+                                                                    className="text-slate-400 hover:text-slate-200">Düzenle</button>
                                                             )}
                                                             {canEdit && status.days < 0 && (
                                                                 <button onClick={() => openRenewModal(doc)}
-                                                                    className="text-indigo-600 hover:text-indigo-800 font-medium">Yenile</button>
+                                                                    className="text-indigo-400 hover:text-indigo-300 font-medium">Yenile</button>
                                                             )}
                                                             {canDelete && (
                                                                 <button onClick={() => handleDeleteDocument(doc)}
-                                                                    className="text-red-600 hover:text-red-800">Sil</button>
+                                                                    className="text-rose-500 hover:text-rose-400">Sil</button>
                                                             )}
                                                         </td>
                                                     </tr>
@@ -704,31 +704,31 @@ export default function DocumentTrackingPage() {
                                                     {isExpanded && (
                                                         <tr key={`${doc.id}-archive`}>
                                                             <td colSpan={isManager ? 10 : 9} className="px-0 py-0">
-                                                                <div className="bg-gray-50 border-t border-b border-gray-200 px-6 py-4">
+                                                                <div className="bg-slate-800/30 border-t border-b border-slate-800 px-6 py-4">
                                                                     {archiveHistory.length === 0 ? (
-                                                                        <p className="text-sm text-gray-400 italic">Bu belgenin arşiv geçmişi bulunmuyor.</p>
+                                                                        <p className="text-sm text-slate-500 italic">Bu belgenin arşiv geçmişi bulunmuyor.</p>
                                                                     ) : (
                                                                         <>
-                                                                            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">
+                                                                            <p className="text-xs font-semibold text-slate-500 uppercase mb-2">
                                                                                 Arşiv Geçmişi ({archiveHistory.length} eski belge)
                                                                             </p>
                                                                             <div className="space-y-2">
                                                                                 {archiveHistory.map((arch) => (
-                                                                                    <div key={arch.id} className="flex items-center justify-between bg-white rounded-md px-4 py-2 border border-gray-200 text-sm">
+                                                                                    <div key={arch.id} className="flex items-center justify-between bg-slate-800 rounded-lg px-4 py-2 border border-slate-700 text-sm">
                                                                                         <div className="flex items-center gap-4">
-                                                                                            <span className="text-gray-400 text-xs">📁</span>
+                                                                                            <span className="text-slate-500 text-xs">📁</span>
                                                                                             <div>
-                                                                                                <span className="text-gray-700">
+                                                                                                <span className="text-slate-300">
                                                                                                     {formatDate(arch.acquisition_date)} — {arch.is_indefinite ? "Süresiz" : formatDate(arch.expiry_date)}
                                                                                                 </span>
-                                                                                                <span className="text-gray-400 text-xs ml-2">
+                                                                                                <span className="text-slate-600 text-xs ml-2">
                                                                                                     (Arşivlenme: {formatDate(arch.archived_at)})
                                                                                                 </span>
                                                                                             </div>
                                                                                         </div>
                                                                                         {arch.file_url && (
                                                                                             <a href={arch.file_url} target="_blank" rel="noopener noreferrer"
-                                                                                                className="text-indigo-600 hover:text-indigo-800 underline text-xs">
+                                                                                                className="text-indigo-400 hover:text-indigo-300 underline text-xs">
                                                                                                 Dosyayı Görüntüle
                                                                                             </a>
                                                                                         )}
@@ -752,50 +752,50 @@ export default function DocumentTrackingPage() {
 
                     {/* ========== YETKİLENDİRME ========== */}
                     {activeTab === "permissions" && isManager && (
-                        <div className="bg-white shadow rounded-lg overflow-hidden">
-                            <div className="px-6 py-4 border-b bg-gray-50">
-                                <h2 className="text-sm font-semibold text-gray-700 uppercase">Kurumsal Evrak Yetkileri</h2>
-                                <p className="text-xs text-gray-500 mt-1">Bu listede sadece "Evrak Takip" modülü atanmış çalışanlar görünür. Şahsi (özel) evraklar bu yetkilerden bağımsızdır, kimse başka birinin şahsi evrakını göremez veya düzenleyemez.</p>
+                        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                            <div className="px-6 py-4 border-b border-slate-800 bg-slate-800/50">
+                                <h2 className="text-sm font-semibold text-slate-300 uppercase">Kurumsal Evrak Yetkileri</h2>
+                                <p className="text-xs text-slate-500 mt-1">Bu listede sadece "Evrak Takip" modülü atanmış çalışanlar görünür. Şahsi (özel) evraklar bu yetkilerden bağımsızdır, kimse başka birinin şahsi evrakını göremez veya düzenleyemez.</p>
                             </div>
 
                             {usersWithPerms.length === 0 ? (
-                                <div className="p-8 text-center text-gray-500 italic">Evrak Takip modülünde çalışan bulunamadı. Önce "Ekip Yönetimi"nden modül ataması yapınız.</div>
+                                <div className="p-8 text-center text-slate-500 italic">Evrak Takip modülünde çalışan bulunamadı. Önce "Ekip Yönetimi"nden modül ataması yapınız.</div>
                             ) : (
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
+                                <table className="min-w-full divide-y divide-slate-800">
+                                    <thead className="bg-slate-800/50">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kullanıcı</th>
-                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tüm Kurumsal Evrakları Gör</th>
-                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Düzenle / Yenile</th>
-                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Sil</th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlem</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Kullanıcı</th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase">Tüm Kurumsal Evrakları Gör</th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase">Düzenle / Yenile</th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase">Sil</th>
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase">İşlem</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="bg-slate-900 divide-y divide-slate-800">
                                         {usersWithPerms.map((u) => (
-                                            <tr key={u.id} className="hover:bg-gray-50 transition">
+                                            <tr key={u.id} className="hover:bg-slate-800/50 transition-colors">
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-medium text-gray-900">{u.first_name || ""} {u.last_name || ""}</div>
-                                                    <div className="text-xs text-gray-500">{u.email}</div>
+                                                    <div className="text-sm font-medium text-slate-200">{u.first_name || ""} {u.last_name || ""}</div>
+                                                    <div className="text-xs text-slate-500">{u.email}</div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center">
                                                     <input type="checkbox" checked={u.permissions.can_view_all_corporate}
                                                         onChange={(e) => handlePermissionChange(u.id, "can_view_all_corporate", e.target.checked)}
-                                                        className="h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" />
+                                                        className="h-4 w-4 accent-indigo-500 rounded" />
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center">
                                                     <input type="checkbox" checked={u.permissions.can_edit_all_corporate}
                                                         onChange={(e) => handlePermissionChange(u.id, "can_edit_all_corporate", e.target.checked)}
-                                                        className="h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" />
+                                                        className="h-4 w-4 accent-indigo-500 rounded" />
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center">
                                                     <input type="checkbox" checked={u.permissions.can_delete_all_corporate}
                                                         onChange={(e) => handlePermissionChange(u.id, "can_delete_all_corporate", e.target.checked)}
-                                                        className="h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" />
+                                                        className="h-4 w-4 accent-indigo-500 rounded" />
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                     <button onClick={() => handleSavePermissions(u)} disabled={savingPerms === u.id}
-                                                        className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1.5 rounded-md disabled:opacity-50">
+                                                        className="text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/30 disabled:opacity-50 text-xs">
                                                         {savingPerms === u.id ? "Kaydediliyor..." : "Kaydet"}
                                                     </button>
                                                 </td>
@@ -811,27 +811,27 @@ export default function DocumentTrackingPage() {
 
             {/* ========== BELGE EKLEME / DÜZENLEME / YENİLEME MODAL ========== */}
             {showAddModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-                    <div className="bg-white rounded-lg max-w-xl w-full p-6 space-y-4 my-8">
-                        <h3 className="text-lg font-bold">
+                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 overflow-y-auto">
+                    <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-xl w-full p-6 space-y-4 my-8 shadow-2xl">
+                        <h3 className="text-lg font-bold text-white">
                             {modalMode === "edit" ? "Belge Düzenle" : modalMode === "renew" ? "Belge Yenile" : "Yeni Belge Ekle"}
                         </h3>
                         {modalMode === "renew" && (
-                            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 text-sm text-yellow-800">
+                            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-sm text-amber-400">
                                 Eski belge otomatik olarak arşive alınacaktır.
                             </div>
                         )}
 
                         {/* Kapsam */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Belge Kapsamı</label>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Belge Kapsamı</label>
                             <div className="flex gap-3">
                                 <button onClick={() => setScope("kurumsal")} disabled={modalMode !== "add"}
-                                    className={`flex-1 py-2 rounded-md text-sm font-medium border transition ${scope === "kurumsal" ? "bg-purple-600 text-white border-purple-600" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"} ${modalMode !== "add" ? "opacity-60" : ""}`}>
+                                    className={`flex-1 py-2 rounded-lg text-sm font-medium border transition ${scope === "kurumsal" ? "bg-purple-600 text-white border-purple-600" : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700"} ${modalMode !== "add" ? "opacity-60" : ""}`}>
                                     Kurumsal
                                 </button>
                                 <button onClick={() => setScope("sahsi")} disabled={modalMode !== "add"}
-                                    className={`flex-1 py-2 rounded-md text-sm font-medium border transition ${scope === "sahsi" ? "bg-teal-600 text-white border-teal-600" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"} ${modalMode !== "add" ? "opacity-60" : ""}`}>
+                                    className={`flex-1 py-2 rounded-lg text-sm font-medium border transition ${scope === "sahsi" ? "bg-teal-600 text-white border-teal-600" : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700"} ${modalMode !== "add" ? "opacity-60" : ""}`}>
                                     Şahsi
                                 </button>
                             </div>
@@ -839,102 +839,102 @@ export default function DocumentTrackingPage() {
 
                         {/* Başlık */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Başlık (Opsiyonel)</label>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">Başlık (Opsiyonel)</label>
                             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-slate-500"
                                 placeholder="Örn: İş Güvenliği Sertifikası" />
                         </div>
 
                         {/* Belge Türü */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Belge Türü *</label>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">Belge Türü *</label>
                             {!showNewType ? (
                                 <div className="flex gap-2">
                                     <select value={selectedTypeId} onChange={(e) => setSelectedTypeId(e.target.value)}
                                         disabled={isTypeLocationLocked}
-                                        className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                        className="flex-1 bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
                                         <option value="">Seçin...</option>
                                         {docTypes.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                                     </select>
                                     {!isTypeLocationLocked && (
                                         <button onClick={() => setShowNewType(true)}
-                                            className="px-3 py-2 bg-gray-100 text-gray-600 rounded-md text-sm hover:bg-gray-200 whitespace-nowrap">+ Yeni</button>
+                                            className="px-3 py-2 bg-slate-700 text-slate-300 rounded-lg text-sm hover:bg-slate-600 whitespace-nowrap">+ Yeni</button>
                                     )}
                                 </div>
                             ) : (
                                 <div className="flex gap-2">
                                     <input type="text" value={newTypeName} onChange={(e) => setNewTypeName(e.target.value)}
-                                        className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="flex-1 bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-slate-500"
                                         placeholder="Yeni belge türü adı" autoFocus />
-                                    <button onClick={handleAddType} className="px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">Ekle</button>
+                                    <button onClick={handleAddType} className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-500">Ekle</button>
                                     <button onClick={() => { setShowNewType(false); setNewTypeName(""); }}
-                                        className="px-3 py-2 bg-gray-100 text-gray-600 rounded-md text-sm hover:bg-gray-200">İptal</button>
+                                        className="px-3 py-2 bg-slate-700 text-slate-300 rounded-lg text-sm hover:bg-slate-600">İptal</button>
                                 </div>
                             )}
                         </div>
 
                         {/* Lokasyon */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Lokasyon *</label>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">Lokasyon *</label>
                             {!showNewLocation ? (
                                 <div className="flex gap-2">
                                     <select value={selectedLocationId} onChange={(e) => setSelectedLocationId(e.target.value)}
                                         disabled={isTypeLocationLocked}
-                                        className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                        className="flex-1 bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
                                         <option value="">Seçin...</option>
                                         {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
                                     </select>
                                     {!isTypeLocationLocked && (
                                         <button onClick={() => setShowNewLocation(true)}
-                                            className="px-3 py-2 bg-gray-100 text-gray-600 rounded-md text-sm hover:bg-gray-200 whitespace-nowrap">+ Yeni</button>
+                                            className="px-3 py-2 bg-slate-700 text-slate-300 rounded-lg text-sm hover:bg-slate-600 whitespace-nowrap">+ Yeni</button>
                                     )}
                                 </div>
                             ) : (
                                 <div className="flex gap-2">
                                     <input type="text" value={newLocationName} onChange={(e) => setNewLocationName(e.target.value)}
-                                        className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="flex-1 bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-slate-500"
                                         placeholder="Yeni lokasyon adı" autoFocus />
-                                    <button onClick={handleAddLocation} className="px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">Ekle</button>
+                                    <button onClick={handleAddLocation} className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-500">Ekle</button>
                                     <button onClick={() => { setShowNewLocation(false); setNewLocationName(""); }}
-                                        className="px-3 py-2 bg-gray-100 text-gray-600 rounded-md text-sm hover:bg-gray-200">İptal</button>
+                                        className="px-3 py-2 bg-slate-700 text-slate-300 rounded-lg text-sm hover:bg-slate-600">İptal</button>
                                 </div>
                             )}
                         </div>
 
                         {/* Tarihler */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Alınma Tarihi *</label>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">Alınma Tarihi *</label>
                             <input type="date" value={acquisitionDate} onChange={(e) => setAcquisitionDate(e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500" />
                         </div>
 
                         <div className="flex items-center gap-2">
                             <input type="checkbox" id="is-indef" checked={isIndefinite} onChange={(e) => setIsIndefinite(e.target.checked)}
-                                className="h-4 w-4 text-indigo-600 rounded border-gray-300" />
-                            <label htmlFor="is-indef" className="text-sm text-gray-700">Süresiz belge</label>
+                                className="h-4 w-4 accent-indigo-500 rounded" />
+                            <label htmlFor="is-indef" className="text-sm text-slate-300">Süresiz belge</label>
                         </div>
 
                         {!isIndefinite && (
                             <>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Bitiş Tarihi *</label>
+                                        <label className="block text-sm font-medium text-slate-300 mb-1">Bitiş Tarihi *</label>
                                         <input type="date" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)}
-                                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                            className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Son Başvuru Tarihi</label>
+                                        <label className="block text-sm font-medium text-slate-300 mb-1">Son Başvuru Tarihi</label>
                                         <input type="date" value={applicationDeadline} onChange={(e) => setApplicationDeadline(e.target.value)}
                                             max={expiryDate || undefined}
-                                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                            className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500" />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Hatırlatma</label>
+                                    <label className="block text-sm font-medium text-slate-300 mb-1">Hatırlatma</label>
                                     <div className="flex items-center gap-2">
                                         <input type="number" value={reminderDays} min="1" max="365" onChange={(e) => setReminderDays(e.target.value)}
-                                            className="w-24 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                                        <span className="text-sm text-gray-500">gün önce e-posta gönder</span>
+                                            className="w-24 bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500" />
+                                        <span className="text-sm text-slate-400">gün önce e-posta gönder</span>
                                     </div>
                                 </div>
                             </>
@@ -942,11 +942,11 @@ export default function DocumentTrackingPage() {
 
                         {/* Dosya */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Evrak Yükle (Max 5MB)</label>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">Evrak Yükle (Max 5MB)</label>
                             {modalMode === "edit" && editingDoc?.file_url && !selectedFile && (
-                                <p className="text-xs text-gray-500 mb-1">
-                                    Mevcut: <a href={editingDoc.file_url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 underline">{editingDoc.file_name || "Dosya"}</a>
-                                    <span className="text-gray-400 ml-1">(Yeni dosya seçerseniz değiştirilir)</span>
+                                <p className="text-xs text-slate-500 mb-1">
+                                    Mevcut: <a href={editingDoc.file_url} target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline">{editingDoc.file_name || "Dosya"}</a>
+                                    <span className="text-slate-600 ml-1">(Yeni dosya seçerseniz değiştirilir)</span>
                                 </p>
                             )}
                             <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
@@ -955,15 +955,15 @@ export default function DocumentTrackingPage() {
                                     if (file && file.size > 5 * 1024 * 1024) { alert("5MB limit aşıldı!"); e.target.value = ""; return; }
                                     setSelectedFile(file);
                                 }}
-                                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+                                className="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-500/20 file:text-indigo-400 hover:file:bg-indigo-500/30" />
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-2 border-t">
+                        <div className="flex justify-end gap-3 pt-2 border-t border-slate-800">
                             <button onClick={() => { setShowAddModal(false); setEditingDoc(null); }}
-                                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">İptal</button>
+                                className="px-4 py-2 text-sm text-slate-400 hover:bg-slate-800 rounded-lg">İptal</button>
                             <button onClick={handleSaveDocument} disabled={formLoading}
-                                className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
-                                {formLoading ? "Kaydediliyor..." : modalMode === "edit" ? "Güncelle" : modalMode === "renew" ? "Yenile ve Arşivle" : "Kaydet"}
+                                className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg disabled:opacity-50 transition-colors">
+                                {formLoading ? "Kaydediliyor..." : modalMode === "edit" ? "Güncelle" : modalMode === "renew" ? "Yenile ve Arşive" : "Kaydet"}
                             </button>
                         </div>
                     </div>
