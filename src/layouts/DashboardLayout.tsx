@@ -141,6 +141,8 @@ export default function DashboardLayout() {
 
     // Gruplandırma
     const groupedModules = activeModules.reduce((acc, mod) => {
+        if (mod.module_key === 'alt_taseron') return acc; // Skip this, it's manually rendered above for managers
+
         const cat = mod.category || "Genel";
         if (!acc[cat]) acc[cat] = [];
         acc[cat].push(mod);

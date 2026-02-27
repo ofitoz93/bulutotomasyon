@@ -26,10 +26,19 @@ serve(async (req) => {
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
         // 1. Hatırlatma e-postalarını kuyruğa ekle
-        const { data: count, error: rpcError } = await supabase.rpc('queue_action_reminders');
-        if (rpcError) throw rpcError;
+        let totalQueued = 0;
 
-        console.log(`${count} hatırlatma e-postası kuyruğa eklendi.`);
+        // 1a. Aksiyonlar
+        const { data: actionCount, error: actionRpcError } = await supabase.rpc('queue_action_reminders');
+        if (actionRpcError) throw actionRpcError;
+        totalQueued += (actionCount || 0);
+
+        // 1b. Evrak Takip
+        const { data: documentCount, error: docRpcError } = await supabase.rpc('queue_document_reminders');
+        if (docRpcError) throw docRpcError;
+        totalQueued += (documentCount || 0);
+
+        console.log(`${totalQueued} hatırlatma e-postası kuyruğa eklendi. (Aksiyonlar: ${actionCount || 0}, Evraklar: ${documentCount || 0})`);
 
         // 2. Kuyruktaki pending e-postaları gönder
         const { data: emails, error } = await supabase
@@ -42,7 +51,7 @@ serve(async (req) => {
         if (error) throw error;
         if (!emails || emails.length === 0) {
             return new Response(
-                JSON.stringify({ message: "Gönderilecek hatırlatma yok", queued: count }),
+                JSON.stringify({ message: "Gönderilecek hatırlatma yok", queued: totalQueued }),
                 { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
         }
@@ -80,7 +89,7 @@ serve(async (req) => {
 
         return new Response(
             JSON.stringify({
-                message: `${count} hatırlatma kuyruğa eklendi, ${sentCount}/${emails.length} e-posta gönderildi`
+                message: `${totalQueued} hatırlatma kuyruğa eklendi, ${sentCount}/${emails.length} e-posta gönderildi`
             }),
             { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );

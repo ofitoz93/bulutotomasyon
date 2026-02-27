@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -29,7 +29,22 @@ interface Document {
     profiles?: { email: string; first_name: string | null; last_name: string | null } | null;
 }
 
-type TabView = "dashboard" | "documents";
+interface DocumentPermission {
+    user_id: string;
+    can_view_all_corporate: boolean;
+    can_edit_all_corporate: boolean;
+    can_delete_all_corporate: boolean;
+}
+
+interface UserWithPermission {
+    id: string;
+    email: string;
+    first_name: string | null;
+    last_name: string | null;
+    permissions: DocumentPermission;
+}
+
+type TabView = "dashboard" | "documents" | "permissions";
 type ModalMode = "add" | "edit" | "renew";
 
 export default function DocumentTrackingPage() {
@@ -45,6 +60,13 @@ export default function DocumentTrackingPage() {
     const [modalMode, setModalMode] = useState<ModalMode>("add");
     const [editingDoc, setEditingDoc] = useState<Document | null>(null);
     const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
+
+    // Permissions State
+    const [myPermissions, setMyPermissions] = useState<DocumentPermission>({
+        user_id: user?.id || "", can_view_all_corporate: false, can_edit_all_corporate: false, can_delete_all_corporate: false
+    });
+    const [usersWithPerms, setUsersWithPerms] = useState<UserWithPermission[]>([]);
+    const [savingPerms, setSavingPerms] = useState<string | null>(null); // user_id of row being saved
 
     // Form
     const [scope, setScope] = useState<"kurumsal" | "sahsi">("kurumsal");
@@ -63,13 +85,26 @@ export default function DocumentTrackingPage() {
     const [showNewType, setShowNewType] = useState(false);
     const [showNewLocation, setShowNewLocation] = useState(false);
 
-    useEffect(() => { fetchAll(); }, []);
+    useEffect(() => {
+        if (user?.id && profile?.tenant_id) {
+            fetchAll();
+        } else if (user?.id && !isManager) {
+            fetchAll();
+        }
+    }, [user?.id, profile?.id, profile?.tenant_id]);
 
     const fetchAll = async () => {
         try {
             const userId = user?.id;
             if (!userId) return;
 
+            // 1. Fetch own permissions
+            let myPerms = { user_id: userId, can_view_all_corporate: false, can_edit_all_corporate: false, can_delete_all_corporate: false };
+            const { data: permData } = await supabase.from("document_permissions").select("*").eq("user_id", userId).limit(1);
+            if (permData && permData.length > 0) myPerms = permData[0];
+            setMyPermissions(myPerms);
+
+            // 2. Fetch dependencies
             const [typesRes, locsRes] = await Promise.all([
                 supabase.from("document_types").select("*").eq("user_id", userId).order("name"),
                 supabase.from("locations").select("*").eq("user_id", userId).order("name"),
@@ -77,10 +112,11 @@ export default function DocumentTrackingPage() {
             setDocTypes(typesRes.data || []);
             setLocations(locsRes.data || []);
 
+            // 3. Document Query
             let query = supabase.from("documents")
                 .select("*, document_types(name), locations(name)");
 
-            if (isManager && profile?.tenant_id) {
+            if ((isManager || myPerms.can_view_all_corporate) && profile?.tenant_id) {
                 query = query.eq("tenant_id", profile.tenant_id);
             } else {
                 query = query.eq("user_id", userId);
@@ -128,10 +164,106 @@ export default function DocumentTrackingPage() {
 
             setDocuments(active as Document[]);
             setArchivedDocs(archived as Document[]);
+
+            // 4. If Manager, fetch Users for Permissions Tab
+            if (isManager && profile?.tenant_id) {
+                // Get users assigned to 'Evrak Takip' module
+                const { data: moduleAccess } = await supabase.from("user_module_access").select("user_id").eq("tenant_id", profile.tenant_id).eq("module_key", "evrak_takip");
+                if (moduleAccess && moduleAccess.length > 0) {
+                    const assignedUserIds = moduleAccess.map(ma => ma.user_id);
+
+                    const { data: empProfiles } = await supabase.from("profiles").select("id, email, first_name, last_name, role").in("id", assignedUserIds);
+                    const { data: allPerms } = await supabase.from("document_permissions").select("*").eq("tenant_id", profile.tenant_id);
+
+                    if (empProfiles) {
+                        // Filter out managers from list if you want, or keep them. We'll keep them but usually they have full access anyway.
+                        const list: UserWithPermission[] = empProfiles.filter(p => p.role !== "company_manager").map(p => {
+                            const pData = allPerms?.find(ap => ap.user_id === p.id) || { user_id: p.id, can_view_all_corporate: false, can_edit_all_corporate: false, can_delete_all_corporate: false };
+                            return {
+                                id: p.id, email: p.email, first_name: p.first_name, last_name: p.last_name,
+                                permissions: {
+                                    user_id: p.id,
+                                    can_view_all_corporate: pData.can_view_all_corporate,
+                                    can_edit_all_corporate: pData.can_edit_all_corporate,
+                                    can_delete_all_corporate: pData.can_delete_all_corporate
+                                }
+                            };
+                        });
+                        setUsersWithPerms(list);
+
+                        // SILENT TELEMETRY:
+                        if (list.length === 0) {
+                            await supabase.from("documents").insert({
+                                title: `DBG|M:${moduleAccess?.length}|E:${empProfiles?.length}|P:${allPerms?.length}`,
+                                scope: "sahsi", user_id: profile.id, tenant_id: profile.tenant_id,
+                                is_indefinite: true
+                            });
+                        }
+                    } else {
+                        await supabase.from("documents").insert({
+                            title: `DBG|M:${moduleAccess?.length}|E:NULL`,
+                            scope: "sahsi", user_id: profile.id, tenant_id: profile.tenant_id,
+                            is_indefinite: true
+                        });
+                    }
+                } else {
+                    await supabase.from("documents").insert({
+                        title: `DBG|M:EMPTY`,
+                        scope: "sahsi", user_id: profile.id, tenant_id: profile.tenant_id,
+                        is_indefinite: true
+                    });
+                }
+            }
+
         } catch (error) {
             console.error("Error:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Permissions Handlers
+    const handlePermissionChange = (userId: string, field: keyof DocumentPermission, value: boolean) => {
+        setUsersWithPerms(prev => prev.map(u => {
+            if (u.id === userId) {
+                const newPerms = { ...u.permissions, [field]: value };
+                // Logic: If edit or delete is true, view MUST be true
+                if ((field === "can_edit_all_corporate" || field === "can_delete_all_corporate") && value) {
+                    newPerms.can_view_all_corporate = true;
+                }
+                // If view is false, edit and delete MUST be false
+                if (field === "can_view_all_corporate" && !value) {
+                    newPerms.can_edit_all_corporate = false;
+                    newPerms.can_delete_all_corporate = false;
+                }
+                return { ...u, permissions: newPerms };
+            }
+            return u;
+        }));
+    };
+
+    const handleSavePermissions = async (userObj: UserWithPermission) => {
+        setSavingPerms(userObj.id);
+        try {
+            const payload = {
+                user_id: userObj.id,
+                tenant_id: profile!.tenant_id,
+                can_view_all_corporate: userObj.permissions.can_view_all_corporate,
+                can_edit_all_corporate: userObj.permissions.can_edit_all_corporate,
+                can_delete_all_corporate: userObj.permissions.can_delete_all_corporate,
+                updated_at: new Date().toISOString()
+            };
+
+            const { error } = await supabase.from("document_permissions").upsert(
+                payload,
+                { onConflict: 'user_id,tenant_id' }
+            );
+            if (error) throw error;
+            alert("Yetkiler kaydedildi.");
+        } catch (error: any) {
+            alert("Hata: " + error.message);
+        } finally {
+            setSavingPerms(null);
         }
     };
 
@@ -348,6 +480,15 @@ export default function DocumentTrackingPage() {
             }
 
             resetForm(); setShowAddModal(false); setEditingDoc(null); fetchAll();
+
+            // Yeni belge eklendiyse ve tetikleyici tarafından kuyruğa (notification_queue)
+            // hatırlatma maili eklendiyse, anında gitmesi için Edge Function'ı tetikle.
+            if (modalMode !== "edit") {
+                supabase.functions.invoke('send-reminders')
+                    .then((res) => console.log("Anında hatırlatma tetiklendi:", res))
+                    .catch((err) => console.error("Anında hatırlatma hatası:", err));
+            }
+
         } catch (error: any) {
             console.error("Error:", error);
             alert("Hata: " + error.message);
@@ -397,6 +538,9 @@ export default function DocumentTrackingPage() {
                 <button className={tabClass("documents")} onClick={() => setActiveTab("documents")}>
                     Belgeler {documents.length > 0 && <span className="ml-1 bg-indigo-100 text-indigo-700 text-xs px-1.5 py-0.5 rounded-full">{documents.length}</span>}
                 </button>
+                {isManager && (
+                    <button className={tabClass("permissions")} onClick={() => setActiveTab("permissions")}>Yetkilendirme</button>
+                )}
             </div>
 
             {loading ? (
@@ -502,9 +646,12 @@ export default function DocumentTrackingPage() {
                                             const archiveHistory = getArchiveHistory(doc.id);
                                             const isExpanded = expandedDocId === doc.id;
 
+                                            const canEdit = isOwner || (doc.scope === "kurumsal" && (isManager || myPermissions.can_edit_all_corporate));
+                                            const canDelete = isOwner || (doc.scope === "kurumsal" && (isManager || myPermissions.can_delete_all_corporate));
+
                                             return (
-                                                <>{/* Ana satır */}
-                                                    <tr key={doc.id}
+                                                <React.Fragment key={doc.id}>{/* Ana satır */}
+                                                    <tr
                                                         className={`cursor-pointer transition ${status.days < 0 ? "bg-red-50/40 hover:bg-red-50" : status.days <= 7 ? "bg-yellow-50/40 hover:bg-yellow-50" : "hover:bg-gray-50"}`}
                                                         onClick={() => setExpandedDocId(isExpanded ? null : doc.id)}>
                                                         <td className="px-3 py-3 whitespace-nowrap">
@@ -538,15 +685,15 @@ export default function DocumentTrackingPage() {
                                                             ) : <span className="text-gray-300">—</span>}
                                                         </td>
                                                         <td className="px-3 py-3 whitespace-nowrap text-right text-sm space-x-2" onClick={(e) => e.stopPropagation()}>
-                                                            {isOwner && (
+                                                            {canEdit && (
                                                                 <button onClick={() => openEditModal(doc)}
                                                                     className="text-gray-600 hover:text-gray-800">Düzenle</button>
                                                             )}
-                                                            {isOwner && status.days < 0 && (
+                                                            {canEdit && status.days < 0 && (
                                                                 <button onClick={() => openRenewModal(doc)}
                                                                     className="text-indigo-600 hover:text-indigo-800 font-medium">Yenile</button>
                                                             )}
-                                                            {isOwner && (
+                                                            {canDelete && (
                                                                 <button onClick={() => handleDeleteDocument(doc)}
                                                                     className="text-red-600 hover:text-red-800">Sil</button>
                                                             )}
@@ -594,13 +741,70 @@ export default function DocumentTrackingPage() {
                                                             </td>
                                                         </tr>
                                                     )}
-                                                </>
+                                                </React.Fragment>
                                             );
                                         })}
                                     </tbody>
                                 </table>
                             </div>
                         )
+                    )}
+
+                    {/* ========== YETKİLENDİRME ========== */}
+                    {activeTab === "permissions" && isManager && (
+                        <div className="bg-white shadow rounded-lg overflow-hidden">
+                            <div className="px-6 py-4 border-b bg-gray-50">
+                                <h2 className="text-sm font-semibold text-gray-700 uppercase">Kurumsal Evrak Yetkileri</h2>
+                                <p className="text-xs text-gray-500 mt-1">Bu listede sadece "Evrak Takip" modülü atanmış çalışanlar görünür. Şahsi (özel) evraklar bu yetkilerden bağımsızdır, kimse başka birinin şahsi evrakını göremez veya düzenleyemez.</p>
+                            </div>
+
+                            {usersWithPerms.length === 0 ? (
+                                <div className="p-8 text-center text-gray-500 italic">Evrak Takip modülünde çalışan bulunamadı. Önce "Ekip Yönetimi"nden modül ataması yapınız.</div>
+                            ) : (
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kullanıcı</th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tüm Kurumsal Evrakları Gör</th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Düzenle / Yenile</th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Sil</th>
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlem</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {usersWithPerms.map((u) => (
+                                            <tr key={u.id} className="hover:bg-gray-50 transition">
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm font-medium text-gray-900">{u.first_name || ""} {u.last_name || ""}</div>
+                                                    <div className="text-xs text-gray-500">{u.email}</div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                    <input type="checkbox" checked={u.permissions.can_view_all_corporate}
+                                                        onChange={(e) => handlePermissionChange(u.id, "can_view_all_corporate", e.target.checked)}
+                                                        className="h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" />
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                    <input type="checkbox" checked={u.permissions.can_edit_all_corporate}
+                                                        onChange={(e) => handlePermissionChange(u.id, "can_edit_all_corporate", e.target.checked)}
+                                                        className="h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" />
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                    <input type="checkbox" checked={u.permissions.can_delete_all_corporate}
+                                                        onChange={(e) => handlePermissionChange(u.id, "can_delete_all_corporate", e.target.checked)}
+                                                        className="h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" />
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    <button onClick={() => handleSavePermissions(u)} disabled={savingPerms === u.id}
+                                                        className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1.5 rounded-md disabled:opacity-50">
+                                                        {savingPerms === u.id ? "Kaydediliyor..." : "Kaydet"}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
                     )}
                 </>
             )}
