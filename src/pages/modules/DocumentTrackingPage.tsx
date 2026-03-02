@@ -269,17 +269,17 @@ export default function DocumentTrackingPage() {
 
     // === Helpers ===
     const getDateStatus = (doc: Document) => {
-        if (doc.is_indefinite) return { label: "Süresiz", color: "bg-green-100 text-green-700", days: Infinity };
+        if (doc.is_indefinite) return { label: "Süresiz", color: "bg-emerald-500/15 text-emerald-400", days: Infinity };
         const targetDate = doc.application_deadline || doc.expiry_date;
-        if (!targetDate) return { label: "—", color: "bg-gray-100 text-gray-500", days: Infinity };
+        if (!targetDate) return { label: "—", color: "bg-slate-500/10 text-slate-500", days: Infinity };
         const today = new Date(); today.setHours(0, 0, 0, 0);
         const target = new Date(targetDate);
         const daysLeft = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-        if (daysLeft < 0) return { label: "Süresi Doldu", color: "bg-red-100 text-red-800", days: daysLeft };
-        if (daysLeft === 0) return { label: "Bugün!", color: "bg-red-100 text-red-800", days: 0 };
-        if (daysLeft <= 7) return { label: `${daysLeft} gün`, color: "bg-yellow-100 text-yellow-800", days: daysLeft };
-        if (daysLeft <= 30) return { label: `${daysLeft} gün`, color: "bg-blue-100 text-blue-700", days: daysLeft };
-        return { label: new Date(targetDate).toLocaleDateString("tr-TR"), color: "bg-gray-100 text-gray-600", days: daysLeft };
+        if (daysLeft < 0) return { label: "Süresi Doldu", color: "bg-rose-500/15 text-rose-400", days: daysLeft };
+        if (daysLeft === 0) return { label: "Bugün!", color: "bg-rose-500/15 text-rose-400", days: 0 };
+        if (daysLeft <= 7) return { label: `${daysLeft} gün`, color: "bg-amber-500/15 text-amber-400", days: daysLeft };
+        if (daysLeft <= 30) return { label: `${daysLeft} gün`, color: "bg-indigo-500/15 text-indigo-400", days: daysLeft };
+        return { label: new Date(targetDate).toLocaleDateString("tr-TR"), color: "bg-slate-500/10 text-slate-400", days: daysLeft };
     };
 
     const formatDate = (d: string | null) => (d ? new Date(d).toLocaleDateString("tr-TR") : "—");
@@ -513,7 +513,7 @@ export default function DocumentTrackingPage() {
     const tabClass = (tab: TabView) =>
         `px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === tab
             ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
-            : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
         }`;
 
     const isTypeLocationLocked = modalMode === "renew";
@@ -523,8 +523,8 @@ export default function DocumentTrackingPage() {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-white">Evrak Takip</h1>
-                    <p className="text-sm text-slate-400 mt-1">Belgelerinizi ekleyin, takip edin ve otomatik hatırlatma alın.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Evrak Takip</h1>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Belgelerinizi ekleyin, takip edin ve otomatik hatırlatma alın.</p>
                 </div>
                 <button onClick={openAddModal}
                     className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg shadow-indigo-500/20">
@@ -551,45 +551,45 @@ export default function DocumentTrackingPage() {
                     {activeTab === "dashboard" && (
                         <div className="space-y-6">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="bg-slate-900 border border-indigo-500/30 rounded-xl p-4 border-l-4">
-                                    <p className="text-sm text-slate-400">Toplam Belge</p>
-                                    <p className="text-2xl font-bold text-indigo-400">{stats.total}</p>
+                                <div className="bg-white dark:bg-slate-900 border border-indigo-500/20 dark:border-indigo-500/30 rounded-xl p-4 border-l-4">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Toplam Belge</p>
+                                    <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{stats.total}</p>
                                 </div>
-                                <div className="bg-slate-900 border border-rose-500/30 rounded-xl p-4 border-l-4">
-                                    <p className="text-sm text-slate-400">Süresi Dolmuş</p>
-                                    <p className="text-2xl font-bold text-rose-400">{stats.expired}</p>
+                                <div className="bg-white dark:bg-slate-900 border border-rose-500/20 dark:border-rose-500/30 rounded-xl p-4 border-l-4">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Süresi Dolmuş</p>
+                                    <p className="text-2xl font-bold text-rose-600 dark:text-rose-400">{stats.expired}</p>
                                 </div>
-                                <div className="bg-slate-900 border border-amber-500/30 rounded-xl p-4 border-l-4">
-                                    <p className="text-sm text-slate-400">Acil (7 gün)</p>
-                                    <p className="text-2xl font-bold text-amber-400">{stats.urgent}</p>
+                                <div className="bg-white dark:bg-slate-900 border border-amber-500/20 dark:border-amber-500/30 rounded-xl p-4 border-l-4">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Acil (7 gün)</p>
+                                    <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{stats.urgent}</p>
                                 </div>
-                                <div className="bg-slate-900 border border-emerald-500/30 rounded-xl p-4 border-l-4">
-                                    <p className="text-sm text-slate-400">Güncel</p>
-                                    <p className="text-2xl font-bold text-emerald-400">{stats.ok}</p>
+                                <div className="bg-white dark:bg-slate-900 border border-emerald-500/20 dark:border-emerald-500/30 rounded-xl p-4 border-l-4">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Güncel</p>
+                                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{stats.ok}</p>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                                    <h3 className="text-sm font-semibold text-slate-300 mb-3">Belge Dağılımı</h3>
+                                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+                                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 uppercase tracking-wider">Belge Dağılımı</h3>
                                     <div className="space-y-2">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-sm text-slate-400">Kurumsal</span>
-                                            <span className="text-sm font-medium bg-purple-500/15 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full">{stats.corporate}</span>
+                                            <span className="text-sm text-slate-500 dark:text-slate-400">Kurumsal</span>
+                                            <span className="text-sm font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 dark:border-purple-500/30 px-2 py-0.5 rounded-full">{stats.corporate}</span>
                                         </div>
                                         <div className="flex justify-between items-center">
-                                            <span className="text-sm text-slate-400">Şahsi</span>
-                                            <span className="text-sm font-medium bg-teal-500/15 text-teal-400 border border-teal-500/30 px-2 py-0.5 rounded-full">{stats.personal}</span>
+                                            <span className="text-sm text-slate-500 dark:text-slate-400">Şahsi</span>
+                                            <span className="text-sm font-medium bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 dark:border-teal-500/30 px-2 py-0.5 rounded-full">{stats.personal}</span>
                                         </div>
-                                        <div className="flex justify-between items-center border-t border-slate-800 pt-2">
-                                            <span className="text-sm text-slate-400">Arşivlenmiş</span>
-                                            <span className="text-sm font-medium bg-slate-700 text-slate-400 px-2 py-0.5 rounded-full">{stats.archived}</span>
+                                        <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-2">
+                                            <span className="text-sm text-slate-500 dark:text-slate-400">Arşivlenmiş</span>
+                                            <span className="text-sm font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full">{stats.archived}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                                    <h3 className="text-sm font-semibold text-slate-300 mb-3">Dikkat Gerektiren Belgeler</h3>
+                                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+                                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 uppercase tracking-wider">Dikkat Gerektiren Belgeler</h3>
                                     {documents.filter(d => { const s = getDateStatus(d); return s.days <= 30 && s.days !== Infinity; }).length === 0 ? (
                                         <p className="text-sm text-slate-500">Acil belge yok ✓</p>
                                     ) : (
@@ -612,143 +612,168 @@ export default function DocumentTrackingPage() {
                         </div>
                     )}
 
-                    {/* ========== BELGELER (tıklanabilir satırlar + inline arşiv) ========== */}
+                    {/* ========== BELGELER ========== */}
                     {activeTab === "documents" && (
-                        documents.length === 0 ? (
-                            <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center">
-                                <svg className="mx-auto h-12 w-12 mb-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                <p className="text-base font-medium text-slate-400">Henüz belge eklenmemiş</p>
+                        <div className="space-y-4">
+                            {/* Filters & Search */}
+                            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center shadow-sm">
+                                <div className="flex gap-2">
+                                    {(["kurumsal", "sahsi"] as const).map(s => (
+                                        <button key={s} onClick={() => { setFilterScope(s); setExpandedDocId(null); }}
+                                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${filterScope === s ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20" : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700"}`}>
+                                            {s === "kurumsal" ? "Kurumsal" : "Şahsi"}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="relative flex-1 w-full">
+                                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">🔍</span>
+                                    <input type="text" placeholder="Belge adı, türü veya lokasyon ara..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50" />
+                                </div>
                             </div>
-                        ) : (
-                            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-x-auto">
-                                <table className="min-w-full divide-y divide-slate-800">
-                                    <thead className="bg-slate-800/50">
-                                        <tr>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Durum</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Kapsam</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Belge Türü</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Lokasyon</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Kullanıcı</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Alınma</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Bitiş</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Son Başvuru</th>
-                                            <th className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Dosya</th>
-                                            <th className="px-3 py-3 text-right text-xs font-medium text-slate-400 uppercase">İşlemler</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-slate-900 divide-y divide-slate-800">
-                                        {documents.map((doc) => {
-                                            const status = getDateStatus(doc);
-                                            const isOwner = doc.user_id === user?.id;
-                                            const archiveHistory = getArchiveHistory(doc.id);
-                                            const isExpanded = expandedDocId === doc.id;
 
-                                            const canEdit = isOwner || (doc.scope === "kurumsal" && (isManager || myPermissions.can_edit_all_corporate));
-                                            const canDelete = isOwner || (doc.scope === "kurumsal" && (isManager || myPermissions.can_delete_all_corporate));
+                            {filteredDocs.length === 0 ? (
+                                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center shadow-sm">
+                                    <svg className="mx-auto h-12 w-12 mb-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <p className="text-base font-medium text-slate-500 dark:text-slate-400">Henüz belge eklenmemiş</p>
+                                </div>
+                            ) : (
+                                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+                                    <div className="overflow-x-auto">
+                                        <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+                                            <thead className="bg-slate-50 dark:bg-slate-800/50">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Durum</th>
+                                                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kapsam</th>
+                                                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Belge / Tür</th>
+                                                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Lokasyon</th>
+                                                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kullanıcı</th>
+                                                    <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">İşlemler</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                                {filteredDocs.map((doc) => {
+                                                    const status = getDateStatus(doc);
+                                                    const isOwner = doc.user_id === user?.id;
+                                                    const archiveHistory = getArchiveHistory(doc.id);
+                                                    const isExpanded = expandedDocId === doc.id;
 
-                                            return (
-                                                <React.Fragment key={doc.id}>{/* Ana satır */}
-                                                    <tr
-                                                        className={`cursor-pointer transition-colors ${status.days < 0 ? "bg-rose-500/5 hover:bg-rose-500/10" : status.days <= 7 ? "bg-amber-500/5 hover:bg-amber-500/10" : "hover:bg-slate-800/50"}`}
-                                                        onClick={() => setExpandedDocId(isExpanded ? null : doc.id)}>
-                                                        <td className="px-3 py-3 whitespace-nowrap">
-                                                            <div className="flex items-center gap-1">
-                                                                <span className={`transform transition text-slate-500 text-xs ${isExpanded ? "rotate-90" : ""}`}>▶</span>
-                                                                <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${status.color}`}>{status.label}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-3 py-3 whitespace-nowrap text-sm">
-                                                            <span className={`px-2 py-0.5 text-xs rounded-full border font-medium ${doc.scope === "kurumsal" ? "bg-purple-500/15 text-purple-400 border-purple-500/30" : "bg-teal-500/15 text-teal-400 border-teal-500/30"}`}>
-                                                                {doc.scope === "kurumsal" ? "Kurumsal" : "Şahsi"}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-200">
-                                                            {doc.title || (doc.document_types as any)?.name || "—"}
-                                                        </td>
-                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-400">{(doc.locations as any)?.name || "—"}</td>
-                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-400">
-                                                            {(doc.profiles as any)?.first_name || ""} {(doc.profiles as any)?.last_name || (doc.profiles as any)?.email || ""}
-                                                        </td>
-                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-400">{formatDate(doc.acquisition_date)}</td>
-                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-400">{doc.is_indefinite ? "Süresiz" : formatDate(doc.expiry_date)}</td>
-                                                        <td className="px-3 py-3 whitespace-nowrap text-sm text-slate-400">{doc.is_indefinite ? "—" : formatDate(doc.application_deadline)}</td>
-                                                        <td className="px-3 py-3 whitespace-nowrap text-sm">
-                                                            {doc.file_url ? (
-                                                                <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
-                                                                    className="text-indigo-400 hover:text-indigo-300 underline text-xs"
-                                                                    onClick={(e) => e.stopPropagation()}>
-                                                                    {doc.file_name?.substring(0, 15) || "Dosya"}
-                                                                </a>
-                                                            ) : <span className="text-slate-700">—</span>}
-                                                        </td>
-                                                        <td className="px-3 py-3 whitespace-nowrap text-right text-sm space-x-2" onClick={(e) => e.stopPropagation()}>
-                                                            {canEdit && (
-                                                                <button onClick={() => openEditModal(doc)}
-                                                                    className="text-slate-400 hover:text-slate-200">Düzenle</button>
-                                                            )}
-                                                            {canEdit && status.days < 0 && (
-                                                                <button onClick={() => openRenewModal(doc)}
-                                                                    className="text-indigo-400 hover:text-indigo-300 font-medium">Yenile</button>
-                                                            )}
-                                                            {canDelete && (
-                                                                <button onClick={() => handleDeleteDocument(doc)}
-                                                                    className="text-rose-500 hover:text-rose-400">Sil</button>
-                                                            )}
-                                                        </td>
-                                                    </tr>
+                                                    const canEdit = isOwner || (doc.scope === "kurumsal" && (isManager || myPermissions.can_edit_all_corporate));
+                                                    const canDelete = isOwner || (doc.scope === "kurumsal" && (isManager || myPermissions.can_delete_all_corporate));
 
-                                                    {/* Genişletilmiş arşiv geçmişi */}
-                                                    {isExpanded && (
-                                                        <tr key={`${doc.id}-archive`}>
-                                                            <td colSpan={isManager ? 10 : 9} className="px-0 py-0">
-                                                                <div className="bg-slate-800/30 border-t border-b border-slate-800 px-6 py-4">
-                                                                    {archiveHistory.length === 0 ? (
-                                                                        <p className="text-sm text-slate-500 italic">Bu belgenin arşiv geçmişi bulunmuyor.</p>
-                                                                    ) : (
-                                                                        <>
-                                                                            <p className="text-xs font-semibold text-slate-500 uppercase mb-2">
-                                                                                Arşiv Geçmişi ({archiveHistory.length} eski belge)
-                                                                            </p>
-                                                                            <div className="space-y-2">
-                                                                                {archiveHistory.map((arch) => (
-                                                                                    <div key={arch.id} className="flex items-center justify-between bg-slate-800 rounded-lg px-4 py-2 border border-slate-700 text-sm">
-                                                                                        <div className="flex items-center gap-4">
-                                                                                            <span className="text-slate-500 text-xs">📁</span>
-                                                                                            <div>
-                                                                                                <span className="text-slate-300">
-                                                                                                    {formatDate(arch.acquisition_date)} — {arch.is_indefinite ? "Süresiz" : formatDate(arch.expiry_date)}
-                                                                                                </span>
-                                                                                                <span className="text-slate-600 text-xs ml-2">
-                                                                                                    (Arşivlenme: {formatDate(arch.archived_at)})
-                                                                                                </span>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        {arch.file_url && (
-                                                                                            <a href={arch.file_url} target="_blank" rel="noopener noreferrer"
-                                                                                                className="text-indigo-400 hover:text-indigo-300 underline text-xs">
-                                                                                                Dosyayı Görüntüle
-                                                                                            </a>
-                                                                                        )}
-                                                                                    </div>
-                                                                                ))}
-                                                                            </div>
-                                                                        </>
+                                                    return (
+                                                        <React.Fragment key={doc.id}>
+                                                            <tr
+                                                                className={`cursor-pointer transition-colors ${status.days < 0 ? "bg-rose-500/5 hover:bg-rose-500/10" : status.days <= 7 ? "bg-amber-500/5 hover:bg-amber-500/10" : "hover:bg-slate-50 dark:hover:bg-slate-800/60"}`}
+                                                                onClick={() => setExpandedDocId(isExpanded ? null : doc.id)}>
+                                                                <td className="px-4 py-4 whitespace-nowrap">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className={`transform transition text-slate-500 text-xs ${isExpanded ? "rotate-90" : ""}`}>▶</span>
+                                                                        <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-full ${status.color}`}>
+                                                                            {status.label}
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-4 py-4 whitespace-nowrap">
+                                                                    <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-full border ${doc.scope === "kurumsal" ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20" : "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20"}`}>
+                                                                        {doc.scope === "kurumsal" ? "Kurumsal" : "Şahsi"}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-4">
+                                                                    <div className="text-sm font-medium text-gray-900 dark:text-slate-200">
+                                                                        {doc.title || "Adsız Belge"}
+                                                                    </div>
+                                                                    <div className="text-[10px] text-slate-500 mt-1 uppercase">
+                                                                        {doc.document_types?.name || "Bilinmiyor"} • {formatDate(doc.acquisition_date)}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-400">
+                                                                    {doc.locations?.name || "—"}
+                                                                </td>
+                                                                <td className="px-4 py-4 whitespace-nowrap">
+                                                                    <div className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                                                                        {doc.profiles?.first_name} {doc.profiles?.last_name}
+                                                                    </div>
+                                                                    <div className="text-[10px] text-slate-500">{doc.profiles?.email}</div>
+                                                                </td>
+                                                                <td className="px-4 py-4 whitespace-nowrap text-right text-sm space-x-2" onClick={(e) => e.stopPropagation()}>
+                                                                    {doc.file_url && (
+                                                                        <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
+                                                                            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors">Dosya</a>
                                                                     )}
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    )}
-                                                </React.Fragment>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )
+                                                                    {canEdit && (
+                                                                        <button onClick={() => openEditModal(doc)}
+                                                                            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">Düz.</button>
+                                                                    )}
+                                                                    {canDelete && (
+                                                                        <button onClick={() => handleDeleteDocument(doc)}
+                                                                            className="text-rose-500 hover:text-rose-600 transition-colors">Sil</button>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                            {isExpanded && (
+                                                                <tr key={`${doc.id}-detail`}>
+                                                                    <td colSpan={6} className="px-0 py-0">
+                                                                        <div className="bg-slate-50 dark:bg-slate-800/30 border-y border-slate-100 dark:border-slate-800 px-8 py-4">
+                                                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                                                <div>
+                                                                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Geçerlilik</p>
+                                                                                    <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                                                                                        {doc.is_indefinite ? "Süresiz" : formatDate(doc.expiry_date)}
+                                                                                    </p>
+                                                                                </div>
+                                                                                {!doc.is_indefinite && (
+                                                                                    <div>
+                                                                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Son Başvuru</p>
+                                                                                        <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                                                                                            {formatDate(doc.application_deadline) || "—"}
+                                                                                        </p>
+                                                                                    </div>
+                                                                                )}
+                                                                                <div>
+                                                                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Hatırlatma</p>
+                                                                                    <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                                                                                        {doc.reminder_days_before} gün kala
+                                                                                    </p>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {archiveHistory.length > 0 && (
+                                                                                <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                                                                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Arşiv Geçmişi</p>
+                                                                                    <div className="space-y-2">
+                                                                                        {archiveHistory.map(arch => (
+                                                                                            <div key={arch.id} className="flex items-center justify-between bg-white dark:bg-slate-800/50 rounded-lg px-4 py-2 border border-slate-200 dark:border-slate-700 text-sm">
+                                                                                                <span className="text-slate-600 dark:text-slate-300">
+                                                                                                    {formatDate(arch.acquisition_date)} — {arch.is_indefinite ? "Süresiz" : formatDate(arch.expiry_date)}
+                                                                                                    <span className="text-[10px] text-slate-400 ml-2">Arşivlendi: {formatDate(arch.archived_at)}</span>
+                                                                                                </span>
+                                                                                                {arch.file_url && (
+                                                                                                    <a href={arch.file_url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">Dosya</a>
+                                                                                                )}
+                                                                                            </div>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            )}
+                                                        </React.Fragment>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     )}
+
 
                     {/* ========== YETKİLENDİRME ========== */}
                     {activeTab === "permissions" && isManager && (

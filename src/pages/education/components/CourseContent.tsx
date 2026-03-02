@@ -125,32 +125,32 @@ export default function CourseContent({ courseId }: { courseId: string }) {
         <div className="space-y-8">
             {/* List of existing */}
             <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Mevcut Müfredat</h3>
+                <h3 className="text-sm font-semibold text-white mb-3">Mevcut Müfredat</h3>
                 {materials.length === 0 ? (
-                    <div className="text-sm text-gray-500 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300 text-center">
+                    <div className="text-sm text-slate-500 p-8 bg-slate-900/50 rounded-lg border-2 border-dashed border-slate-800 text-center">
                         Henüz hiç içerik eklenmemiş. Alttaki formu kullanarak içerik (PDF/Video) ekleyebilirsiniz.
                     </div>
                 ) : (
                     <div className="space-y-2">
                         {materials.map((m) => (
-                            <div key={m.id} className="flex items-center p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
-                                <GripVertical className="w-5 h-5 text-gray-300 mr-3 cursor-grab" />
-                                <div className="h-10 w-10 flex-shrink-0 bg-indigo-50 text-indigo-600 rounded flex items-center justify-center mr-4">
+                            <div key={m.id} className="flex items-center p-3 bg-slate-900 border border-slate-800 rounded-lg shadow-sm hover:border-slate-700 transition-colors">
+                                <GripVertical className="w-5 h-5 text-slate-700 mr-3 cursor-grab" />
+                                <div className="h-10 w-10 flex-shrink-0 bg-indigo-500/10 text-indigo-400 rounded flex items-center justify-center mr-4 border border-indigo-500/20">
                                     {m.content_type === 'pdf' ? <FileText className="w-5 h-5" /> : <Video className="w-5 h-5" />}
                                 </div>
                                 <div className="flex-1">
-                                    <h4 className="text-sm font-medium text-gray-900">{m.order_num}. {m.title}</h4>
-                                    <div className="text-xs text-gray-500 flex items-center gap-3">
-                                        <span className="uppercase">{m.content_type}</span>
+                                    <h4 className="text-sm font-medium text-slate-100">{m.order_num}. {m.title}</h4>
+                                    <div className="text-xs text-slate-500 flex items-center gap-3">
+                                        <span className="uppercase font-bold tracking-wider">{m.content_type}</span>
                                         {m.min_duration_minutes > 0 ? (
                                             <span>Minimum Süre: {m.min_duration_minutes} Dk</span>
                                         ) : (
                                             <span>Süre Limiti Yok</span>
                                         )}
-                                        <a href={m.file_url} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline">Bağlantıyı Gör</a>
+                                        <a href={m.file_url} target="_blank" rel="noreferrer" className="text-indigo-400 hover:text-indigo-300 hover:underline">Bağlantıyı Gör</a>
                                     </div>
                                 </div>
-                                <button onClick={() => handleDelete(m.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-md transition ml-4">
+                                <button onClick={() => handleDelete(m.id)} className="p-2 text-rose-500 hover:bg-rose-500/10 rounded-md transition ml-4">
                                     <Trash2 className="w-4 h-4" />
                                 </button>
                             </div>
@@ -160,50 +160,50 @@ export default function CourseContent({ courseId }: { courseId: string }) {
             </div>
 
             {/* Add New */}
-            <form onSubmit={handleAdd} className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                <h3 className="text-sm font-semibold text-gray-900 mb-4 pb-2 border-b">Yeni İçerik Ekle</h3>
+            <form onSubmit={handleAdd} className="bg-slate-900/50 p-6 rounded-lg border border-slate-800 shadow-inner">
+                <h3 className="text-sm font-semibold text-white mb-6 pb-2 border-b border-slate-800">Yeni İçerik Ekle</h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="md:col-span-2">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">İçerik Başlığı</label>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">İçerik Başlığı</label>
                         <input
                             type="text" required value={newTitle} onChange={e => setNewTitle(e.target.value)}
                             placeholder="Örn: Bölüm 1 - Risk Değerlendirmesi"
-                            className="w-full px-3 py-2 text-sm border rounded focus:ring-indigo-500 focus:border-indigo-500"
+                            className="w-full bg-slate-800 border-slate-700 text-slate-100 px-3 py-2.5 text-sm border rounded focus:ring-1 focus:ring-indigo-500 outline-none"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">İçerik Tipi</label>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">İçerik Tipi</label>
                         <select
                             value={newType} onChange={e => setNewType(e.target.value as 'pdf' | 'video')}
-                            className="w-full px-3 py-2 text-sm border rounded focus:ring-indigo-500 focus:border-indigo-500"
+                            className="w-full bg-slate-800 border-slate-700 text-slate-100 px-3 py-2.5 text-sm border rounded focus:ring-1 focus:ring-indigo-500 outline-none"
                         >
-                            <option value="pdf">PDF Dosyası (Slayt vb.)</option>
-                            <option value="video">Video (MP4 / YouTube vb.)</option>
+                            <option value="pdf" className="bg-slate-900">PDF Dosyası (Slayt vb.)</option>
+                            <option value="video" className="bg-slate-900">Video (MP4 / YouTube vb.)</option>
                         </select>
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Harcanması Gereken Min. Süre (Dakika)</label>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Harcanması Gereken Min. Süre (Dakika)</label>
                         <input
                             type="number" min="0" required value={newMinDuration} onChange={e => setNewMinDuration(parseInt(e.target.value) || 0)}
-                            className="w-full px-3 py-2 text-sm border rounded focus:ring-indigo-500 focus:border-indigo-500"
+                            className="w-full bg-slate-800 border-slate-700 text-slate-100 px-3 py-2.5 text-sm border rounded focus:ring-1 focus:ring-indigo-500 outline-none"
                         />
-                        <p className="text-[10px] text-gray-500 mt-0.5">Katılımcı bu süre dolmadan sıradaki konuya veya sınava geçemez (0 = serbest).</p>
+                        <p className="text-[10px] text-slate-500 mt-1.5 font-medium italic">Katılımcı bu süre dolmadan sıradaki konuya veya sınava geçemez (0 = serbest).</p>
                     </div>
 
                     <div className="md:col-span-2">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Dışsal Link (URL) VEYA Dosya Yükle</label>
-                        <div className="flex flex-col gap-2">
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Dışsal Link (URL) VEYA Dosya Yükle</label>
+                        <div className="flex flex-col gap-3">
                             <input
                                 type="url" value={newUrl} onChange={e => { setNewUrl(e.target.value); setNewFile(null); }}
                                 placeholder="Dışsal URL (Örn: YouTube veya Drive linki)"
-                                className="w-full px-3 py-2 text-sm border rounded focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full bg-slate-800 border-slate-700 text-slate-100 px-3 py-2.5 text-sm border rounded focus:ring-1 focus:ring-indigo-500 outline-none"
                                 disabled={!!newFile}
                             />
-                            <div className="flex items-center">
-                                <span className="text-xs text-gray-500 mr-2">YA DA</span>
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-black text-slate-600 whitespace-nowrap px-2 py-0.5 border border-slate-800 rounded">YA DA</span>
                                 <input
                                     type="file"
                                     onChange={(e) => {
@@ -212,12 +212,12 @@ export default function CourseContent({ courseId }: { courseId: string }) {
                                             setNewUrl("");
                                         }
                                     }}
-                                    className="text-sm file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                    className="text-xs text-slate-400 file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-500/10 file:text-indigo-400 hover:file:bg-indigo-500/20 transition-colors cursor-pointer"
                                     disabled={!!newUrl}
                                 />
                             </div>
                         </div>
-                        <p className="text-[10px] text-gray-500 mt-1">Lütfen sadece birini kullanın. Bilgisayardan dosya (PDF, MP4) seçerseniz sistem otomatik yükleyecektir.</p>
+                        <p className="text-[10px] text-slate-500 mt-2 font-medium italic">Lütfen sadece birini kullanın. Bilgisayardan dosya (PDF, MP4) seçerseniz sistem otomatik yükleyecektir.</p>
                     </div>
                 </div>
 

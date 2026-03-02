@@ -221,9 +221,9 @@ export default function QRScanPage() {
 
     if (loading || gpsLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center space-y-4">
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center space-y-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-                <p className="text-gray-500 font-medium">
+                <p className="text-slate-500 dark:text-slate-400 font-medium">
                     {loading ? "Ekipman bilgileri yükleniyor..." : "Konumunuz alınıyor, lütfen bekleyin..."}
                 </p>
             </div>
@@ -232,11 +232,11 @@ export default function QRScanPage() {
 
     if (notFound || !equipment) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
                 <div className="text-center">
                     <div className="text-6xl mb-4">❌</div>
-                    <h1 className="text-xl font-bold text-gray-700">Ekipman bulunamadı</h1>
-                    <p className="text-gray-400 mt-2">Bu QR kod geçersiz veya ekipman devre dışı bırakılmış.</p>
+                    <h1 className="text-xl font-bold text-slate-700 dark:text-slate-200">Ekipman bulunamadı</h1>
+                    <p className="text-slate-400 mt-2">Bu QR kod geçersiz veya ekipman devre dışı bırakılmış.</p>
                 </div>
             </div>
         );
@@ -244,25 +244,25 @@ export default function QRScanPage() {
 
     if (locationPermission === "denied") {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-                <div className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full text-center">
-                    <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center px-4">
+                <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-lg max-w-sm w-full text-center border border-transparent dark:border-slate-800">
+                    <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                     </div>
-                    <h1 className="text-xl font-bold text-gray-800 mb-2">Konum İzni Gerekli</h1>
-                    <p className="text-gray-600 text-sm mb-6">
+                    <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Konum İzni Gerekli</h1>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm mb-6">
                         {locationErrorMsg || "Bu ekipmanın bilgilerini görüntüleyebilmek ve işleme devam edebilmek için cihazınızın konum (GPS) iznini vermeniz gerekmektedir."}
                     </p>
                     <button
                         onClick={() => window.location.reload()}
-                        className="w-full bg-indigo-600 text-white py-3 rounded-xl font-medium hover:bg-indigo-700 transition"
+                        className="w-full bg-indigo-600 text-white py-3 rounded-xl font-medium hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/20"
                     >
                         Tekrar Dene
                     </button>
-                    <p className="text-xs text-gray-400 mt-4 px-2">
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-4 px-2">
                         Tarayıcınızın ayarlarından veya adres çubuğundan konum erişimine izin vermeyi unutmayın.
                     </p>
                 </div>
@@ -271,18 +271,18 @@ export default function QRScanPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-8 px-4">
             <div className="max-w-lg mx-auto space-y-4">
 
                 {/* Header */}
                 <div className="text-center mb-4">
-                    <div className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium">
+                    <div className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg shadow-indigo-600/20">
                         <span>📋</span> Ekipman Bilgi Kartı
                     </div>
                 </div>
 
                 {/* Ana Kart */}
-                <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-md overflow-hidden border border-transparent dark:border-slate-800">
                     <div className="bg-indigo-600 px-6 py-5">
                         <div className="flex justify-between items-start">
                             <div>
@@ -322,48 +322,48 @@ export default function QRScanPage() {
                         </div>
 
                         {equipment.purpose && (
-                            <div className="bg-gray-50 rounded-xl px-4 py-3">
-                                <p className="text-xs text-gray-400 font-medium mb-1">Kullanım Amacı</p>
-                                <p className="text-sm text-gray-700">{equipment.purpose}</p>
+                            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl px-4 py-3 border border-transparent dark:border-slate-800">
+                                <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mb-1">Kullanım Amacı</p>
+                                <p className="text-sm text-slate-700 dark:text-slate-300">{equipment.purpose}</p>
                             </div>
                         )}
                     </div>
                 </div>
 
                 {/* Hasar / Arıza Bildir */}
-                <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-md overflow-hidden border border-transparent dark:border-slate-800">
                     {damageReported ? (
                         <div className="px-6 py-5 text-center">
                             <div className="text-4xl mb-2">✅</div>
-                            <p className="text-green-700 font-medium">Arıza/Hasar kaydı alındı!</p>
-                            <p className="text-sm text-gray-400 mt-1">İlgili yöneticilere iletildi.</p>
+                            <p className="text-emerald-700 dark:text-emerald-400 font-medium">Arıza/Hasar kaydı alındı!</p>
+                            <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">İlgili yöneticilere iletildi.</p>
                         </div>
                     ) : !showDamageForm ? (
-                        <div className="px-6 py-5 text-center bg-red-50">
-                            <p className="text-sm text-red-800 font-medium mb-3">Ekipmanda bir arıza veya fiziksel hasar mı tespit ettiniz?</p>
+                        <div className="px-6 py-5 text-center bg-red-50 dark:bg-red-900/10">
+                            <p className="text-sm text-red-800 dark:text-red-400 font-medium mb-3">Ekipmanda bir arıza veya fiziksel hasar mı tespit ettiniz?</p>
                             <button onClick={() => setShowDamageForm(true)}
-                                className="bg-red-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-red-700 transition">
+                                className="bg-red-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-red-700 transition shadow-lg shadow-red-600/20">
                                 ⚠️ Arıza / Hasar Bildir
                             </button>
                         </div>
                     ) : (
-                        <div className="px-6 py-5 space-y-3 bg-red-50 border-t-4 border-red-500">
-                            <h3 className="font-bold text-red-800 text-sm">Hasar Bildirim Formu</h3>
+                        <div className="px-6 py-5 space-y-3 bg-red-50 dark:bg-red-900/10 border-t-4 border-red-500">
+                            <h3 className="font-bold text-red-800 dark:text-red-400 text-sm">Hasar Bildirim Formu</h3>
                             <div>
-                                <label className="block text-xs text-red-700 font-medium mb-1">Arıza / Hasar Detayı *</label>
+                                <label className="block text-xs text-red-700 dark:text-red-500/80 font-medium mb-1">Arıza / Hasar Detayı *</label>
                                 <textarea rows={3} value={damageDesc} onChange={e => setDamageDesc(e.target.value)}
                                     placeholder="Lütfen tespit ettiğiniz sorunu kısaca açıklayın..."
-                                    className="w-full border border-red-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white" />
+                                    className="w-full border border-red-200 dark:border-red-900/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" />
                             </div>
                             <div>
-                                <label className="block text-xs text-red-700 font-medium mb-1">Adınız (opsiyonel)</label>
+                                <label className="block text-xs text-red-700 dark:text-red-500/80 font-medium mb-1">Adınız (opsiyonel)</label>
                                 <input type="text" value={scannedBy} onChange={e => setScannedBy(e.target.value)}
                                     placeholder="Örn: Ahmet Yılmaz"
-                                    className="w-full border border-red-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white" />
+                                    className="w-full border border-red-200 dark:border-red-900/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" />
                             </div>
                             <div className="flex gap-2 pt-2">
                                 <button onClick={() => setShowDamageForm(false)}
-                                    className="flex-1 border border-red-200 text-red-700 bg-white px-4 py-2 rounded-lg text-sm hover:bg-red-50 transition font-medium">
+                                    className="flex-1 border border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-400 bg-white dark:bg-slate-900 px-4 py-2 rounded-lg text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition font-medium">
                                     İptal
                                 </button>
                                 <button onClick={submitDamageReport} disabled={reportingDamage}
@@ -376,45 +376,45 @@ export default function QRScanPage() {
                 </div>
 
                 {/* Lokasyon Güncelle */}
-                <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-md overflow-hidden border border-transparent dark:border-slate-800">
                     {updated ? (
                         <div className="px-6 py-5 text-center">
                             <div className="text-4xl mb-2">✅</div>
-                            <p className="text-green-700 font-medium">Lokasyon güncellendi!</p>
-                            <p className="text-sm text-gray-400 mt-1">{newLocation}</p>
+                            <p className="text-emerald-700 dark:text-emerald-400 font-medium">Lokasyon güncellendi!</p>
+                            <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">{newLocation}</p>
                         </div>
                     ) : !isMobile ? (
-                        <div className="px-6 py-5 text-center bg-yellow-50">
+                        <div className="px-6 py-5 text-center bg-amber-50 dark:bg-amber-900/10">
                             <div className="text-4xl mb-2">📱</div>
-                            <p className="text-sm text-yellow-800 font-medium">Bu cihazdan konum güncellenemez.</p>
-                            <p className="text-xs text-yellow-600 mt-1">Konum güncellemesi sadece mobil cihazlardan QR kod okutularak yapılabilir.</p>
+                            <p className="text-sm text-amber-800 dark:text-amber-400 font-medium">Bu cihazdan konum güncellenemez.</p>
+                            <p className="text-xs text-amber-600 dark:text-amber-500/70 mt-1">Konum güncellemesi sadece mobil cihazlardan QR kod okutularak yapılabilir.</p>
                         </div>
                     ) : !showUpdateForm ? (
                         <div className="px-6 py-5 text-center">
-                            <p className="text-sm text-gray-500 mb-3">Bu ekipmanı teslim aldınız veya yerini değiştirdiniz mi?</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">Bu ekipmanı teslim aldınız veya yerini değiştirdiniz mi?</p>
                             <button onClick={() => setShowUpdateForm(true)}
-                                className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-indigo-700 transition">
+                                className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/20">
                                 📍 Lokasyonu Güncelle
                             </button>
                         </div>
                     ) : (
                         <div className="px-6 py-5 space-y-3">
-                            <h3 className="font-medium text-gray-800 text-sm">Lokasyon Güncelle</h3>
+                            <h3 className="font-medium text-slate-800 dark:text-slate-200 text-sm">Lokasyon Güncelle</h3>
                             <div>
-                                <label className="block text-xs text-gray-500 mb-1">Güncel Lokasyon *</label>
+                                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Güncel Lokasyon *</label>
                                 <input type="text" value={newLocation} onChange={e => setNewLocation(e.target.value)}
                                     placeholder="Depo A / 2. Kat / Üretim Hattı..."
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    className="w-full border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" />
                             </div>
                             <div>
-                                <label className="block text-xs text-gray-500 mb-1">Adınız (opsiyonel)</label>
+                                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Adınız (opsiyonel)</label>
                                 <input type="text" value={scannedBy} onChange={e => setScannedBy(e.target.value)}
                                     placeholder="Ahmet Yılmaz"
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    className="w-full border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" />
                             </div>
                             <div className="flex gap-2">
                                 <button onClick={() => setShowUpdateForm(false)}
-                                    className="flex-1 border border-gray-300 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition">
+                                    className="flex-1 border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 px-4 py-2 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition">
                                     İptal
                                 </button>
                                 <button onClick={handleUpdateLocation} disabled={updating}
@@ -426,7 +426,7 @@ export default function QRScanPage() {
                     )}
                 </div>
 
-                <p className="text-center text-xs text-gray-300 pb-4">
+                <p className="text-center text-xs text-slate-300 dark:text-slate-600 pb-4">
                     BulutOtomasyon • Ekipman Takip Sistemi
                 </p>
             </div>
@@ -436,9 +436,9 @@ export default function QRScanPage() {
 
 function InfoCard({ label, value }: { label: string; value: string | null | undefined }) {
     return (
-        <div className="bg-gray-50 rounded-xl px-3 py-3">
-            <p className="text-xs text-gray-400 font-medium">{label}</p>
-            <p className="text-sm text-gray-800 mt-0.5 font-medium">{value || "—"}</p>
+        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl px-3 py-3 border border-transparent dark:border-slate-800">
+            <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">{label}</p>
+            <p className="text-sm text-slate-800 dark:text-slate-200 mt-0.5 font-medium">{value || "—"}</p>
         </div>
     );
 }

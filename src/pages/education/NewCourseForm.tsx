@@ -88,76 +88,76 @@ export default function NewCourseForm() {
         <div className="max-w-3xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                    <Link to="/app/education/manage" className="p-2 text-gray-500 hover:text-gray-700 bg-white rounded-full shadow-sm border border-gray-200 hover:bg-gray-50 transition">
+                    <Link to="/app/education/manage" className="p-2 text-slate-400 hover:text-slate-200 bg-slate-900 rounded-full shadow-lg border border-slate-800 hover:bg-slate-800 transition">
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900">Yeni Eğitim Oluştur</h2>
-                        <p className="text-sm text-gray-500">Temel bilgileri girerek eğitimi taslak olarak kaydedin</p>
+                        <h2 className="text-xl font-bold text-white">Yeni Eğitim Oluştur</h2>
+                        <p className="text-sm text-slate-500">Temel bilgileri girerek eğitimi taslak olarak kaydedin</p>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-slate-900 rounded-xl shadow-xl border border-slate-800 overflow-hidden">
                 <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
 
                     <div className="grid grid-cols-1 gap-6">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Eğitim Başlığı *</label>
+                            <label className="block text-sm font-medium text-slate-400 mb-1">Eğitim Başlığı *</label>
                             <input
                                 type="text"
                                 required
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 placeholder="Örn: 2026 Yılı Temel İSG Eğitimi"
-                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                                className="w-full px-4 py-2 bg-slate-800 border-slate-700 text-slate-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Hedef Sınıf *</label>
+                            <label className="block text-sm font-medium text-slate-400 mb-1">Hedef Sınıf *</label>
                             <select
                                 required
                                 value={classId}
                                 onChange={(e) => setClassId(e.target.value)}
-                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition bg-white"
+                                className="w-full px-4 py-2 bg-slate-800 border-slate-700 text-slate-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
                             >
                                 <option value="">-- Sınıf Seçin --</option>
                                 {classes.map((c: any) => (
-                                    <option key={c.id} value={c.id}>
+                                    <option key={c.id} value={c.id} className="bg-slate-900">
                                         {c.name} {c.type?.name ? `(${c.type.name})` : ''}
                                     </option>
                                 ))}
                             </select>
-                            <p className="text-xs text-gray-500 mt-1">Eğer uygun sınıf yoksa önce Ayarlar bölümünden yeni bir "Eğitim Sınıfı" oluşturun.</p>
+                            <p className="text-xs text-slate-500 mt-1">Eğer uygun sınıf yoksa önce Ayarlar bölümünden yeni bir "Eğitim Sınıfı" oluşturun.</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Başlangıç Tarihi *</label>
+                                <label className="block text-sm font-medium text-slate-400 mb-1">Başlangıç Tarihi *</label>
                                 <input
                                     type="date"
                                     required
                                     value={startDate}
                                     onChange={(e) => setStartDate(e.target.value)}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                                    className="w-full px-4 py-2 bg-slate-800 border-slate-700 text-slate-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Bitiş Tarihi *</label>
+                                <label className="block text-sm font-medium text-slate-400 mb-1">Bitiş Tarihi *</label>
                                 <input
                                     type="date"
                                     required
                                     value={endDate}
                                     onChange={(e) => setEndDate(e.target.value)}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                                    className="w-full px-4 py-2 bg-slate-800 border-slate-700 text-slate-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Geçme Notu (0-100) *</label>
+                            <label className="block text-sm font-medium text-slate-400 mb-1">Geçme Notu (0-100) *</label>
                             <input
                                 type="number"
                                 min="0"
@@ -165,15 +165,15 @@ export default function NewCourseForm() {
                                 required
                                 value={passingScore}
                                 onChange={(e) => setPassingScore(e.target.value)}
-                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                                className="w-full px-4 py-2 bg-slate-800 border-slate-700 text-slate-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
                             />
                         </div>
                     </div>
 
-                    <div className="pt-6 border-t flex justify-end">
+                    <div className="pt-6 border-t border-slate-800 flex justify-end">
                         <Link
                             to="/app/education/manage"
-                            className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition mr-3"
+                            className="px-6 py-2.5 border border-slate-700 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 transition mr-3"
                         >
                             İptal
                         </Link>

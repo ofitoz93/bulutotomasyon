@@ -139,14 +139,14 @@ export default function ADRDetail() {
 
     // Helper to match colors
     const getResultColor = (result: string) => {
-        if (["Evet", "Uygun"].includes(result)) return "text-green-600 font-bold";
-        if (["Hayır", "Uygun Değil", "Uygunsuz"].includes(result)) return "text-red-600 font-bold";
-        if (["Kısmen"].includes(result)) return "text-yellow-600 font-bold";
-        return "text-gray-900";
+        if (["Evet", "Uygun"].includes(result)) return "text-emerald-400 font-bold";
+        if (["Hayır", "Uygun Değil", "Uygunsuz"].includes(result)) return "text-rose-400 font-bold";
+        if (["Kısmen"].includes(result)) return "text-amber-400 font-bold";
+        return "text-slate-100";
     };
 
-    if (loading) return <div className="p-8 text-center">Yükleniyor...</div>;
-    if (!form) return <div className="p-8 text-center">Form bulunamadı.</div>;
+    if (loading) return <div className="p-8 text-center text-slate-500">Yükleniyor...</div>;
+    if (!form) return <div className="p-8 text-center text-slate-500">Form bulunamadı.</div>;
 
     const isPending = form.status === 'pending';
     const canApprove = (profile?.role === 'company_manager' || profile?.role === 'system_admin');
@@ -154,23 +154,23 @@ export default function ADRDetail() {
     return (
         <div className="max-w-4xl mx-auto space-y-6 pb-20">
             {/* Header */}
-            <div className="flex items-center gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                <button onClick={() => navigate("/app/adr")} className="text-gray-500 hover:text-gray-900">
+            <div className="flex items-center gap-4 bg-slate-900 p-4 rounded-lg shadow-sm border border-slate-800">
+                <button onClick={() => navigate("/app/adr")} className="text-slate-400 hover:text-slate-200 transition-colors">
                     <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div className="flex-1">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <h1 className="text-xl font-bold text-gray-900">
+                        <h1 className="text-xl font-bold text-white">
                             {form.plate_no} - {form.driver_name}
                         </h1>
-                        <span className={`px-2 py-0.5 text-xs rounded-full font-medium w-fit ${form.status === 'approved' ? 'bg-green-100 text-green-800' :
-                            form.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                'bg-yellow-100 text-yellow-800'
+                        <span className={`px-2 py-0.5 text-xs rounded-full font-medium w-fit border ${form.status === 'approved' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' :
+                            form.status === 'rejected' ? 'bg-rose-500/15 text-rose-400 border-rose-500/30' :
+                                'bg-amber-500/15 text-amber-400 border-amber-500/30'
                             }`}>
                             {form.status === 'approved' ? 'ONAYLANDI' : form.status === 'rejected' ? 'REDDEDİLDİ' : 'ONAY BEKLİYOR'}
                         </span>
                     </div>
-                    <p className="text-sm text-gray-500">{form.form_type} • {new Date(form.created_at).toLocaleString('tr-TR')} • Hazırlayan: {form.profiles ? `${form.profiles.first_name || ""} ${form.profiles.last_name || ""}`.trim() : "Bilinmiyor"}</p>
+                    <p className="text-sm text-slate-500">{form.form_type} • {new Date(form.created_at).toLocaleString('tr-TR')} • Hazırlayan: {form.profiles ? `${form.profiles.first_name || ""} ${form.profiles.last_name || ""}`.trim() : "Bilinmiyor"}</p>
                 </div>
 
                 {isPending && canApprove && (
@@ -178,13 +178,13 @@ export default function ADRDetail() {
                         <button
                             onClick={handleReject}
                             disabled={actionLoading}
-                            className="text-red-600 hover:bg-red-50 p-2 rounded-lg border border-transparent hover:border-red-100" title="Reddet">
+                            className="text-rose-400 hover:bg-rose-500/10 p-2 rounded-lg border border-transparent hover:border-rose-500/20 transition-colors" title="Reddet">
                             <XCircle className="w-6 h-6" />
                         </button>
                         <button
                             onClick={handleApprove}
                             disabled={actionLoading}
-                            className="text-green-600 hover:bg-green-50 p-2 rounded-lg border border-transparent hover:border-green-100" title="Onayla">
+                            className="text-emerald-400 hover:bg-emerald-500/10 p-2 rounded-lg border border-transparent hover:border-emerald-500/20 transition-colors" title="Onayla">
                             <CheckCircle className="w-6 h-6" />
                         </button>
                     </div>
@@ -196,22 +196,22 @@ export default function ADRDetail() {
 
                 {/* 1. Form Soruları */}
                 {formDefs.map((def, i) => (
-                    <div key={i} className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
-                        <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                            <h3 className="text-sm font-bold text-gray-700 uppercase">{def.title}</h3>
+                    <div key={i} className="bg-slate-900 shadow-xl rounded-lg overflow-hidden border border-slate-800">
+                        <div className="bg-slate-800/50 px-4 py-3 border-b border-slate-800">
+                            <h3 className="text-sm font-bold text-slate-300 uppercase">{def.title}</h3>
                         </div>
-                        <div className="divide-y divide-gray-100">
+                        <div className="divide-y divide-slate-800">
                             {def.sections.map((sec, j) => (
                                 <div key={j}>
-                                    <div className="px-4 py-2 bg-gray-50/50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <div className="px-4 py-2 bg-slate-800/20 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                         {sec.title}
                                     </div>
-                                    <div className="divide-y divide-gray-100">
+                                    <div className="divide-y divide-slate-800/50">
                                         {sec.questions.map((q) => {
                                             const ans = getAnswer(q.key);
                                             return (
-                                                <div key={q.key} className="px-4 py-3 flex justify-between items-center hover:bg-white transition-colors">
-                                                    <span className="text-sm text-gray-700 flex-1 pr-4">{q.text}</span>
+                                                <div key={q.key} className="px-4 py-3 flex justify-between items-center hover:bg-slate-800/30 transition-colors">
+                                                    <span className="text-sm text-slate-300 flex-1 pr-4">{q.text}</span>
                                                     <span className={`text-sm ${getResultColor(ans.result)}`}>
                                                         {ans.result}
                                                     </span>
@@ -227,13 +227,13 @@ export default function ADRDetail() {
 
                 {/* 2. Medya */}
                 {media.length > 0 && (
-                    <div className="bg-white shadow rounded-lg p-4 border border-gray-200">
-                        <h3 className="text-sm font-bold text-gray-700 uppercase mb-3 flex items-center gap-2">
-                            <ImageIcon className="w-4 h-4" /> Fotoğraflar
+                    <div className="bg-slate-900 shadow-xl rounded-lg p-4 border border-slate-800">
+                        <h3 className="text-sm font-bold text-slate-300 uppercase mb-3 flex items-center gap-2">
+                            <ImageIcon className="w-4 h-4 text-indigo-400" /> Fotoğraflar
                         </h3>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                             {media.map((m) => (
-                                <a key={m.id} href={m.file_url} target="_blank" rel="noopener noreferrer" className="block relative aspect-square bg-gray-100 rounded-lg overflow-hidden hover:opacity-90">
+                                <a key={m.id} href={m.file_url} target="_blank" rel="noopener noreferrer" className="block relative aspect-square bg-slate-800 rounded-lg overflow-hidden border border-slate-700 hover:border-indigo-500 transition-colors">
                                     <img src={m.file_url} alt="Proof" className="object-cover w-full h-full" />
                                 </a>
                             ))}
@@ -244,33 +244,33 @@ export default function ADRDetail() {
                 {/* 3. Konum ve Notlar */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Konum */}
-                    <div className="bg-white shadow rounded-lg p-4 border border-gray-200">
-                        <h3 className="text-sm font-bold text-gray-700 uppercase mb-3 flex items-center gap-2">
-                            <MapPin className="w-4 h-4" /> Konum
+                    <div className="bg-slate-900 shadow-xl rounded-lg p-4 border border-slate-800">
+                        <h3 className="text-sm font-bold text-slate-300 uppercase mb-3 flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-indigo-400" /> Konum
                         </h3>
                         {form.location_lat && form.location_lng ? (
                             <div>
-                                <div className="text-sm text-gray-600 mb-2">
+                                <div className="text-sm text-slate-400 mb-2">
                                     Enlem: {form.location_lat}, Boylam: {form.location_lng}
                                 </div>
                                 <a
                                     href={`https://www.google.com/maps/search/?api=1&query=${form.location_lat},${form.location_lng}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-indigo-600 hover:text-indigo-800 text-sm font-medium underline"
+                                    className="text-indigo-400 hover:text-indigo-300 text-sm font-medium underline transition-colors"
                                 >
                                     Google Haritalar'da Aç
                                 </a>
                             </div>
                         ) : (
-                            <p className="text-sm text-gray-500">Konum bilgisi yok.</p>
+                            <p className="text-sm text-slate-500">Konum bilgisi yok.</p>
                         )}
                     </div>
 
                     {/* Notlar */}
-                    <div className="bg-white shadow rounded-lg p-4 border border-gray-200">
-                        <h3 className="text-sm font-bold text-gray-700 uppercase mb-3">Notlar</h3>
-                        <p className="text-sm text-gray-600 md:whitespace-pre-wrap">
+                    <div className="bg-slate-900 shadow-xl rounded-lg p-4 border border-slate-800">
+                        <h3 className="text-sm font-bold text-slate-300 uppercase mb-3">Notlar</h3>
+                        <p className="text-sm text-slate-400 md:whitespace-pre-wrap leading-relaxed">
                             {form.notes || "Not eklenmemiş."}
                         </p>
                     </div>
@@ -278,9 +278,9 @@ export default function ADRDetail() {
 
                 {/* Onay Bilgisi */}
                 {form.status === 'approved' && form.approved_at && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                        <p className="text-green-800 font-medium">Bu form onaylanmıştır.</p>
-                        <p className="text-green-600 text-sm mt-1">
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 text-center">
+                        <p className="text-emerald-400 font-bold">Bu form onaylanmıştır.</p>
+                        <p className="text-emerald-500/80 text-sm mt-1">
                             Onaylayan: {form.approver ? `${form.approver.first_name || ""} ${form.approver.last_name || ""}`.trim() : "Bilinmiyor"} • Tarih: {new Date(form.approved_at).toLocaleString('tr-TR')}
                         </p>
                     </div>

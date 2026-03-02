@@ -62,7 +62,7 @@ export default function Login() {
     return (
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
             {error && (
-                <div className="p-3 text-sm text-red-600 bg-red-100 rounded-md">
+                <div className="p-3 text-sm text-red-600 bg-red-100 dark:bg-red-500/10 dark:text-red-400 rounded-md">
                     {error}
                 </div>
             )}
@@ -77,7 +77,7 @@ export default function Login() {
                         type="email"
                         autoComplete="email"
                         required
-                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-300 dark:border-slate-700 placeholder-slate-500 text-slate-900 dark:text-white bg-white dark:bg-slate-800 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                         placeholder="E-posta Adresi"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -93,7 +93,7 @@ export default function Login() {
                         type="password"
                         autoComplete="current-password"
                         required
-                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-300 dark:border-slate-700 placeholder-slate-500 text-slate-900 dark:text-white bg-white dark:bg-slate-800 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                         placeholder="Şifre"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}

@@ -74,7 +74,10 @@ export default function CourseReport({ courseId }: { courseId: string }) {
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Rapor verileri yükleniyor...</div>;
+    if (loading) return <div className="p-12 text-center text-slate-500 flex flex-col items-center gap-4">
+        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        <span>Rapor verileri yükleniyor...</span>
+    </div>;
 
     const printCertificate = (row: any) => {
         const printWindow = window.open('', '_blank');
@@ -366,73 +369,76 @@ export default function CourseReport({ courseId }: { courseId: string }) {
         <div className="space-y-6">
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center">
-                    <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center mr-4">
+                <div className="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-lg flex items-center transition-all hover:border-slate-700">
+                    <div className="w-12 h-12 bg-indigo-500/10 text-indigo-400 rounded-lg flex items-center justify-center mr-4 shadow-inner">
                         <Users className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-gray-500">Katılımcı Sayısı</p>
-                        <p className="text-xl font-bold text-gray-900">{allData.length}</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Katılımcı Sayısı</p>
+                        <p className="text-2xl font-black text-white">{allData.length}</p>
                     </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center">
-                    <div className="w-12 h-12 bg-green-50 text-green-600 rounded-lg flex items-center justify-center mr-4">
+                <div className="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-lg flex items-center transition-all hover:border-slate-700">
+                    <div className="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-lg flex items-center justify-center mr-4 shadow-inner">
                         <CheckCircle2 className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-gray-500">Geçenler</p>
-                        <p className="text-xl font-bold text-gray-900">{examResults.filter(e => e.status === 'passed').length}</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Geçenler</p>
+                        <p className="text-2xl font-black text-white">{examResults.filter(e => e.status === 'passed').length}</p>
                     </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center">
-                    <div className="w-12 h-12 bg-red-50 text-red-600 rounded-lg flex items-center justify-center mr-4">
+                <div className="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-lg flex items-center transition-all hover:border-slate-700">
+                    <div className="w-12 h-12 bg-rose-500/10 text-rose-400 rounded-lg flex items-center justify-center mr-4 shadow-inner">
                         <AlertCircle className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-gray-500">Kalanlar</p>
-                        <p className="text-xl font-bold text-gray-900">{examResults.filter(e => e.status === 'failed').length}</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Kalanlar</p>
+                        <p className="text-2xl font-black text-white">{examResults.filter(e => e.status === 'failed').length}</p>
                     </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center">
-                    <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-lg flex items-center justify-center mr-4">
+                <div className="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-lg flex items-center transition-all hover:border-slate-700">
+                    <div className="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-lg flex items-center justify-center mr-4 shadow-inner">
                         <Clock className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-gray-500">Katılmayanlar</p>
-                        <p className="text-xl font-bold text-gray-900">{participants.length > 0 ? (participants.length - examResults.filter(e => enrolledUsers.some(u => u.id === e.user_id)).length) : 0}</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Katılmayanlar</p>
+                        <p className="text-2xl font-black text-white">{participants.length > 0 ? (participants.length - examResults.filter(e => enrolledUsers.some(u => u.id === e.user_id)).length) : 0}</p>
                     </div>
                 </div>
             </div>
 
             {/* detailed Table */}
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-                    <h3 className="font-semibold text-gray-800">Katılımcı Durum ve Başarı Tablosu</h3>
-                    <button onClick={fetchReportData} className="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Yenile</button>
+            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
+                <div className="px-6 py-4 border-b border-slate-800 bg-slate-800/20 flex justify-between items-center">
+                    <h3 className="font-bold text-slate-300 uppercase tracking-widest text-xs">Katılımcı Durum ve Başarı Tablosu</h3>
+                    <button onClick={fetchReportData} className="text-xs text-indigo-400 hover:text-indigo-300 font-bold uppercase tracking-widest transition-colors flex items-center gap-1.5">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        Yenile
+                    </button>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-slate-800">
+                        <thead className="bg-slate-800/50">
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kişi / Birim</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İçerik İlerleme</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harcanan Süre</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sınav Sorucu</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Taahhütname</th>
-                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Kişi / Birim</th>
+                                <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">İçerik İlerleme</th>
+                                <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Harcanan Süre</th>
+                                <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sınav Sorucu</th>
+                                <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Taahhütname</th>
+                                <th scope="col" className="px-6 py-4 text-right text-[10px] font-bold text-slate-500 uppercase tracking-widest">İşlemler</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="divide-y divide-slate-800/50">
                             {allData.map((row, idx) => (
-                                <tr key={idx} className="hover:bg-gray-50 transition">
+                                <tr key={idx} className="hover:bg-slate-800/40 transition-colors group">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
                                             <div>
-                                                <div className="text-sm font-medium text-gray-900">{row.profile?.first_name} {row.profile?.last_name} {row.isGuest && "(Misafir)"}</div>
-                                                <div className="text-xs text-gray-500">{row.profile?.department || 'Bölüm Yok'} | TC: {row.profile?.tc_no}</div>
+                                                <div className="text-sm font-bold text-slate-200 group-hover:text-indigo-400 transition-colors">{row.profile?.first_name} {row.profile?.last_name} {row.isGuest && "(Misafir)"}</div>
+                                                <div className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">{row.profile?.department || 'Bölüm Yok'} | TC: {row.profile?.tc_no}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -440,52 +446,52 @@ export default function CourseReport({ courseId }: { courseId: string }) {
                                         <div className="flex items-center">
                                             {typeof row.progressPercent === 'number' ? (
                                                 <div className="w-full max-w-[120px]">
-                                                    <div className="flex justify-between text-xs mb-1">
+                                                    <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1.5 font-mono">
                                                         <span>{row.progressPercent}%</span>
                                                     </div>
-                                                    <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                                                        <div className="bg-indigo-600 h-1.5 rounded-full" style={{ width: `${row.progressPercent}%` }}></div>
+                                                    <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden shadow-inner">
+                                                        <div className="bg-indigo-500 h-1.5 rounded-full shadow-lg shadow-indigo-500/50" style={{ width: `${row.progressPercent}%` }}></div>
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <span className="text-sm text-gray-500">-</span>
+                                                <span className="text-sm text-slate-600 font-mono">-</span>
                                             )}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400 font-mono">
                                         {typeof row.totalTimeSpent === 'number' && row.totalTimeSpent > 0
                                             ? `${Math.floor(row.totalTimeSpent / 60)} dk`
                                             : row.totalTimeSpent === '-' ? '-' : 'Başlamadı'}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         {row.examScore !== undefined ? (
-                                            <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${row.examStatus === 'passed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                            <span className={`px-3 py-1 inline-flex text-[10px] leading-5 font-bold rounded-full border uppercase tracking-widest shadow-sm ${row.examStatus === 'passed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
                                                 {row.examScore} Puan ({row.examStatus === 'passed' ? 'Geçti' : 'Kaldı'})
                                             </span>
                                         ) : (
-                                            <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                                            <span className="px-3 py-1 inline-flex text-[10px] leading-5 font-bold rounded-full bg-slate-800 text-slate-500 border border-slate-700 uppercase tracking-widest">
                                                 Sınava Girmedi
                                             </span>
                                         )}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
                                         {row.agreed === true ? (
-                                            <span className="text-green-600 flex items-center font-medium"><CheckCircle2 className="w-4 h-4 mr-1" /> Onaylı</span>
+                                            <span className="text-emerald-400 flex items-center font-bold text-xs"><CheckCircle2 className="w-4 h-4 mr-1.5" /> Onaylı</span>
                                         ) : row.examScore !== undefined ? (
-                                            <span className="text-orange-500 flex items-center font-medium"><Clock className="w-4 h-4 mr-1" /> Bekliyor</span>
+                                            <span className="text-amber-400 flex items-center font-bold text-xs"><Clock className="w-4 h-4 mr-1.5" /> Bekliyor</span>
                                         ) : (
-                                            <span className="text-gray-400">-</span>
+                                            <span className="text-slate-600">-</span>
                                         )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         {row.examScore !== undefined && (
                                             <button
                                                 onClick={() => printCertificate(row)}
-                                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                className="inline-flex items-center px-3 py-2 bg-indigo-600/10 border border-indigo-500/20 text-[10px] font-bold rounded-lg shadow-sm text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all uppercase tracking-widest"
                                                 title="Sınav Sertifikasını İndir/Yazdır"
                                             >
-                                                <Printer className="w-4 h-4 mr-1" />
-                                                Sertifika İndir
+                                                <Printer className="w-3.5 h-3.5 mr-2" />
+                                                Sertifika
                                             </button>
                                         )}
                                     </td>
@@ -493,7 +499,7 @@ export default function CourseReport({ courseId }: { courseId: string }) {
                             ))}
                             {allData.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">Henüz katılımcı verisi bulunmuyor.</td>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-500 font-medium italic bg-slate-900/50">Henüz katılımcı verisi bulunmuyor.</td>
                                 </tr>
                             )}
                         </tbody>

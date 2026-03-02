@@ -260,11 +260,11 @@ export default function EquipmentTrackingPage() {
     };
 
     const getInspStatus = (days: number | null) => {
-        if (days === null) return { label: "Bakım yok", color: "bg-gray-100 text-gray-500" };
-        if (days < 0) return { label: `${Math.abs(days)} gün gecikmiş`, color: "bg-red-100 text-red-700" };
-        if (days === 0) return { label: "Bugün!", color: "bg-red-100 text-red-700" };
-        if (days <= 30) return { label: `${days} gün`, color: "bg-yellow-100 text-yellow-700" };
-        return { label: `${days} gün`, color: "bg-green-100 text-green-700" };
+        if (days === null) return { label: "Bakım yok", color: "bg-slate-500/10 text-slate-500" };
+        if (days < 0) return { label: `${Math.abs(days)} gün gecikmiş`, color: "bg-rose-500/15 text-rose-400" };
+        if (days === 0) return { label: "Bugün!", color: "bg-rose-500/15 text-rose-400" };
+        if (days <= 30) return { label: `${days} gün`, color: "bg-amber-500/15 text-amber-400" };
+        return { label: `${days} gün`, color: "bg-emerald-500/15 text-emerald-400" };
     };
 
     const formatDate = (d: string | null) => (d ? new Date(d).toLocaleDateString("tr-TR") : "—");
@@ -398,8 +398,8 @@ export default function EquipmentTrackingPage() {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-white">Ekipman Takip</h1>
-                    <p className="text-sm text-slate-400 mt-1">6331 İSG Kanunu kapsamında periyodik ekipman bakım takibi</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Ekipman Takip</h1>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">6331 İSG Kanunu kapsamında periyodik ekipman bakım takibi</p>
                 </div>
                 <div className="flex gap-2">
                     {activeTab === "equipments" && (
@@ -437,7 +437,7 @@ export default function EquipmentTrackingPage() {
                                 <span className="text-slate-500">🔍</span>
                             </div>
                             <input type="text" placeholder="Ara..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 pr-4 py-1.5 w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-slate-500" />
+                                className="pl-10 pr-4 py-1.5 w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-slate-400 dark:placeholder-slate-500 shadow-sm" />
                             {searchQuery && (
                                 <button onClick={() => setSearchQuery("")}
                                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300">
@@ -453,7 +453,7 @@ export default function EquipmentTrackingPage() {
                             <span className="text-slate-500">🔍</span>
                         </div>
                         <input type="text" placeholder="Ara..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 pr-4 py-1.5 w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-slate-500" />
+                            className="pl-10 pr-4 py-1.5 w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-slate-400 dark:placeholder-slate-500 shadow-sm" />
                         {searchQuery && (
                             <button onClick={() => setSearchQuery("")}
                                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300">
@@ -479,16 +479,16 @@ export default function EquipmentTrackingPage() {
                                 { label: "Güncel", value: stats.ok, color: "border-emerald-500/40", text: "text-emerald-400" },
                                 { label: "Bakım Yok", value: stats.noInspection, color: "border-slate-600", text: "text-slate-400" },
                             ].map(s => (
-                                <div key={s.label} className={`bg-slate-900 rounded-xl p-4 border-l-4 border ${s.color}`}>
-                                    <p className="text-sm text-slate-400">{s.label}</p>
+                                <div key={s.label} className={`bg-white dark:bg-slate-900 rounded-xl p-4 border-l-4 border ${s.color} shadow-sm`}>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">{s.label}</p>
                                     <p className={`text-2xl font-bold ${s.text}`}>{s.value}</p>
                                 </div>
                             ))}
                         </div>
 
                         {/* Yaklaşan bakımlar */}
-                        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                            <h3 className="text-sm font-semibold text-slate-300 mb-3">Yaklaşan &amp; Gecikmeli Bakımlar</h3>
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+                            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Yaklaşan &amp; Gecikmeli Bakımlar</h3>
                             {equipments.filter(e => (getDaysUntilInspection(e) ?? 999) <= 60).length === 0 ? (
                                 <p className="text-sm text-slate-500">Yakın vadede bakım gereken ekipman yok ✓</p>
                             ) : (
@@ -497,11 +497,11 @@ export default function EquipmentTrackingPage() {
                                         <thead>
                                             <tr>
                                                 {["Kod", "Ekipman", "Risk", "Son Bakım", "Sonraki Bakım", "Durum"].map(h => (
-                                                    <th key={h} className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase">{h}</th>
+                                                    <th key={h} className="px-3 py-2 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{h}</th>
                                                 ))}
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-slate-800">
+                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                             {equipments
                                                 .filter(e => (getDaysUntilInspection(e) ?? 999) <= 60)
                                                 .sort((a, b) => (getDaysUntilInspection(a) ?? 999) - (getDaysUntilInspection(b) ?? 999))
@@ -509,9 +509,9 @@ export default function EquipmentTrackingPage() {
                                                     const days = getDaysUntilInspection(eq);
                                                     const st = getInspStatus(days);
                                                     return (
-                                                        <tr key={eq.id} className="hover:bg-slate-800/50">
+                                                        <tr key={eq.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                                             <td className="px-3 py-2 text-xs font-mono text-slate-500">{eq.code}</td>
-                                                            <td className="px-3 py-2 text-sm text-slate-200">{eq.name}</td>
+                                                            <td className="px-3 py-2 text-sm text-slate-700 dark:text-slate-200 font-medium">{eq.name}</td>
                                                             <td className="px-3 py-2"><span className={`px-2 py-0.5 text-xs rounded-full font-medium ${RISK_COLORS[eq.risk_level]}`}>{eq.risk_level}</span></td>
                                                             <td className="px-3 py-2 text-sm text-slate-400">{formatDate(eq.last_inspection_date ?? null)}</td>
                                                             <td className="px-3 py-2 text-sm text-slate-400">{formatDate(eq.next_inspection_date ?? null)}</td>
@@ -526,14 +526,14 @@ export default function EquipmentTrackingPage() {
                         </div>
 
                         {/* Risk Dağılımı */}
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             {(["yüksek", "orta", "düşük"] as const).map(level => (
-                                <div key={level} className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                                    <p className="text-xs uppercase font-semibold text-slate-500 mb-1">{level} Risk</p>
+                                <div key={level} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+                                    <p className="text-xs uppercase font-bold text-slate-500 mb-1">{level} Risk</p>
                                     <p className={`text-3xl font-bold ${RISK_COLORS[level].split(" ")[1]}`}>
                                         {equipments.filter(e => e.risk_level === level).length}
                                     </p>
-                                    <p className="text-xs text-slate-600 mt-1">Periyot: {RISK_PERIODS[level]} ay (varsayılan)</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Periyot: {RISK_PERIODS[level]} ay (varsayılan)</p>
                                 </div>
                             ))}
                         </div>
@@ -543,71 +543,73 @@ export default function EquipmentTrackingPage() {
                 {/* ===== EKİPMANLAR ===== */}
                 {activeTab === "equipments" && (
                     equipments.length === 0 ? (
-                        <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center">
-                            <p className="text-base font-medium text-slate-400">Henüz ekipman eklenmemiş</p>
-                            <p className="text-sm mt-1 text-slate-500">Ekipman envanterinizi oluşturmak için "Ekipman Ekle" butonunu kullanın.</p>
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center shadow-sm">
+                            <p className="text-base font-medium text-slate-500 dark:text-slate-400">Henüz ekipman eklenmemiş</p>
+                            <p className="text-sm mt-1 text-slate-400">Ekipman envanterinizi oluşturmak için "Ekipman Ekle" butonunu kullanın.</p>
                         </div>
                     ) : (
-                        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-x-auto">
-                            <table className="min-w-full divide-y divide-slate-800">
-                                <thead className="bg-slate-800/50">
-                                    <tr>
-                                        {["Kod", "Ekipman Adı", "Tip", "Risk", "Teslim Edilen", "Lokasyon", "Son Bakım", "Durum", "İşlemler"].map(h => (
-                                            <th key={h} className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">{h}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-slate-900 divide-y divide-slate-800">
-                                    {equipments.filter(eq => {
-                                        if (filterDamaged && !eq.is_damaged) return false;
-                                        if (!searchQuery) return true;
-                                        const q = searchQuery.toLowerCase();
-                                        return (
-                                            eq.name.toLowerCase().includes(q) ||
-                                            eq.code.toLowerCase().includes(q) ||
-                                            (eq.type && eq.type.toLowerCase().includes(q)) ||
-                                            (eq.serial_no && eq.serial_no.toLowerCase().includes(q)) ||
-                                            (eq.brand && eq.brand.toLowerCase().includes(q)) ||
-                                            (eq.model && eq.model.toLowerCase().includes(q))
-                                        );
-                                    }).map(eq => {
-                                        const days = eq.maintenance_required ? getDaysUntilInspection(eq) : null;
-                                        const st = eq.maintenance_required ? getInspStatus(days) : { label: "Gerekmiyor", color: "bg-slate-700 text-slate-500" };
-                                        const lastDate = eq.last_inspection_date || eq.purchase_date;
-                                        return (
-                                            <tr key={eq.id} className={`hover:bg-slate-800/50 transition-colors ${eq.is_damaged ? "bg-rose-500/5" : ""}`}>
-                                                <td className="px-3 py-3 text-xs font-mono text-slate-500">
-                                                    <div className="flex items-center gap-1">
-                                                        {eq.is_damaged && <span className="text-rose-400" title="Hasalı/Arızalı">⚠️</span>}
-                                                        {eq.code}
-                                                    </div>
-                                                </td>
-                                                <td className="px-3 py-3 text-sm font-medium text-slate-200">{eq.name}</td>
-                                                <td className="px-3 py-3 text-sm text-slate-400">{eq.type || "—"}</td>
-                                                <td className="px-3 py-3">
-                                                    <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${RISK_COLORS[eq.risk_level]}`}>{eq.risk_level}</span>
-                                                </td>
-                                                <td className="px-3 py-3 text-sm text-slate-400">{eq.assigned_to || "—"}</td>
-                                                <td className="px-3 py-3 text-sm text-slate-400">{eq.current_location || eq.default_location || "—"}</td>
-                                                <td className="px-3 py-3 text-sm text-slate-400">{eq.maintenance_required ? formatDate(lastDate ?? null) : "—"}</td>
-                                                <td className="px-3 py-3">
-                                                    <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${st.color}`}>{st.label}</span>
-                                                </td>
-                                                <td className="px-3 py-3 whitespace-nowrap text-sm space-x-2">
-                                                    <button onClick={() => openDetail(eq)}
-                                                        className="text-indigo-400 hover:text-indigo-300 font-medium">Detay / Bakım</button>
-                                                    <button onClick={() => { setEditingEquip(eq); setEquipForm(equipToForm(eq)); setShowEquipModal(true); }}
-                                                        className="text-slate-400 hover:text-slate-200">Düzenle</button>
-                                                    <button onClick={() => downloadQR(eq)}
-                                                        className="text-emerald-400 hover:text-emerald-300">QR</button>
-                                                    <button onClick={() => handleDeleteEquip(eq)}
-                                                        className="text-rose-500 hover:text-rose-400">Sil</button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+                                    <thead className="bg-slate-50 dark:bg-slate-800/50">
+                                        <tr>
+                                            {["Kod", "Ekipman Adı", "Tip", "Risk", "Teslim Edilen", "Lokasyon", "Son Bakım", "Durum", "İşlemler"].map(h => (
+                                                <th key={h} className="px-3 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{h}</th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                        {equipments.filter(eq => {
+                                            if (filterDamaged && !eq.is_damaged) return false;
+                                            if (!searchQuery) return true;
+                                            const q = searchQuery.toLowerCase();
+                                            return (
+                                                eq.name.toLowerCase().includes(q) ||
+                                                eq.code.toLowerCase().includes(q) ||
+                                                (eq.type && eq.type.toLowerCase().includes(q)) ||
+                                                (eq.serial_no && eq.serial_no.toLowerCase().includes(q)) ||
+                                                (eq.brand && eq.brand.toLowerCase().includes(q)) ||
+                                                (eq.model && eq.model.toLowerCase().includes(q))
+                                            );
+                                        }).map(eq => {
+                                            const days = eq.maintenance_required ? getDaysUntilInspection(eq) : null;
+                                            const st = eq.maintenance_required ? getInspStatus(days) : { label: "Gerekmiyor", color: "bg-slate-700 text-slate-500" };
+                                            const lastDate = eq.last_inspection_date || eq.purchase_date;
+                                            return (
+                                                <tr key={eq.id} className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${eq.is_damaged ? "bg-rose-500/5" : ""}`}>
+                                                    <td className="px-3 py-3 text-xs font-mono text-slate-500">
+                                                        <div className="flex items-center gap-1">
+                                                            {eq.is_damaged && <span className="text-rose-400" title="Hasalı/Arızalı">⚠️</span>}
+                                                            {eq.code}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-3 py-3 text-sm font-semibold text-slate-800 dark:text-slate-200">{eq.name}</td>
+                                                    <td className="px-3 py-3 text-sm text-slate-400">{eq.type || "—"}</td>
+                                                    <td className="px-3 py-3">
+                                                        <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${RISK_COLORS[eq.risk_level]}`}>{eq.risk_level}</span>
+                                                    </td>
+                                                    <td className="px-3 py-3 text-sm text-slate-400">{eq.assigned_to || "—"}</td>
+                                                    <td className="px-3 py-3 text-sm text-slate-400">{eq.current_location || eq.default_location || "—"}</td>
+                                                    <td className="px-3 py-3 text-sm text-slate-400">{eq.maintenance_required ? formatDate(lastDate ?? null) : "—"}</td>
+                                                    <td className="px-3 py-3">
+                                                        <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${st.color}`}>{st.label}</span>
+                                                    </td>
+                                                    <td className="px-3 py-3 whitespace-nowrap text-sm space-x-2">
+                                                        <button onClick={() => openDetail(eq)}
+                                                            className="text-indigo-400 hover:text-indigo-300 font-medium">Detay / Bakım</button>
+                                                        <button onClick={() => { setEditingEquip(eq); setEquipForm(equipToForm(eq)); setShowEquipModal(true); }}
+                                                            className="text-slate-400 hover:text-slate-200">Düzenle</button>
+                                                        <button onClick={() => downloadQR(eq)}
+                                                            className="text-emerald-400 hover:text-emerald-300">QR</button>
+                                                        <button onClick={() => handleDeleteEquip(eq)}
+                                                            className="text-rose-500 hover:text-rose-400">Sil</button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )
                 )}
@@ -615,42 +617,44 @@ export default function EquipmentTrackingPage() {
                 {/* ===== YETKİLİ KURULUŞLAR ===== */}
                 {activeTab === "inspectors" && (
                     inspectors.length === 0 ? (
-                        <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center">
-                            <p className="text-base font-medium text-slate-400">Yetkili kuruluş/mühendis eklenmemiş</p>
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center shadow-sm">
+                            <p className="text-base font-medium text-slate-500 dark:text-slate-400">Yetkili kuruluş/mühendis eklenmemiş</p>
                         </div>
                     ) : (
-                        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-x-auto">
-                            <table className="min-w-full divide-y divide-slate-800">
-                                <thead className="bg-slate-800/50">
-                                    <tr>
-                                        {["Ad / Kuruluş", "Tür", "Sertifika No", "Telefon", "E-posta"].map(h => (
-                                            <th key={h} className="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">{h}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-slate-900 divide-y divide-slate-800">
-                                    {inspectors.filter(ins => {
-                                        if (!searchQuery) return true;
-                                        const q = searchQuery.toLowerCase();
-                                        return (
-                                            ins.name.toLowerCase().includes(q) ||
-                                            (ins.certificate_no && ins.certificate_no.toLowerCase().includes(q))
-                                        );
-                                    }).map(ins => (
-                                        <tr key={ins.id} className="hover:bg-slate-800/50 transition-colors">
-                                            <td className="px-3 py-3 text-sm font-medium text-slate-200">{ins.name}</td>
-                                            <td className="px-3 py-3">
-                                                <span className={`px-2 py-0.5 text-xs rounded-full font-medium border ${ins.type === "kuruluş" ? "bg-indigo-500/15 text-indigo-400 border-indigo-500/30" : "bg-teal-500/15 text-teal-400 border-teal-500/30"}`}>
-                                                    {ins.type}
-                                                </span>
-                                            </td>
-                                            <td className="px-3 py-3 text-sm text-slate-500 font-mono">{ins.certificate_no || "—"}</td>
-                                            <td className="px-3 py-3 text-sm text-slate-500">{(ins as any).phone || "—"}</td>
-                                            <td className="px-3 py-3 text-sm text-slate-500">{(ins as any).email || "—"}</td>
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+                                    <thead className="bg-slate-50 dark:bg-slate-800/50">
+                                        <tr>
+                                            {["Ad / Kuruluş", "Tür", "Sertifika No", "Telefon", "E-posta"].map(h => (
+                                                <th key={h} className="px-3 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{h}</th>
+                                            ))}
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                        {inspectors.filter(ins => {
+                                            if (!searchQuery) return true;
+                                            const q = searchQuery.toLowerCase();
+                                            return (
+                                                ins.name.toLowerCase().includes(q) ||
+                                                (ins.certificate_no && ins.certificate_no.toLowerCase().includes(q))
+                                            );
+                                        }).map(ins => (
+                                            <tr key={ins.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                                <td className="px-3 py-3 text-sm font-semibold text-slate-800 dark:text-slate-200">{ins.name}</td>
+                                                <td className="px-3 py-3">
+                                                    <span className={`px-2 py-0.5 text-xs rounded-full font-medium border ${ins.type === "kuruluş" ? "bg-indigo-500/15 text-indigo-400 border-indigo-500/30" : "bg-teal-500/15 text-teal-400 border-teal-500/30"}`}>
+                                                        {ins.type}
+                                                    </span>
+                                                </td>
+                                                <td className="px-3 py-3 text-sm text-slate-500 font-mono">{ins.certificate_no || "—"}</td>
+                                                <td className="px-3 py-3 text-sm text-slate-500">{(ins as any).phone || "—"}</td>
+                                                <td className="px-3 py-3 text-sm text-slate-500">{(ins as any).email || "—"}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )
                 )}
@@ -658,14 +662,14 @@ export default function EquipmentTrackingPage() {
 
             {/* ===== MODAL: EKİPMAN EKLE/DÜZENLE ===== */}
             {showEquipModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 overflow-y-auto">
-                    <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-2xl w-full p-6 space-y-4 my-8 shadow-2xl">
-                        <h3 className="text-lg font-bold text-white">{editingEquip ? "Ekipman Düzenle" : "Yeni Ekipman Ekle"}</h3>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl max-w-2xl w-full p-6 space-y-4 my-8 shadow-2xl">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">{editingEquip ? "Ekipman Düzenle" : "Yeni Ekipman Ekle"}</h3>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <Field label="Ekipman Kodu *" value={equipForm.code} onChange={v => setEquipForm(f => ({ ...f, code: v }))} placeholder="Otomatik üretilir..." />
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">
+                                <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">
                                     Ekipman Adı *
                                     <span className="ml-1 text-xs text-slate-500 font-normal">(Tanımlı listeden seçin)</span>
                                 </label>
@@ -677,7 +681,7 @@ export default function EquipmentTrackingPage() {
                                             const code = await generateCode(name);
                                             setEquipForm(f => ({ ...f, name, code }));
                                         }}
-                                        className="flex-1 bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
+                                        className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
                                         <option value="">Seçin...</option>
                                         {definitions.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
                                     </select>
@@ -694,7 +698,7 @@ export default function EquipmentTrackingPage() {
                                             <input type="text" value={newDefName} onChange={e => setNewDefName(e.target.value)}
                                                 placeholder="ör. Kompresör, Vinç, Jenerator..."
                                                 onKeyDown={e => { if (e.key === 'Enter') handleSaveDefinition(); }}
-                                                className="flex-1 bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500" autoFocus />
+                                                className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors" autoFocus />
                                             <button onClick={handleSaveDefinition} disabled={newDefLoading}
                                                 className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-500 disabled:opacity-50">
                                                 {newDefLoading ? "..." : "Ekle"}
@@ -725,7 +729,7 @@ export default function EquipmentTrackingPage() {
                                         const rl = e.target.value as "düşük" | "orta" | "yüksek";
                                         setEquipForm(f => ({ ...f, risk_level: rl, inspection_period_months: RISK_PERIODS[rl] }));
                                     }}
-                                    className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
                                     <option value="düşük">Düşük</option>
                                     <option value="orta">Orta</option>
                                     <option value="yüksek">Yüksek</option>
@@ -736,14 +740,14 @@ export default function EquipmentTrackingPage() {
                                     <input type="checkbox" checked={equipForm.maintenance_required}
                                         onChange={e => setEquipForm(f => ({ ...f, maintenance_required: e.target.checked }))}
                                         className="w-4 h-4 accent-indigo-500 rounded" />
-                                    <span className="text-sm font-medium text-slate-300">Periyodik Bakım Gerekli</span>
+                                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Periyodik Bakım Gerekli</span>
                                 </label>
                                 {equipForm.maintenance_required && (
                                     <>
                                         <label className="block text-sm font-medium text-slate-300 mb-1">Periyot (ay)</label>
                                         <input type="number" min={1} max={60} value={equipForm.inspection_period_months}
                                             onChange={e => setEquipForm(f => ({ ...f, inspection_period_months: parseInt(e.target.value) || 6 }))}
-                                            className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500" />
+                                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500" />
                                     </>
                                 )}
                             </div>
@@ -755,7 +759,7 @@ export default function EquipmentTrackingPage() {
                                 <div className="flex gap-2">
                                     <select value={equipForm.category_id}
                                         onChange={e => setEquipForm(f => ({ ...f, category_id: e.target.value }))}
-                                        className="flex-1 bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
+                                        className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
                                         <option value="">Seçin...</option>
                                         {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                     </select>
@@ -772,7 +776,7 @@ export default function EquipmentTrackingPage() {
                                             <input type="text" value={newCatName} onChange={e => setNewCatName(e.target.value)}
                                                 placeholder="ör. Kaldırma Araçları, Basınçlı Ekipmanlar..."
                                                 onKeyDown={e => { if (e.key === 'Enter') handleSaveCategory(); }}
-                                                className="flex-1 bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500" autoFocus />
+                                                className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors" autoFocus />
                                             <button onClick={handleSaveCategory} disabled={newCatLoading}
                                                 className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-500 disabled:opacity-50">
                                                 {newCatLoading ? "..." : "Kaydet"}
@@ -789,7 +793,7 @@ export default function EquipmentTrackingPage() {
 
                         <div className="flex justify-end gap-3 pt-2 border-t border-slate-800">
                             <button onClick={() => { setShowEquipModal(false); setEditingEquip(null); }}
-                                className="px-4 py-2 text-sm text-slate-400 hover:bg-slate-800 rounded-lg">İptal</button>
+                                className="px-4 py-2 text-sm text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">İptal</button>
                             <button onClick={handleSaveEquip} disabled={equipLoading}
                                 className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg disabled:opacity-50 transition-colors">
                                 {equipLoading ? "Kaydediliyor..." : editingEquip ? "Güncelle" : "Kaydet"}
@@ -801,14 +805,14 @@ export default function EquipmentTrackingPage() {
 
             {/* ===== MODAL: BAKIM KAYDI ===== */}
             {showInspModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 overflow-y-auto">
-                    <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-xl w-full p-6 space-y-4 my-8 shadow-2xl">
-                        <h3 className="text-lg font-bold text-white">Periyodik Bakım / Kontrol Kaydı</h3>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl max-w-xl w-full p-6 space-y-4 my-8 shadow-2xl">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Periyodik Bakım / Kontrol Kaydı</h3>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-1">Ekipman *</label>
+                            <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">Ekipman *</label>
                             <select value={inspForm.equipment_id} onChange={e => setInspForm(f => ({ ...f, equipment_id: e.target.value }))}
-                                className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
                                 <option value="">Seçin...</option>
                                 {equipments.map(eq => <option key={eq.id} value={eq.id}>{eq.code} — {eq.name}</option>)}
                             </select>
@@ -820,9 +824,9 @@ export default function EquipmentTrackingPage() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-1">Yetkili Kuruluş / Mühendis</label>
+                            <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">Yetkili Kuruluş / Mühendis</label>
                             <select value={inspForm.inspector_id} onChange={e => setInspForm(f => ({ ...f, inspector_id: e.target.value }))}
-                                className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
                                 <option value="">Listeden seç...</option>
                                 {inspectors.map(ins => <option key={ins.id} value={ins.id}>{ins.name}</option>)}
                             </select>
@@ -830,9 +834,9 @@ export default function EquipmentTrackingPage() {
                         {/* Field: Yetkili serbest metin & Sonuç - bunlar Field component'i */}
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-1">Sonuç</label>
+                            <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">Sonuç</label>
                             <select value={inspForm.result} onChange={e => setInspForm(f => ({ ...f, result: e.target.value as any }))}
-                                className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
                                 <option value="uygun">Uygun</option>
                                 <option value="koşullu uygun">Koşullu Uygun</option>
                                 <option value="uygunsuz">Uygunsuz</option>
@@ -842,17 +846,17 @@ export default function EquipmentTrackingPage() {
                         <Field label="Notlar" value={inspForm.notes} onChange={v => setInspForm(f => ({ ...f, notes: v }))} placeholder="Gözlemler, notlar..." />
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-1">Belge Yükle (Max 10MB)</label>
+                            <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">Belge Yükle (Max 10MB)</label>
                             <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                                 onChange={e => setSelectedFile(e.target.files?.[0] || null)}
-                                className="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-500/20 file:text-indigo-400 hover:file:bg-indigo-500/30" />
+                                className="w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-500/10 file:text-indigo-600 dark:file:bg-indigo-500/20 dark:file:text-indigo-400 hover:file:bg-indigo-500/20 transition-all font-medium" />
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-2 border-t border-slate-800">
+                        <div className="flex justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                             <button onClick={() => { setShowInspModal(false); setSelectedFile(null); }}
-                                className="px-4 py-2 text-sm text-slate-400 hover:bg-slate-800 rounded-lg">İptal</button>
+                                className="px-4 py-2 text-sm text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">İptal</button>
                             <button onClick={handleSaveInspection} disabled={inspLoading}
-                                className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg disabled:opacity-50 transition-colors">
+                                className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg disabled:opacity-50 transition-colors shadow-sm font-medium">
                                 {inspLoading ? "Kaydediliyor..." : "Kaydet"}
                             </button>
                         </div>
@@ -862,15 +866,15 @@ export default function EquipmentTrackingPage() {
 
             {/* ===== MODAL: YETKİLİ KURULUŞ ===== */}
             {showInspectorModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
-                    <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-                        <h3 className="text-lg font-bold text-white">Kuruluş / Mühendis Ekle</h3>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Kuruluş / Mühendis Ekle</h3>
 
                         <Field label="Ad / Kuruluş Adı *" value={inspectorForm.name} onChange={v => setInspectorForm(f => ({ ...f, name: v }))} />
                         <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-1">Tür</label>
+                            <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">Tür</label>
                             <select value={inspectorForm.type} onChange={e => setInspectorForm(f => ({ ...f, type: e.target.value as any }))}
-                                className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
                                 <option value="kuruluş">A Tipi Muayene Kuruluşu</option>
                                 <option value="mühendis">Sertifikalı Mühendis</option>
                             </select>
@@ -880,11 +884,11 @@ export default function EquipmentTrackingPage() {
                         <Field label="E-posta" value={inspectorForm.email} onChange={v => setInspectorForm(f => ({ ...f, email: v }))} />
                         <Field label="Notlar" value={inspectorForm.notes} onChange={v => setInspectorForm(f => ({ ...f, notes: v }))} />
 
-                        <div className="flex justify-end gap-3 pt-2 border-t border-slate-800">
+                        <div className="flex justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                             <button onClick={() => setShowInspectorModal(false)}
-                                className="px-4 py-2 text-sm text-slate-400 hover:bg-slate-800 rounded-lg">İptal</button>
+                                className="px-4 py-2 text-sm text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">İptal</button>
                             <button onClick={handleSaveInspector} disabled={inspectorLoading}
-                                className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg disabled:opacity-50 transition-colors">
+                                className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg disabled:opacity-50 transition-colors shadow-sm font-medium">
                                 {inspectorLoading ? "Kaydediliyor..." : "Kaydet"}
                             </button>
                         </div>
@@ -894,17 +898,17 @@ export default function EquipmentTrackingPage() {
 
             {/* ===== MODAL: EKİPMAN DETAY & GEÇMİŞ ===== */}
             {showDetailModal && selectedEquip && (
-                <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-end z-50 overflow-hidden">
-                    <div className="w-full max-w-md bg-slate-900 border-l border-slate-800 h-full shadow-2xl overflow-y-auto flex flex-col animate-slide-in-right">
-                        <div className="p-4 border-b border-slate-800 flex justify-between items-start bg-slate-900 sticky top-0 z-10">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-end z-50 overflow-hidden">
+                    <div className="w-full max-w-md bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 h-full shadow-2xl overflow-y-auto flex flex-col animate-slide-in-right">
+                        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-start bg-white dark:bg-slate-900 sticky top-0 z-10 transition-colors">
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <h2 className="text-lg font-bold text-white">{selectedEquip.name}</h2>
-                                    {selectedEquip.is_damaged && <span className="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs px-2 py-0.5 rounded-full font-bold">HASARLI</span>}
+                                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">{selectedEquip.name}</h2>
+                                    {selectedEquip.is_damaged && <span className="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">HASARLI</span>}
                                 </div>
                                 <p className="text-sm font-mono text-slate-500">{selectedEquip.code}</p>
                             </div>
-                            <button onClick={() => setShowDetailModal(false)} className="text-slate-500 hover:text-slate-300">✕</button>
+                            <button onClick={() => setShowDetailModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">✕</button>
                         </div>
 
                         <div className="flex border-b border-slate-800 sticky top-[73px] bg-slate-900 z-10 overflow-x-auto">
@@ -1018,9 +1022,9 @@ export default function EquipmentTrackingPage() {
                                                     <Field label="veya Harici Uzman Adı" value={inspForm.inspector_name_override} onChange={v => setInspForm(f => ({ ...f, inspector_name_override: v }))} />
                                                 )}
                                                 <div>
-                                                    <label className="block text-xs font-medium text-slate-400 mb-1">Notlar</label>
+                                                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Notlar</label>
                                                     <textarea rows={2} value={inspForm.notes} onChange={e => setInspForm(f => ({ ...f, notes: e.target.value }))}
-                                                        className="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500/50" placeholder="Yapılan işlemler..." />
+                                                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500/50" placeholder="Yapılan işlemler..." />
                                                 </div>
                                                 <div className="pt-2">
                                                     <button onClick={handleSaveInspection} disabled={inspLoading} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg text-sm font-medium transition disabled:opacity-50 shadow-sm">
@@ -1032,16 +1036,16 @@ export default function EquipmentTrackingPage() {
                                     )}
 
                                     <div className="space-y-4 relative pl-2">
-                                        <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-slate-800 rounded-full"></div>
+                                        <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-slate-100 dark:bg-slate-800 rounded-full"></div>
                                         {detailInspections.length === 0 ? (
                                             <p className="text-center text-sm text-slate-500 py-8 italic bg-slate-800/50 rounded-lg border border-dashed border-slate-700">Henüz bakım kaydı yok.</p>
                                         ) : (
                                             detailInspections.map(insp => (
                                                 <div key={insp.id} className="relative pl-8 group">
-                                                    <div className={`absolute left-0 top-1.5 w-6 h-6 rounded-full border-4 bg-slate-900 z-10 transition-transform group-hover:scale-110 ${insp.result === "uygun" ? "border-emerald-500" : insp.result === "koşullu uygun" ? "border-amber-500" : "border-rose-500"}`}></div>
-                                                    <div className="bg-slate-800 p-3 rounded-xl border border-slate-700 shadow-sm hover:shadow-lg hover:border-indigo-500/30 transition-all group-hover:border-indigo-500/30">
+                                                    <div className={`absolute left-0 top-1.5 w-6 h-6 rounded-full border-4 bg-white dark:bg-slate-900 z-10 transition-transform group-hover:scale-110 ${insp.result === "uygun" ? "border-emerald-500" : insp.result === "koşullu uygun" ? "border-amber-500" : "border-rose-500"}`}></div>
+                                                    <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg hover:border-indigo-500/30 transition-all group-hover:border-indigo-500/30">
                                                         <div className="flex justify-between items-start mb-1">
-                                                            <span className="text-sm font-bold text-slate-200">{formatDate(insp.inspection_date)}</span>
+                                                            <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{formatDate(insp.inspection_date)}</span>
                                                             <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wide ${insp.result === "uygun" ? "bg-emerald-500/15 text-emerald-400" : insp.result === "koşullu uygun" ? "bg-amber-500/15 text-amber-400" : "bg-rose-500/15 text-rose-400"}`}>{insp.result}</span>
                                                         </div>
                                                         <p className="text-xs text-slate-500 flex items-center gap-1">
@@ -1181,12 +1185,12 @@ function Field({ label, value, onChange, placeholder, type = "text", children, a
         <div>
             <label className="block text-sm font-medium text-slate-300 mb-1">{label}</label>
             {as === "select" ? (
-                <select value={value || ""} onChange={e => onChange(e.target.value)} className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
+                <select value={value || ""} onChange={e => onChange(e.target.value)} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors">
                     {children}
                 </select>
             ) : (
                 <input type={type} value={value || ""} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-                    className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-slate-500" />
+                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-slate-400 dark:placeholder-slate-500 transition-colors shadow-sm" />
             )}
         </div>
     );

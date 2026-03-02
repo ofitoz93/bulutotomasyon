@@ -204,52 +204,52 @@ export default function PublicExamPage() {
     // Deprecated: Agreement is now handled before start
     const handleAgree = async () => { };
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><p className="text-gray-500">Yükleniyor...</p></div>;
-    if (!exam || !course) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><p className="text-gray-500">Sınav bulunamadı.</p></div>;
+    if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950"><p className="text-slate-500 dark:text-slate-400 animate-pulse">Yükleniyor...</p></div>;
+    if (!exam || !course) return <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950"><p className="text-slate-500 dark:text-slate-400">Sınav bulunamadı.</p></div>;
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
             <div className="max-w-3xl mx-auto">
                 {/* Header (Always Visible except result) */}
                 {step < 3 && (
                     <div className="text-center mb-10">
-                        <ShieldCheck className="w-12 h-12 text-indigo-600 mx-auto mb-4" />
-                        <h1 className="text-3xl font-extrabold text-gray-900">{course.title}</h1>
-                        <p className="mt-2 text-gray-600 font-medium">Online Değerlendirme Sınavı</p>
+                        <ShieldCheck className="w-12 h-12 text-indigo-600 dark:text-indigo-400 mx-auto mb-4" />
+                        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">{course.title}</h1>
+                        <p className="mt-2 text-slate-600 dark:text-slate-400 font-medium">Online Değerlendirme Sınavı</p>
                     </div>
                 )}
 
                 {/* Step 0: TC Control */}
                 {step === 0 && (
-                    <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 max-w-md mx-auto">
-                        <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center justify-center gap-2">
-                            <User className="w-6 h-6 text-indigo-500" /> Sınava Giriş Yapın
+                    <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 max-w-md mx-auto">
+                        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center justify-center gap-2">
+                            <User className="w-6 h-6 text-indigo-500 dark:text-indigo-400" /> Sınava Giriş Yapın
                         </h2>
                         <form onSubmit={handleTcCheck} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">TC Kimlik veya Sicil No *</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">TC Kimlik veya Sicil No *</label>
                                 <input
                                     type="text" required value={tcNo} onChange={e => setTcNo(e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg"
+                                    className="w-full px-4 py-3 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg text-slate-900 dark:text-white"
                                     placeholder="Kimlik numaranız"
                                 />
                             </div>
 
                             {tcError && (
-                                <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                                    <p className="text-sm text-orange-800 mb-3">{tcError}</p>
+                                <div className="p-4 bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-900/30 rounded-lg">
+                                    <p className="text-sm text-orange-800 dark:text-orange-400 mb-3">{tcError}</p>
                                     <div>
-                                        <label className="block text-sm font-medium text-orange-900 mb-1">Adınız ve Soyadınız (Misafir Girişi)</label>
+                                        <label className="block text-sm font-medium text-orange-900 dark:text-orange-300 mb-1">Adınız ve Soyadınız (Misafir Girişi)</label>
                                         <input
                                             type="text" value={fullName} onChange={e => setFullName(e.target.value)}
-                                            className="w-full px-4 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                                            className="w-full px-4 py-2 border border-orange-300 dark:border-orange-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-orange-500"
                                             placeholder="Ad Soyad"
                                         />
                                     </div>
                                 </div>
                             )}
 
-                            <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
+                            <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg shadow-indigo-600/20 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-950 transition">
                                 Doğrula ve Devam Et
                             </button>
                         </form>
@@ -258,16 +258,16 @@ export default function PublicExamPage() {
 
                 {/* Step 1: Info */}
                 {step === 1 && (
-                    <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 text-center">
-                        <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 text-center">
+                        <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-10 h-10" />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Hoş Geldiniz, {fullName}</h2>
-                        <p className="text-gray-500 mb-8">{matchedProfile ? "(Şirket Personeli)" : "(Misafir / Dış Katılımcı)"}</p>
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Hoş Geldiniz, {fullName}</h2>
+                        <p className="text-slate-500 dark:text-slate-400 mb-8">{matchedProfile ? "(Şirket Personeli)" : "(Misafir / Dış Katılımcı)"}</p>
 
-                        <div className="bg-gray-50 rounded-xl p-6 text-left space-y-4 mb-8">
-                            <h3 className="font-semibold text-gray-900 border-b pb-2">Sınav Kuralları</h3>
-                            <ul className="space-y-2 text-gray-600 text-sm list-disc pl-5">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 text-left space-y-4 mb-8">
+                            <h3 className="font-semibold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-700 pb-2">Sınav Kuralları</h3>
+                            <ul className="space-y-2 text-slate-600 dark:text-slate-400 text-sm list-disc pl-5">
                                 <li>Toplam <strong>{questions.length}</strong> soru sorulacaktır.</li>
                                 <li>Sınav süresi <strong>{exam.time_limit_minutes > 0 ? `${exam.time_limit_minutes} dakika` : 'süresiz'}</strong> olarak belirlenmiştir.</li>
                                 <li>Başarılı olmak için geçme notu: <strong>{course.passing_score}</strong>.</li>
@@ -276,19 +276,19 @@ export default function PublicExamPage() {
                         </div>
 
                         {exam?.agreement_text && (
-                            <div className="bg-yellow-50 border border-yellow-200 p-6 rounded-xl text-left mb-8">
-                                <h3 className="font-bold text-yellow-800 flex items-center mb-3">
+                            <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/20 p-6 rounded-xl text-left mb-8">
+                                <h3 className="font-bold text-yellow-800 dark:text-yellow-500 flex items-center mb-3">
                                     <AlertCircle className="w-5 h-5 mr-2" /> Taahhütname
                                 </h3>
-                                <p className="text-gray-700 italic text-sm mb-4">"{exam.agreement_text}"</p>
+                                <p className="text-slate-700 dark:text-slate-300 italic text-sm mb-4">"{exam.agreement_text}"</p>
                                 <label className="flex items-start gap-3 cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={agreed}
                                         onChange={(e) => setAgreed(e.target.checked)}
-                                        className="mt-1 w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                        className="mt-1 w-5 h-5 text-indigo-600 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded focus:ring-indigo-500"
                                     />
-                                    <span className="text-sm font-medium text-gray-800">Yukarıdaki taahhütnameyi okudum, anladım ve kabul ediyorum.</span>
+                                    <span className="text-sm font-medium text-slate-800 dark:text-slate-200">Yukarıdaki taahhütnameyi okudum, anladım ve kabul ediyorum.</span>
                                 </label>
                             </div>
                         )}
@@ -296,7 +296,7 @@ export default function PublicExamPage() {
                         <button
                             onClick={handleStart}
                             disabled={!!exam?.agreement_text && !agreed}
-                            className="px-8 py-4 bg-indigo-600 text-white text-lg font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-8 py-4 bg-indigo-600 text-white text-lg font-bold rounded-xl shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Sınavı Şimdi Başlat
                         </button>
@@ -306,13 +306,13 @@ export default function PublicExamPage() {
                 {/* Step 2: In Progress */}
                 {step === 2 && (
                     <div className="space-y-6">
-                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between sticky top-4 z-10">
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-4 z-10 transition-colors">
                             <div>
-                                <span className="text-xs text-gray-500 uppercase font-semibold">Sınavda:</span>
-                                <h3 className="font-bold text-gray-900 leading-tight">{fullName}</h3>
+                                <span className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Sınavda:</span>
+                                <h3 className="font-bold text-slate-900 dark:text-white leading-tight">{fullName}</h3>
                             </div>
                             {exam.time_limit_minutes > 0 && (
-                                <div className="flex items-center text-orange-600 bg-orange-50 px-4 py-2 rounded-lg font-bold border border-orange-100 flex-shrink-0">
+                                <div className="flex items-center text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 px-4 py-2 rounded-lg font-bold border border-orange-100 dark:border-orange-900/30 flex-shrink-0">
                                     <Clock className="w-5 h-5 mr-2" />
                                     {Math.floor(timeLeftSeconds / 60)}:{String(timeLeftSeconds % 60).padStart(2, '0')}
                                 </div>
@@ -321,16 +321,18 @@ export default function PublicExamPage() {
 
                         <div className="space-y-6">
                             {questions.map((q, idx) => (
-                                <div key={q.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                                    <h3 className="font-semibold text-gray-900 mb-4 text-lg">
-                                        <span className="text-indigo-600 mr-2">{idx + 1}.</span> {q.question_text}
+                                <div key={q.id} className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-md border border-slate-200 dark:border-slate-800">
+                                    <h3 className="font-semibold text-slate-900 dark:text-white mb-4 text-lg">
+                                        <span className="text-indigo-600 dark:text-indigo-400 mr-2">{idx + 1}.</span> {q.question_text}
                                     </h3>
                                     <div className="space-y-3">
                                         {q.exam_answers?.map((ans: any) => (
                                             <label
                                                 key={ans.id}
                                                 className={`flex items-center p-4 border rounded-lg cursor-pointer transition 
-                                                    ${answers[q.id] === ans.id ? 'border-indigo-600 bg-indigo-50 ring-1 ring-indigo-600' : 'border-gray-200 hover:bg-gray-50'}`
+                                                    ${answers[q.id] === ans.id
+                                                        ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-indigo-600 dark:ring-indigo-400'
+                                                        : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'}`
                                                 }
                                             >
                                                 <input
@@ -339,9 +341,9 @@ export default function PublicExamPage() {
                                                     value={ans.id}
                                                     checked={answers[q.id] === ans.id}
                                                     onChange={() => handleAnswer(q.id, ans.id)}
-                                                    className="w-5 h-5 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                                                    className="w-5 h-5 text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
                                                 />
-                                                <span className="ml-3 text-gray-800 font-medium">{ans.answer_text}</span>
+                                                <span className="ml-3 text-slate-800 dark:text-slate-200 font-medium">{ans.answer_text}</span>
                                             </label>
                                         ))}
                                     </div>
@@ -353,7 +355,7 @@ export default function PublicExamPage() {
                             <button
                                 onClick={() => handleSubmitExam(false)}
                                 disabled={submitting}
-                                className="flex items-center px-10 py-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-xl hover:bg-indigo-700 transition disabled:opacity-50 w-full sm:w-auto justify-center"
+                                className="flex items-center px-10 py-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 transition disabled:opacity-50 w-full sm:w-auto justify-center"
                             >
                                 <CheckCircle className="w-6 h-6 mr-3" />
                                 {submitting ? "Gönderiliyor..." : "Sınavı Bitir ve Gönder"}
@@ -364,30 +366,30 @@ export default function PublicExamPage() {
 
                 {/* Step 3: Result & Agreement */}
                 {step === 3 && result && (
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden text-center">
-                        <div className={`p-10 pb-8 ${result.status === 'passed' ? 'bg-green-50' : 'bg-red-50'}`}>
-                            <Award className={`w-20 h-20 mx-auto mb-6 ${result.status === 'passed' ? 'text-green-500' : 'text-red-500'}`} />
-                            <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden text-center transition-all">
+                        <div className={`p-10 pb-8 ${result.status === 'passed' ? 'bg-emerald-50 dark:bg-emerald-900/10' : 'bg-rose-50 dark:bg-rose-900/10'}`}>
+                            <Award className={`w-20 h-20 mx-auto mb-6 ${result.status === 'passed' ? 'text-emerald-500' : 'text-rose-500'}`} />
+                            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2">
                                 {result.status === 'passed' ? "Tebrikler, Başarıyla Tamamladınız!" : "Maalesef Başarısız Oldunuz."}
                             </h2>
-                            <p className="text-gray-600 text-lg">Sayın {result.full_name}, sınav sonucunuz kaydedilmiştir.</p>
+                            <p className="text-slate-600 dark:text-slate-400 text-lg">Sayın {result.full_name}, sınav sonucunuz kaydedilmiştir.</p>
                         </div>
 
                         <div className="p-10 max-w-lg mx-auto">
                             <div className="flex justify-center items-center space-x-12 mb-10">
                                 <div>
-                                    <p className="text-sm text-gray-500 uppercase tracking-wide font-semibold mb-1">Aldığınız Puan</p>
-                                    <p className={`text-5xl font-black ${result.status === 'passed' ? 'text-green-600' : 'text-red-600'}`}>{result.score}</p>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 uppercase tracking-wide font-bold mb-1">Aldığınız Puan</p>
+                                    <p className={`text-6xl font-black ${result.status === 'passed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{result.score}</p>
                                 </div>
-                                <div className="w-px h-16 bg-gray-200"></div>
+                                <div className="w-px h-16 bg-slate-200 dark:bg-slate-800"></div>
                                 <div>
-                                    <p className="text-sm text-gray-500 uppercase tracking-wide font-semibold mb-1">Geçme Notu</p>
-                                    <p className="text-5xl font-black text-gray-800">{course?.passing_score}</p>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 uppercase tracking-wide font-bold mb-1">Geçme Notu</p>
+                                    <p className="text-6xl font-black text-slate-800 dark:text-slate-200">{course?.passing_score}</p>
                                 </div>
                             </div>
 
-                            <div className="text-green-600 font-medium flex justify-center items-center p-4 bg-green-50 rounded-lg">
-                                <CheckCircle className="w-5 h-5 mr-2" /> İşlem tamamlanmıştır, sayfayı kapatabilirsiniz.
+                            <div className="text-emerald-600 dark:text-emerald-400 font-bold flex justify-center items-center p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-900/30">
+                                <CheckCircle className="w-5 h-5 mr-3" /> İşlem tamamlanmıştır, sayfayı kapatabilirsiniz.
                             </div>
                         </div>
                     </div>

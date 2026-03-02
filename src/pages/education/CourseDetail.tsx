@@ -59,7 +59,7 @@ export default function CourseDetail() {
         }
     };
 
-    if (loading || !course) return <div className="p-6 text-gray-500">Yükleniyor...</div>;
+    if (loading || !course) return <div className="p-6 text-slate-500">Yükleniyor...</div>;
 
     const tabs = [
         { id: "info", name: "Genel Bilgiler", icon: Settings },
@@ -74,17 +74,17 @@ export default function CourseDetail() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center space-x-4">
-                    <Link to="/app/education/manage" className="p-2 text-gray-500 hover:text-gray-700 bg-white rounded-full shadow-sm border border-gray-200">
+                    <Link to="/app/education/manage" className="p-2 text-slate-400 hover:text-slate-200 bg-slate-900 rounded-full shadow-lg border border-slate-800 transition-colors">
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
                     <div>
                         <div className="flex items-center space-x-2">
-                            <h2 className="text-xl font-bold text-gray-900">{course.title}</h2>
-                            {course.status === 'draft' && <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs font-semibold">Taslak</span>}
-                            {course.status === 'published' && <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-semibold">Yayında</span>}
-                            {course.status === 'archived' && <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-xs font-semibold">Arşivli</span>}
+                            <h2 className="text-xl font-bold text-white">{course.title}</h2>
+                            {course.status === 'draft' && <span className="bg-slate-800 text-slate-400 px-2 py-0.5 rounded text-xs font-semibold border border-slate-700">Taslak</span>}
+                            {course.status === 'published' && <span className="bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded text-xs font-semibold border border-emerald-500/30">Yayında</span>}
+                            {course.status === 'archived' && <span className="bg-amber-500/15 text-amber-400 px-2 py-0.5 rounded text-xs font-semibold border border-amber-500/30">Arşivli</span>}
                         </div>
-                        <p className="text-sm text-gray-500 mt-0.5">
+                        <p className="text-sm text-slate-500 mt-0.5">
                             {course.education_classes?.name} {course.education_classes?.education_types?.name && `(${course.education_classes.education_types.name})`}
                         </p>
                     </div>
@@ -104,8 +104,8 @@ export default function CourseDetail() {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div className="flex border-b border-gray-200 overflow-x-auto">
+            <div className="bg-slate-900 rounded-lg shadow-xl border border-slate-800 overflow-hidden">
+                <div className="flex border-b border-slate-800 overflow-x-auto">
                     {tabs.map((tab) => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
@@ -114,11 +114,11 @@ export default function CourseDetail() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${isActive
-                                    ? "border-indigo-600 text-indigo-600 bg-indigo-50/50"
-                                    : "border-transparent text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+                                    ? "border-indigo-500 text-indigo-400 bg-indigo-500/5"
+                                    : "border-transparent text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
                                     }`}
                             >
-                                <Icon className={`w-4 h-4 mr-2 ${isActive ? "text-indigo-600" : "text-gray-400"}`} />
+                                <Icon className={`w-4 h-4 mr-2 ${isActive ? "text-indigo-400" : "text-slate-500"}`} />
                                 {tab.name}
                             </button>
                         );
@@ -128,23 +128,26 @@ export default function CourseDetail() {
                 <div className="p-6 min-h-[400px]">
                     {activeTab === "info" && (
                         <div className="max-w-2xl">
-                            <h3 className="text-lg font-medium text-gray-900 mb-4">Eğitim Detayları</h3>
-                            <div className="grid grid-cols-2 gap-y-6 gap-x-4">
+                            <h3 className="text-lg font-medium text-white mb-6 flex items-center gap-2">
+                                <Settings className="w-5 h-5 text-indigo-400" />
+                                Eğitim Detayları
+                            </h3>
+                            <div className="grid grid-cols-2 gap-y-8 gap-x-6">
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 uppercase">Başlangıç Tarihi</label>
-                                    <p className="mt-1 text-sm text-gray-900">{new Date(course.start_date).toLocaleDateString("tr-TR")}</p>
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Başlangıç Tarihi</label>
+                                    <p className="text-sm text-slate-200 font-medium">{new Date(course.start_date).toLocaleDateString("tr-TR")}</p>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 uppercase">Bitiş Tarihi</label>
-                                    <p className="mt-1 text-sm text-gray-900">{new Date(course.end_date).toLocaleDateString("tr-TR")}</p>
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Bitiş Tarihi</label>
+                                    <p className="text-sm text-slate-200 font-medium">{new Date(course.end_date).toLocaleDateString("tr-TR")}</p>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 uppercase">Geçme Notu</label>
-                                    <p className="mt-1 text-sm text-gray-900">{course.passing_score} Puan</p>
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Geçme Notu</label>
+                                    <p className="text-sm text-slate-200 font-medium">{course.passing_score} Puan</p>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 uppercase">Durum</label>
-                                    <p className="mt-1 text-sm text-gray-900">{course.status === 'draft' ? "Taslak" : course.status === 'published' ? "Yayında" : "Arşiv"}</p>
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Durum</label>
+                                    <p className="text-sm text-slate-200 font-medium">{course.status === 'draft' ? "Taslak" : course.status === 'published' ? "Yayında" : "Arşiv"}</p>
                                 </div>
                             </div>
                         </div>

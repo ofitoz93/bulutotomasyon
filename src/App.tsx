@@ -42,14 +42,39 @@ import CoursePlayer from "@/pages/education/CoursePlayer";
 import CourseExamPlayer from "@/pages/education/CourseExamPlayer";
 import PublicExamPage from "@/pages/education/PublicExamPage";
 import PhysicalExams from "@/pages/education/PhysicalExams";
+import ISGCenterLayout from "@/pages/isg-merkezi/ISGCenterLayout";
+import ISGDashboard from "@/pages/isg-merkezi/ISGDashboard";
+import AccidentTracking from "@/pages/isg-merkezi/AccidentTracking";
+import RootCauseAnalysis from "@/pages/isg-merkezi/RootCauseAnalysis";
+import AuditTracking from "@/pages/isg-merkezi/AuditTracking";
+import RiskAssessments from "@/pages/isg-merkezi/RiskAssessments";
+import CorrectiveActions from "@/pages/isg-merkezi/CorrectiveActions";
+import MeasurementRecords from "@/pages/isg-merkezi/MeasurementRecords";
+import PersonnelLayout from "@/pages/personnel/PersonnelLayout";
+import PersonnelList from "@/pages/personnel/PersonnelList";
+import PersonnelDetail from "@/pages/personnel/PersonnelDetail";
+import HealthRecords from "@/pages/personnel/HealthRecords";
+import PPETracking from "@/pages/personnel/PPETracking";
+import BulkOperations from "@/pages/personnel/BulkOperations";
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
+import { useThemeStore } from "@/stores/themeStore";
 import { supabase } from "@/lib/supabase";
 
 function App() {
   const setSession = useAuthStore((state) => state.setSession);
   const loading = useAuthStore((state) => state.loading);
   const setProfile = useAuthStore((state) => state.setProfile);
+  const theme = useThemeStore((state) => state.theme);
+
+  useEffect(() => {
+    // Uygulama genelinde temayı uygula
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -128,6 +153,24 @@ function App() {
             <Route path="manage/:id" element={<CourseDetail />} />
             <Route path="course/:id" element={<CoursePlayer />} />
             <Route path="course/:id/exam" element={<CourseExamPlayer />} />
+          </Route>
+
+          <Route path="isg-merkezi" element={<ISGCenterLayout />}>
+            <Route index element={<ISGDashboard />} />
+            <Route path="kazalar" element={<AccidentTracking />} />
+            <Route path="kok-neden" element={<RootCauseAnalysis />} />
+            <Route path="denetimler" element={<AuditTracking />} />
+            <Route path="risk" element={<RiskAssessments />} />
+            <Route path="dof" element={<CorrectiveActions />} />
+            <Route path="olcumler" element={<MeasurementRecords />} />
+          </Route>
+
+          <Route path="personel-takip" element={<PersonnelLayout />}>
+            <Route index element={<PersonnelList />} />
+            <Route path=":id" element={<PersonnelDetail />} />
+            <Route path="saglik" element={<HealthRecords />} />
+            <Route path="kkd" element={<PPETracking />} />
+            <Route path="toplu-islem" element={<BulkOperations />} />
           </Route>
 
           <Route path="settings" element={<SettingsPage />} />

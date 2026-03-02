@@ -196,9 +196,9 @@ export default function EducationSettings() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                 {/* Education Types Panel */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h2 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4 hover:text-indigo-600 transition">Kurs Tipleri</h2>
-                    <p className="text-xs text-gray-500 mb-4">"İSG Eğitimi", "Kalite Eğitimi" gibi ana başlıklar oluşturun.</p>
+                <div className="bg-slate-900 p-6 rounded-xl shadow-2xl border border-slate-800">
+                    <h2 className="text-lg font-bold text-white border-b border-slate-800 pb-3 mb-4 hover:text-indigo-400 transition-colors uppercase tracking-wider">Kurs Tipleri</h2>
+                    <p className="text-xs text-slate-500 mb-6">"İSG Eğitimi", "Kalite Eğitimi" gibi ana başlıklar oluşturun.</p>
 
                     <form onSubmit={handleAddType} className="flex gap-2 mb-6">
                         <input
@@ -207,34 +207,34 @@ export default function EducationSettings() {
                             value={newTypeName}
                             onChange={(e) => setNewTypeName(e.target.value)}
                             placeholder="Yeni Tip Adı (Örn: İSG Eğitimi)"
-                            className="flex-1 px-3 py-2 border rounded-md text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                            className="flex-1 bg-slate-800 border-slate-700 text-slate-200 px-4 py-2.5 rounded-lg text-sm border focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none placeholder-slate-500 transition-all"
                         />
                         <button
                             type="submit"
                             disabled={addingType}
-                            className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+                            className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-indigo-500 shadow-lg shadow-indigo-600/20 disabled:opacity-50 transition-all"
                         >
                             {addingType ? "..." : "Ekle"}
                         </button>
                     </form>
 
-                    <div className="mt-4 border rounded-md max-h-64 overflow-y-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50 sticky top-0">
+                    <div className="mt-4 border border-slate-800 rounded-xl max-h-64 overflow-y-auto bg-slate-950/30">
+                        <table className="min-w-full divide-y divide-slate-800">
+                            <thead className="bg-slate-800/50 sticky top-0 backdrop-blur-md">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tip Adı</th>
-                                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlem</th>
+                                    <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tip Adı</th>
+                                    <th className="px-6 py-4 text-right text-[10px] font-bold text-slate-500 uppercase tracking-widest">İşlem</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="divide-y divide-slate-800">
                                 {types.length === 0 ? (
-                                    <tr><td colSpan={2} className="px-4 py-3 text-center text-sm text-gray-500">Henüz kurs tipi eklenmedi.</td></tr>
+                                    <tr><td colSpan={2} className="px-6 py-8 text-center text-sm text-slate-500 italic">Henüz kurs tipi eklenmedi.</td></tr>
                                 ) : (
                                     types.map((type) => (
-                                        <tr key={type.id} className="hover:bg-gray-50">
-                                            <td className="px-4 py-3 text-sm font-medium text-gray-900 border-l-4 border-l-indigo-500">{type.name}</td>
-                                            <td className="px-4 py-3 text-sm text-right">
-                                                <button onClick={() => handleDeleteType(type.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded-md hover:bg-red-100 transition" title="Sil">
+                                        <tr key={type.id} className="hover:bg-slate-800/40 transition-colors group">
+                                            <td className="px-6 py-4 text-sm font-bold text-slate-200 border-l-4 border-l-indigo-600 group-hover:bg-indigo-600/5 transition-all">{type.name}</td>
+                                            <td className="px-6 py-4 text-sm text-right">
+                                                <button onClick={() => handleDeleteType(type.id)} className="text-rose-400 hover:text-rose-300 bg-rose-500/10 p-2 rounded-lg hover:bg-rose-500/20 transition-all border border-rose-500/20" title="Sil">
                                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                                 </button>
                                             </td>
@@ -247,61 +247,61 @@ export default function EducationSettings() {
                 </div>
 
                 {/* Education Classes Panel */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h2 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4 hover:text-teal-600 transition">Eğitim Sınıfları</h2>
-                    <p className="text-xs text-gray-500 mb-4">Bir tipe bağlı olan hedef kitle grupları. Örn: "2026 Yılı Temel İSG Sınıfı"</p>
+                <div className="bg-slate-900 p-6 rounded-xl shadow-2xl border border-slate-800">
+                    <h2 className="text-lg font-bold text-white border-b border-slate-800 pb-3 mb-4 hover:text-emerald-400 transition-colors uppercase tracking-wider">Eğitim Sınıfları</h2>
+                    <p className="text-xs text-slate-500 mb-6">Bir tipe bağlı olan hedef kitle grupları. Örn: "2026 Yılı Temel İSG Sınıfı"</p>
 
-                    <form onSubmit={handleAddClass} className="flex flex-col gap-2 mb-6">
+                    <form onSubmit={handleAddClass} className="flex flex-col gap-3 mb-6">
                         <select
                             required
                             value={selectedTypeId}
                             onChange={(e) => setSelectedTypeId(e.target.value)}
-                            className="w-full px-3 py-2 border rounded-md text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 bg-gray-50"
+                            className="w-full bg-slate-800 border-slate-700 text-slate-200 px-4 py-2.5 rounded-lg text-sm border focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 outline-none transition-all"
                         >
                             <option value="">-- Bağlı Olacağı Kurs Tipini Seçin --</option>
-                            {types.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                            {types.map(t => <option key={t.id} value={t.id} className="bg-slate-900">{t.name}</option>)}
                         </select>
 
-                        <div className="flex gap-2 mt-1">
+                        <div className="flex gap-2">
                             <input
                                 type="text"
                                 required
                                 value={newClassName}
                                 onChange={(e) => setNewClassName(e.target.value)}
                                 placeholder="Sınıf Adı (Örn: 2026 Yılı Mavi Yaka İSG)"
-                                className="flex-1 px-3 py-2 border rounded-md text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                                className="flex-1 bg-slate-800 border-slate-700 text-slate-200 px-4 py-2.5 rounded-lg text-sm border focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 outline-none placeholder-slate-500 transition-all"
                             />
                             <button
                                 type="submit"
                                 disabled={addingClass || types.length === 0}
-                                className="bg-teal-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-teal-700 disabled:opacity-50"
+                                className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-emerald-500 shadow-lg shadow-emerald-600/20 disabled:opacity-50 transition-all"
                             >
                                 {addingClass ? "..." : "Sınıf Ekle"}
                             </button>
                         </div>
                     </form>
 
-                    <div className="mt-4 border rounded-md max-h-64 overflow-y-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50 sticky top-0">
+                    <div className="mt-4 border border-slate-800 rounded-xl max-h-64 overflow-y-auto bg-slate-950/30">
+                        <table className="min-w-full divide-y divide-slate-800">
+                            <thead className="bg-slate-800/50 sticky top-0 backdrop-blur-md">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sınıf Adı</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bağlı Tip</th>
-                                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlem</th>
+                                    <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sınıf Adı</th>
+                                    <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Bağlı Tip</th>
+                                    <th className="px-6 py-4 text-right text-[10px] font-bold text-slate-500 uppercase tracking-widest">İşlem</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="divide-y divide-slate-800">
                                 {classes.length === 0 ? (
-                                    <tr><td colSpan={3} className="px-4 py-3 text-center text-sm text-gray-500">Henüz sınıf eklenmedi. Önce Tip oluşturun.</td></tr>
+                                    <tr><td colSpan={3} className="px-6 py-8 text-center text-sm text-slate-500 italic">Henüz sınıf eklenmedi. Önce Tip oluşturun.</td></tr>
                                 ) : (
                                     classes.map((cls) => (
-                                        <tr key={cls.id} className="hover:bg-gray-50">
-                                            <td className="px-4 py-3 text-sm font-medium text-gray-900 border-l-4 border-l-teal-500">{cls.name}</td>
-                                            <td className="px-4 py-3 text-xs text-gray-500">
-                                                <span className="bg-gray-100 px-2 py-1 rounded-full">{cls.type?.name || 'Bilinmiyor'}</span>
+                                        <tr key={cls.id} className="hover:bg-slate-800/40 transition-colors group">
+                                            <td className="px-6 py-4 text-sm font-bold text-slate-200 border-l-4 border-l-emerald-600 group-hover:bg-emerald-600/5 transition-all">{cls.name}</td>
+                                            <td className="px-6 py-4 text-xs text-slate-400">
+                                                <span className="bg-slate-800 px-3 py-1 rounded-full border border-slate-700">{cls.type?.name || 'Bilinmiyor'}</span>
                                             </td>
-                                            <td className="px-4 py-3 text-sm text-right">
-                                                <button onClick={() => handleDeleteClass(cls.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded-md hover:bg-red-100 transition" title="Sil">
+                                            <td className="px-6 py-4 text-sm text-right">
+                                                <button onClick={() => handleDeleteClass(cls.id)} className="text-rose-400 hover:text-rose-300 bg-rose-500/10 p-2 rounded-lg hover:bg-rose-500/20 transition-all border border-rose-500/20" title="Sil">
                                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                                 </button>
                                             </td>
@@ -317,48 +317,48 @@ export default function EducationSettings() {
 
             {/* Education Managers Panel (Only for Company Managers) */}
             {isSystemAdminOrCompanyManager && (
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h2 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4 hover:text-orange-600 transition">Eğitim Yöneticileri</h2>
-                    <p className="text-xs text-gray-500 mb-4">Bu yetkiye sahip personeller modülün yönetimine sınırsız erişebilir (Kurs açma, atama yapma vb.).</p>
+                <div className="bg-slate-900 p-6 rounded-xl shadow-2xl border border-slate-800">
+                    <h2 className="text-lg font-bold text-white border-b border-slate-800 pb-3 mb-4 hover:text-orange-400 transition-colors uppercase tracking-wider">Eğitim Yöneticileri</h2>
+                    <p className="text-xs text-slate-500 mb-6">Bu yetkiye sahip personeller modülün yönetimine sınırsız erişebilir (Kurs açma, atama yapma vb.).</p>
 
                     <form onSubmit={handleAssignManager} className="flex gap-2 mb-6">
                         <select
                             required
                             value={selectedManagerId}
                             onChange={(e) => setSelectedManagerId(e.target.value)}
-                            className="flex-1 px-3 py-2 border rounded-md text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 bg-gray-50"
+                            className="flex-1 bg-slate-800 border-slate-700 text-slate-200 px-4 py-2.5 rounded-lg text-sm border focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 outline-none transition-all"
                         >
                             <option value="">-- Personel Seçin --</option>
-                            {users.map(u => <option key={u.id} value={u.id}>{u.first_name} {u.last_name}</option>)}
+                            {users.map(u => <option key={u.id} value={u.id} className="bg-slate-900">{u.first_name} {u.last_name}</option>)}
                         </select>
                         <button
                             type="submit"
                             disabled={assigningManager}
-                            className="bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-700 disabled:opacity-50"
+                            className="bg-orange-600 text-white px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-orange-500 shadow-lg shadow-orange-600/20 disabled:opacity-50 transition-all"
                         >
                             {assigningManager ? "..." : "Yetki Ver"}
                         </button>
                     </form>
 
-                    <div className="mt-4 border rounded-md max-h-64 overflow-y-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50 sticky top-0">
+                    <div className="mt-4 border border-slate-800 rounded-xl max-h-64 overflow-y-auto bg-slate-950/30">
+                        <table className="min-w-full divide-y divide-slate-800">
+                            <thead className="bg-slate-800/50 sticky top-0 backdrop-blur-md">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ad Soyad</th>
-                                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlem</th>
+                                    <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Ad Soyad</th>
+                                    <th className="px-6 py-4 text-right text-[10px] font-bold text-slate-500 uppercase tracking-widest">İşlem</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="divide-y divide-slate-800">
                                 {managers.length === 0 ? (
-                                    <tr><td colSpan={2} className="px-4 py-3 text-center text-sm text-gray-500">Henüz yönetici atanmamış. Şirket yöneticileri varsayılan olarak her şeye yetkilidir.</td></tr>
+                                    <tr><td colSpan={2} className="px-6 py-8 text-center text-sm text-slate-500 italic">Henüz yönetici atanmamış. Şirket yöneticileri varsayılan olarak her şeye yetkilidir.</td></tr>
                                 ) : (
                                     managers.map((m) => (
-                                        <tr key={m.id} className="hover:bg-gray-50">
-                                            <td className="px-4 py-3 text-sm font-medium text-gray-900 border-l-4 border-l-orange-500">
+                                        <tr key={m.id} className="hover:bg-slate-800/40 transition-colors group">
+                                            <td className="px-6 py-4 text-sm font-bold text-slate-200 border-l-4 border-l-orange-600 group-hover:bg-orange-600/5 transition-all">
                                                 {m.profiles?.first_name} {m.profiles?.last_name}
                                             </td>
-                                            <td className="px-4 py-3 text-sm text-right">
-                                                <button onClick={() => handleRemoveManager(m.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded-md hover:bg-red-100 transition" title="Sil">
+                                            <td className="px-6 py-4 text-sm text-right">
+                                                <button onClick={() => handleRemoveManager(m.id)} className="text-rose-400 hover:text-rose-300 bg-rose-500/10 p-2 rounded-lg hover:bg-rose-500/20 transition-all border border-rose-500/20" title="Sil">
                                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                                 </button>
                                             </td>

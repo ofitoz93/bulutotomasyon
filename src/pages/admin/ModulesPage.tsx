@@ -116,15 +116,15 @@ export default function ModulesPage() {
     };
 
     const getExpiryStatus = (assignment: CompanyModule) => {
-        if (!assignment.is_active) return { label: "Pasif", color: "bg-gray-100 text-gray-600" };
-        if (assignment.is_indefinite) return { label: "Süresiz", color: "bg-green-100 text-green-800" };
-        if (!assignment.expires_at) return { label: "Tarih Yok", color: "bg-gray-100 text-gray-600" };
+        if (!assignment.is_active) return { label: "Pasif", color: "bg-slate-500/10 text-slate-500" };
+        if (assignment.is_indefinite) return { label: "Süresiz", color: "bg-emerald-500/15 text-emerald-400" };
+        if (!assignment.expires_at) return { label: "Tarih Yok", color: "bg-slate-500/10 text-slate-500" };
         const today = new Date();
         const expiry = new Date(assignment.expires_at);
         const daysLeft = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-        if (daysLeft < 0) return { label: "Süresi Doldu", color: "bg-red-100 text-red-800" };
-        if (daysLeft <= 7) return { label: `${daysLeft} gün`, color: "bg-yellow-100 text-yellow-800" };
-        return { label: expiry.toLocaleDateString("tr-TR"), color: "bg-blue-100 text-blue-800" };
+        if (daysLeft < 0) return { label: "Süresi Doldu", color: "bg-rose-500/15 text-rose-400" };
+        if (daysLeft <= 7) return { label: `${daysLeft} gün`, color: "bg-amber-500/15 text-amber-400" };
+        return { label: expiry.toLocaleDateString("tr-TR"), color: "bg-indigo-500/15 text-indigo-400" };
     };
 
     const getAssignmentCount = (moduleKey: string) => {
@@ -266,41 +266,41 @@ export default function ModulesPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Modül Yönetimi</h1>
-                    <p className="text-sm text-gray-500 mt-1">Firma arayarak modül erişimini yönetin veya kategori düzenleyin.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-white">Modül Yönetimi</h1>
+                    <p className="text-sm text-slate-400 mt-1">Firma arayarak modül erişimini yönetin veya kategori düzenleyin.</p>
                 </div>
                 <button
                     onClick={() => setShowCategoryModal(true)}
-                    className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm"
+                    className="px-4 py-2 bg-slate-800 dark:bg-slate-900 border border-slate-700 rounded-md text-sm font-medium text-slate-200 hover:bg-slate-700 transition-colors shadow-sm"
                 >
                     📂 Kategorileri Yönet
                 </button>
             </div>
 
             {/* Firma Arama */}
-            <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-sm font-semibold text-gray-700 uppercase mb-3">Firmaya Göre Modül Yönetimi</h2>
+            <div className="bg-white dark:bg-slate-900 shadow rounded-lg p-6 border border-transparent dark:border-slate-800">
+                <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-300 uppercase mb-3 text-white">Firmaya Göre Modül Yönetimi</h2>
                 <div className="relative">
                     <input
                         type="text"
                         value={selectedCompany ? selectedCompany.name : companySearch}
                         onChange={(e) => { setCompanySearch(e.target.value); setSelectedCompany(null); }}
                         placeholder="Firma adı yazarak arayın..."
-                        className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-10"
+                        className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white pr-10"
                     />
                     {selectedCompany && (
                         <button onClick={() => { setSelectedCompany(null); setCompanySearch(""); }}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg">✕</button>
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 text-lg">✕</button>
                     )}
                     {/* Dropdown sonuçları */}
                     {!selectedCompany && filteredCompanies.length > 0 && (
-                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
                             {filteredCompanies.map(company => (
                                 <button key={company.id}
                                     onClick={() => { setSelectedCompany(company); setCompanySearch(""); }}
-                                    className="w-full text-left px-4 py-3 text-sm hover:bg-indigo-50 border-b border-gray-100 last:border-0 flex justify-between items-center">
-                                    <span className="font-medium text-gray-900">{company.name}</span>
-                                    <span className="text-xs text-gray-400">
+                                    className="w-full text-left px-4 py-3 text-sm hover:bg-indigo-50 dark:hover:bg-slate-700 border-b border-gray-100 dark:border-slate-700 last:border-0 flex justify-between items-center">
+                                    <span className="font-medium text-gray-900 dark:text-slate-200">{company.name}</span>
+                                    <span className="text-xs text-slate-500 dark:text-slate-400">
                                         {assignments.filter(a => a.company_id === company.id && a.is_active).length} modül
                                     </span>
                                 </button>
@@ -311,9 +311,9 @@ export default function ModulesPage() {
 
                 {/* Seçili firmanın modülleri */}
                 {selectedCompany && (
-                    <div className="mt-4 border-t pt-4">
-                        <p className="text-sm text-gray-500 mb-3">
-                            <span className="font-semibold text-gray-700">{selectedCompany.name}</span> firmasının modül erişimleri:
+                    <div className="mt-4 border-t border-gray-100 dark:border-slate-800 pt-4">
+                        <p className="text-sm text-gray-500 dark:text-slate-400 mb-3">
+                            <span className="font-semibold text-gray-700 dark:text-slate-200">{selectedCompany.name}</span> firmasının modül erişimleri:
                         </p>
                         <div className="space-y-2">
                             {modules.map(mod => {
@@ -322,23 +322,23 @@ export default function ModulesPage() {
                                 const status = assignment ? getExpiryStatus(assignment) : null;
                                 return (
                                     <div key={mod.key}
-                                        className={`flex items-center justify-between px-4 py-3 rounded-lg border ${assigned ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"}`}>
+                                        className={`flex items-center justify-between px-4 py-3 rounded-lg border transition-colors ${assigned ? "bg-emerald-50 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/20" : "bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700"}`}>
                                         <div className="flex items-center gap-3">
-                                            <span className={`w-3 h-3 rounded-full ${assigned ? "bg-green-500" : "bg-gray-300"}`}></span>
+                                            <span className={`w-3 h-3 rounded-full ${assigned ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-700"}`}></span>
                                             <div>
-                                                <span className="text-sm font-medium text-gray-900">{mod.name}</span>
-                                                {mod.description && <p className="text-xs text-gray-500">{mod.description}</p>}
+                                                <span className="text-sm font-medium text-gray-900 dark:text-slate-200">{mod.name}</span>
+                                                {mod.description && <p className="text-xs text-gray-500 dark:text-slate-500">{mod.description}</p>}
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             {status && (
-                                                <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${status.color}`}>
+                                                <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full ${status.color}`}>
                                                     {status.label}
                                                 </span>
                                             )}
                                             {assigned ? (
                                                 <button onClick={() => handleRemoveAssignment(selectedCompany.id, mod.key)}
-                                                    className="text-red-600 hover:text-red-800 text-sm font-medium">Kaldır</button>
+                                                    className="text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 text-sm font-medium">Kaldır</button>
                                             ) : (
                                                 <button onClick={() => {
                                                     setSelectedModule(mod);
@@ -347,7 +347,7 @@ export default function ModulesPage() {
                                                     setIsIndefinite(false); setExpiresAt("");
                                                     setShowAssignModal(true);
                                                 }}
-                                                    className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">Ata</button>
+                                                    className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium">Ata</button>
                                             )}
                                         </div>
                                     </div>
@@ -360,27 +360,27 @@ export default function ModulesPage() {
 
             {/* Modül Kartları (Genel Bakış) */}
             <div>
-                <h2 className="text-sm font-semibold text-gray-700 uppercase mb-3">Modül Genel Bakış</h2>
+                <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-300 uppercase mb-3">Modül Genel Bakış</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {modules.map(mod => (
-                        <div key={mod.key} className="bg-white shadow rounded-lg p-5 border-l-4 border-indigo-500 relative group">
-                            <button onClick={() => openEditModal(mod)} className="absolute top-2 right-2 text-gray-400 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition">
+                        <div key={mod.key} className="bg-white dark:bg-slate-900 shadow rounded-lg p-5 border-l-4 border-indigo-500 relative group border dark:border-slate-800">
+                            <button onClick={() => openEditModal(mod)} className="absolute top-2 right-2 text-slate-400 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition">
                                 ✏️
                             </button>
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h3 className="text-sm font-semibold text-gray-900">{mod.name}</h3>
-                                    <span className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded mt-1 inline-block">
+                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-slate-100">{mod.name}</h3>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded mt-1.5 inline-block">
                                         {mod.module_categories?.name || mod.category || "Genel"}
                                     </span>
-                                    {mod.description && <p className="text-xs text-gray-500 mt-1">{mod.description}</p>}
+                                    {mod.description && <p className="text-xs text-gray-500 dark:text-slate-500 mt-2 line-clamp-2">{mod.description}</p>}
                                 </div>
                                 <button onClick={() => openAssignModal(mod)}
-                                    className="text-indigo-600 hover:text-indigo-800 text-xs font-medium ml-2">+ Ata</button>
+                                    className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-xs font-medium ml-2">+ Ata</button>
                             </div>
                             <div className="mt-3 flex items-center gap-2">
-                                <span className="text-2xl font-bold text-indigo-700">{getAssignmentCount(mod.key)}</span>
-                                <span className="text-sm text-gray-500">firma kullanıyor</span>
+                                <span className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">{getAssignmentCount(mod.key)}</span>
+                                <span className="text-sm text-gray-500 dark:text-slate-400">firma kullanıyor</span>
                             </div>
                         </div>
                     ))}
@@ -389,34 +389,34 @@ export default function ModulesPage() {
 
             {/* Atama Modal */}
             {showAssignModal && selectedModule && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg max-w-md w-full p-6 space-y-4">
-                        <h3 className="text-lg font-bold">
-                            Modül Ata: <span className="text-indigo-600">{selectedModule.name}</span>
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 rounded-lg max-w-md w-full p-6 space-y-4 shadow-2xl">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                            Modül Ata: <span className="text-indigo-600 dark:text-indigo-400">{selectedModule.name}</span>
                         </h3>
 
                         {/* Firma Arama */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Firma</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Firma</label>
                             {modalSelectedCompany ? (
-                                <div className="flex items-center justify-between bg-indigo-50 border border-indigo-200 rounded-md px-3 py-2">
-                                    <span className="text-sm font-medium text-indigo-700">{modalSelectedCompany.name}</span>
+                                <div className="flex items-center justify-between bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/30 rounded-md px-3 py-2">
+                                    <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">{modalSelectedCompany.name}</span>
                                     <button onClick={() => { setModalSelectedCompany(null); setModalCompanySearch(""); }}
-                                        className="text-indigo-400 hover:text-indigo-600">✕</button>
+                                        className="text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300">✕</button>
                                 </div>
                             ) : (
                                 <div className="relative">
                                     <input type="text" value={modalCompanySearch}
                                         onChange={(e) => setModalCompanySearch(e.target.value)}
                                         placeholder="Firma adı yazarak arayın..."
-                                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white"
                                         autoFocus />
                                     {modalFilteredCompanies.length > 0 && (
-                                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                                        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md shadow-lg max-h-48 overflow-y-auto">
                                             {modalFilteredCompanies.map(company => (
                                                 <button key={company.id}
                                                     onClick={() => { setModalSelectedCompany(company); setModalCompanySearch(company.name); }}
-                                                    className="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 border-b border-gray-100 last:border-0">
+                                                    className="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-slate-700 border-b border-gray-100 dark:border-slate-700 last:border-0 text-gray-900 dark:text-slate-200">
                                                     {company.name}
                                                 </button>
                                             ))}
@@ -430,24 +430,24 @@ export default function ModulesPage() {
                         <div className="flex items-center gap-2">
                             <input type="checkbox" id="indefinite" checked={isIndefinite}
                                 onChange={(e) => setIsIndefinite(e.target.checked)}
-                                className="h-4 w-4 text-indigo-600 rounded border-gray-300" />
-                            <label htmlFor="indefinite" className="text-sm text-gray-700">Süresiz (Sınırsız erişim)</label>
+                                className="h-4 w-4 text-indigo-600 dark:text-indigo-500 rounded border-gray-300 dark:border-slate-700 dark:bg-slate-800 accent-indigo-500" />
+                            <label htmlFor="indefinite" className="text-sm text-gray-700 dark:text-slate-300">Süresiz (Sınırsız erişim)</label>
                         </div>
 
                         {!isIndefinite && (
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Bitiş Tarihi</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Bitiş Tarihi</label>
                                 <input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)}
                                     min={new Date().toISOString().split("T")[0]}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white" />
                             </div>
                         )}
 
-                        <div className="flex justify-end gap-3 pt-2">
+                        <div className="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-slate-800">
                             <button onClick={() => setShowAssignModal(false)}
-                                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">İptal</button>
+                                className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">İptal</button>
                             <button onClick={handleAssign} disabled={assignLoading || !modalSelectedCompany}
-                                className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
+                                className="px-4 py-2 text-sm bg-indigo-600 dark:bg-indigo-500 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-400 disabled:opacity-50 transition-colors">
                                 {assignLoading ? "Atanıyor..." : "Ata"}
                             </button>
                         </div>
@@ -457,20 +457,20 @@ export default function ModulesPage() {
 
             {/* Modül Düzenleme Modal */}
             {editModal && editingModule && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg max-w-sm w-full p-6 space-y-4">
-                        <h3 className="text-lg font-bold">Modül Düzenle</h3>
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 rounded-lg max-w-sm w-full p-6 space-y-4 shadow-2xl">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Modül Düzenle</h3>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Modül Adı</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Modül Adı</label>
                             <input type="text" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white" />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Kategori</label>
                             <select
                                 value={editForm.category_id}
                                 onChange={e => setEditForm({ ...editForm, category_id: e.target.value })}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                                className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white"
                             >
                                 <option value="">Kategori Seçin...</option>
                                 {categories.map(cat => (
@@ -479,14 +479,14 @@ export default function ModulesPage() {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Açıklama</label>
                             <textarea value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 h-20" />
+                                className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white h-24 resize-none" />
                         </div>
-                        <div className="flex justify-end gap-3 pt-2">
-                            <button onClick={() => setEditModal(false)} className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">İptal</button>
+                        <div className="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-slate-800">
+                            <button onClick={() => setEditModal(false)} className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">İptal</button>
                             <button onClick={handleSaveModule} disabled={saveLoading}
-                                className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
+                                className="px-4 py-2 text-sm bg-indigo-600 dark:bg-indigo-500 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-400 disabled:opacity-50 transition-colors">
                                 {saveLoading ? "Kaydediliyor..." : "Kaydet"}
                             </button>
                         </div>
@@ -496,9 +496,9 @@ export default function ModulesPage() {
 
             {/* Kategori Yönetimi Modal */}
             {showCategoryModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg max-w-sm w-full p-6 flex flex-col max-h-[80vh]">
-                        <h3 className="text-lg font-bold mb-4">Kategori Yönetimi</h3>
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 rounded-lg max-w-sm w-full p-6 flex flex-col max-h-[80vh] shadow-2xl">
+                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Kategori Yönetimi</h3>
 
                         {/* Yeni Kategori Ekleme */}
                         <div className="flex gap-2 mb-4">
@@ -507,39 +507,39 @@ export default function ModulesPage() {
                                 placeholder="Yeni kategori adı..."
                                 value={newCategoryName}
                                 onChange={(e) => setNewCategoryName(e.target.value)}
-                                className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
+                                className="flex-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
                             <button
                                 onClick={handleSaveCategory}
                                 disabled={categoryLoading || !newCategoryName.trim()}
-                                className="bg-indigo-600 text-white px-3 py-2 rounded text-sm hover:bg-indigo-700 disabled:opacity-50"
+                                className="bg-indigo-600 dark:bg-indigo-500 text-white px-3 py-2 rounded text-sm hover:bg-indigo-700 dark:hover:bg-indigo-400 disabled:opacity-50 transition-colors"
                             >
                                 {editingCategory ? "Güncelle" : "Ekle"}
                             </button>
                         </div>
                         {editingCategory && (
-                            <div className="text-xs text-blue-600 mb-2 flex justify-between">
+                            <div className="text-xs text-blue-600 dark:text-blue-400 mb-2 flex justify-between px-1">
                                 <span>Düzenleniyor: {editingCategory.name}</span>
-                                <button onClick={() => { setEditingCategory(null); setNewCategoryName(""); }} className="underline">İptal</button>
+                                <button onClick={() => { setEditingCategory(null); setNewCategoryName(""); }} className="underline hover:no-underline">İptal</button>
                             </div>
                         )}
 
                         {/* Liste */}
-                        <div className="flex-1 overflow-y-auto border-t border-gray-100 pt-2 space-y-1">
-                            {categories.length === 0 && <p className="text-sm text-gray-500 italic text-center py-4">Henüz kategori yok.</p>}
+                        <div className="flex-1 overflow-y-auto border-t border-gray-100 dark:border-slate-800 pt-2 space-y-1">
+                            {categories.length === 0 && <p className="text-sm text-gray-500 dark:text-slate-500 italic text-center py-4">Henüz kategori yok.</p>}
                             {categories.map(cat => (
-                                <div key={cat.id} className="flex justify-between items-center p-2 hover:bg-gray-50 rounded group">
-                                    <span className="text-sm text-gray-900">{cat.name}</span>
+                                <div key={cat.id} className="flex justify-between items-center p-2 hover:bg-gray-50 dark:hover:bg-slate-800/50 rounded group transition-colors">
+                                    <span className="text-sm text-gray-900 dark:text-slate-200">{cat.name}</span>
                                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
                                             onClick={() => { setEditingCategory(cat); setNewCategoryName(cat.name); }}
-                                            className="text-blue-600 hover:text-blue-800 p-1 text-xs"
+                                            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 p-1 text-xs"
                                         >
                                             ✏️
                                         </button>
                                         <button
                                             onClick={() => handleDeleteCategory(cat.id, cat.name)}
-                                            className="text-red-600 hover:text-red-800 p-1 text-xs"
+                                            className="text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 p-1 text-xs"
                                         >
                                             🗑️
                                         </button>
@@ -548,8 +548,8 @@ export default function ModulesPage() {
                             ))}
                         </div>
 
-                        <div className="flex justify-end pt-4 mt-2 border-t border-gray-100">
-                            <button onClick={() => setShowCategoryModal(false)} className="text-gray-600 text-sm hover:text-gray-900">Kapat</button>
+                        <div className="flex justify-end pt-4 mt-2 border-t border-gray-100 dark:border-slate-800">
+                            <button onClick={() => setShowCategoryModal(false)} className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 text-sm transition-colors">Kapat</button>
                         </div>
                     </div>
                 </div>

@@ -65,9 +65,9 @@ export default function CourseManagement() {
 
     const translateStatus = (status: string) => {
         switch (status) {
-            case 'draft': return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Taslak</span>;
-            case 'published': return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Yayında</span>;
-            case 'archived': return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Arşivlendi</span>;
+            case 'draft': return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-slate-800 text-slate-400 border border-slate-700">Taslak</span>;
+            case 'published': return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Yayında</span>;
+            case 'archived': return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Arşivlendi</span>;
             default: return status;
         }
     };
@@ -76,8 +76,8 @@ export default function CourseManagement() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-lg font-semibold text-gray-800">Eğitim & Kurs Yönetimi</h2>
-                    <p className="text-sm text-gray-500">Çalışanlar için yeni bir eğitim oluşturun, yayınlananları takip edin.</p>
+                    <h2 className="text-lg font-semibold text-slate-100">Eğitim & Kurs Yönetimi</h2>
+                    <p className="text-sm text-slate-500">Çalışanlar için yeni bir eğitim oluşturun, yayınlananları takip edin.</p>
                 </div>
                 <button
                     onClick={handleCreateNew}
@@ -88,17 +88,17 @@ export default function CourseManagement() {
                 </button>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+            <div className="bg-slate-900 rounded-lg shadow-xl border border-slate-800 overflow-hidden">
+                <table className="min-w-full divide-y divide-slate-800">
+                    <thead className="bg-slate-800/50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Eğitim Adı & Sınıf</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih Aralığı</th>
-                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlem</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Eğitim Adı & Sınıf</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Tarih Aralığı</th>
+                            <th className="px-6 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Durum</th>
+                            <th className="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">İşlem</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-transparent divide-y divide-slate-800/50">
                         {courses.length === 0 ? (
                             <tr>
                                 <td colSpan={4} className="px-6 py-8 text-center text-sm text-gray-500">
@@ -107,15 +107,15 @@ export default function CourseManagement() {
                             </tr>
                         ) : (
                             courses.map((course) => (
-                                <tr key={course.id} className="hover:bg-gray-50 transition">
+                                <tr key={course.id} className="hover:bg-slate-800/50 transition">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center">
-                                            <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-lg">
+                                            <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20">
                                                 <GraduationCap className="h-6 w-6" />
                                             </div>
                                             <div className="ml-4">
-                                                <div className="text-sm font-medium text-gray-900">{course.title}</div>
-                                                <div className="text-sm text-gray-500 flex items-center mt-1">
+                                                <div className="text-sm font-medium text-slate-100">{course.title}</div>
+                                                <div className="text-sm text-slate-500 flex items-center mt-1">
                                                     <Users className="w-3.5 h-3.5 mr-1" />
                                                     {course.education_classes?.name || "Bilinmeyen Sınıf"}
                                                     {course.education_classes?.education_types?.name && ` (${course.education_classes.education_types.name})`}
@@ -124,10 +124,10 @@ export default function CourseManagement() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900 flex items-center">
-                                            <Calendar className="w-4 h-4 mr-1 text-gray-400" />
+                                        <div className="text-sm text-slate-300 flex items-center">
+                                            <Calendar className="w-4 h-4 mr-1 text-slate-500" />
                                             {course.start_date ? new Date(course.start_date).toLocaleDateString("tr-TR") : "-"}
-                                            <span className="mx-1 text-gray-400">/</span>
+                                            <span className="mx-1 text-slate-600">/</span>
                                             {course.end_date ? new Date(course.end_date).toLocaleDateString("tr-TR") : "-"}
                                         </div>
                                     </td>
@@ -135,7 +135,7 @@ export default function CourseManagement() {
                                         {translateStatus(course.status)}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <Link to={`/app/education/manage/${course.id}`} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1.5 rounded-md hover:bg-indigo-100 transition">
+                                        <Link to={`/app/education/manage/${course.id}`} className="text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 px-3 py-1.5 rounded-md hover:bg-indigo-500/20 transition border border-indigo-500/20">
                                             Yönet & Düzenle
                                         </Link>
                                     </td>

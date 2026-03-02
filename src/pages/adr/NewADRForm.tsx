@@ -146,16 +146,16 @@ export default function NewADRForm() {
     return (
         <div className="max-w-3xl mx-auto pb-20">
             {/* Header */}
-            <div className="flex items-center gap-4 mb-6 sticky top-0 bg-gray-50 z-10 py-4 px-4 sm:px-0">
-                <button onClick={() => { if (step > 1) setStep(step - 1); else navigate("/app/adr"); }} className="text-gray-500 hover:text-gray-900">
+            <div className="flex items-center gap-4 mb-6 sticky top-0 bg-slate-950/80 backdrop-blur-md z-10 py-4 px-4 sm:px-0 border-b border-slate-800 md:border-none">
+                <button onClick={() => { if (step > 1) setStep(step - 1); else navigate("/app/adr"); }} className="text-slate-500 hover:text-slate-300 transition-colors">
                     <ArrowLeft className="w-6 h-6" />
                 </button>
                 <div className="flex-1">
-                    <h1 className="text-xl font-bold text-gray-900">
+                    <h1 className="text-xl font-bold text-white">
                         {step === 1 ? "İşlem Türü" : step === 2 ? "Detay Seçimi" : step === 3 ? "Form Doldurma" : "Özet ve Onay"}
                     </h1>
-                    <div className="w-full bg-gray-200 h-2 rounded-full mt-2">
-                        <div className="bg-indigo-600 h-2 rounded-full transition-all duration-300" style={{ width: `${(step / 4) * 100}%` }}></div>
+                    <div className="w-full bg-slate-800 h-2 rounded-full mt-2">
+                        <div className="bg-indigo-500 h-2 rounded-full transition-all duration-300 shadow-sm shadow-indigo-500/20" style={{ width: `${(step / 4) * 100}%` }}></div>
                     </div>
                 </div>
             </div>
@@ -186,7 +186,7 @@ export default function NewADRForm() {
                 {/* STEP 2: Alt Tip */}
                 {step === 2 && (
                     <div className="space-y-4">
-                        <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                        <h2 className="text-lg font-semibold text-slate-100 mb-4">
                             {processType === "ALIM" ? "Araç / Ambalaj Tipi" : "Gönderilen Materyal Tipi"}
                         </h2>
 
@@ -235,18 +235,18 @@ export default function NewADRForm() {
                     })} className="space-y-8">
 
                         {/* Genel Bilgiler */}
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-indigo-100">
-                            <h3 className="font-semibold text-indigo-900 border-b border-indigo-100 pb-2 mb-4">Sefer Bilgileri</h3>
+                        <div className="bg-slate-900 p-4 rounded-lg shadow-sm border border-slate-800">
+                            <h3 className="font-semibold text-indigo-400 border-b border-slate-800 pb-2 mb-4">Sefer Bilgileri</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Araç Plakası</label>
-                                    <input {...register("plate_no", { required: true })} className="w-full border rounded px-3 py-2" placeholder="34 ABC 123" />
-                                    {errors.plate_no && <span className="text-red-500 text-xs">Gerekli</span>}
+                                    <label className="block text-sm font-medium text-slate-400 mb-1">Araç Plakası</label>
+                                    <input {...register("plate_no", { required: true })} className="w-full bg-slate-800 border-slate-700 text-slate-100 rounded px-3 py-2 focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="34 ABC 123" />
+                                    {errors.plate_no && <span className="text-rose-500 text-xs">Gerekli</span>}
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Şoför Adı Soyadı</label>
-                                    <input {...register("driver_name", { required: true })} className="w-full border rounded px-3 py-2" placeholder="Ad Soyad" />
-                                    {errors.driver_name && <span className="text-red-500 text-xs">Gerekli</span>}
+                                    <label className="block text-sm font-medium text-slate-400 mb-1">Şoför Adı Soyadı</label>
+                                    <input {...register("driver_name", { required: true })} className="w-full bg-slate-800 border-slate-700 text-slate-100 rounded px-3 py-2 focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="Ad Soyad" />
+                                    {errors.driver_name && <span className="text-rose-500 text-xs">Gerekli</span>}
                                 </div>
                             </div>
                         </div>
@@ -254,13 +254,13 @@ export default function NewADRForm() {
                         {/* Dinamik Form Bölümleri */}
                         {activeForms.map((formDef, fIndex) => (
                             <div key={fIndex} className="space-y-6">
-                                <div className="bg-indigo-50 p-3 rounded text-indigo-900 font-bold text-center uppercase tracking-wide">
+                                <div className="bg-indigo-500/10 p-3 rounded text-indigo-300 font-bold text-center uppercase tracking-wide border border-indigo-500/20">
                                     {formDef.title}
                                 </div>
 
                                 {formDef.sections.map((section, sIndex) => (
                                     <div key={sIndex} className="space-y-3">
-                                        <h4 className="text-sm font-bold text-gray-500 uppercase ml-1">{section.title}</h4>
+                                        <h4 className="text-sm font-bold text-slate-500 uppercase ml-1">{section.title}</h4>
                                         <div className="space-y-3">
                                             {section.questions.map((q) => (
                                                 <QuestionBlock
@@ -288,16 +288,16 @@ export default function NewADRForm() {
                 {/* STEP 4: Özet, Fotoğraf, Konum */}
                 {step === 4 && (
                     <div className="space-y-6">
-                        <div className="bg-green-50 p-4 rounded-lg border border-green-200 text-green-800 flex items-start gap-3">
+                        <div className="bg-emerald-500/10 p-4 rounded-lg border border-emerald-500/20 text-emerald-400 flex items-start gap-3 shadow-lg shadow-emerald-500/5">
                             <CheckCircle className="w-6 h-6 flex-shrink-0" />
                             <div>
                                 <h3 className="font-bold">Form Verileri Hazır</h3>
-                                <p className="text-sm">Lütfen son olarak fotoğraf ve konum ekleyerek kaydı tamamlayın.</p>
+                                <p className="text-sm text-emerald-400/80">Lütfen son olarak fotoğraf ve konum ekleyerek kaydı tamamlayın.</p>
                             </div>
                         </div>
 
                         {/* Fotoğraf Yükleme */}
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                        <div className="bg-slate-900 p-4 rounded-lg shadow-sm border border-slate-800">
                             <ImageUploader
                                 currentImages={images}
                                 onUpload={(url, name) => setImages([...images, { url, name }])}
@@ -306,35 +306,35 @@ export default function NewADRForm() {
                         </div>
 
                         {/* Konum */}
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                        <div className="bg-slate-900 p-4 rounded-lg shadow-sm border border-slate-800">
                             <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-sm font-medium text-gray-700">Konum Bilgisi</h3>
-                                {location && <span className="text-xs text-green-600 font-medium">Konum Alındı ✓</span>}
+                                <h3 className="text-sm font-medium text-slate-400">Konum Bilgisi</h3>
+                                {location && <span className="text-xs text-emerald-400 font-medium">Konum Alındı ✓</span>}
                             </div>
 
                             {!location ? (
                                 <button
                                     onClick={getLocation}
                                     disabled={locationLoading}
-                                    className="w-full flex items-center justify-center gap-2 py-3 border-2 border-indigo-100 bg-indigo-50 text-indigo-700 rounded-lg font-medium hover:bg-indigo-100 transition-colors"
+                                    className="w-full flex items-center justify-center gap-2 py-3 border-2 border-indigo-500/20 bg-indigo-500/5 text-indigo-400 rounded-lg font-medium hover:bg-indigo-500/10 transition-colors"
                                 >
                                     <MapPin className="w-5 h-5" />
                                     {locationLoading ? "Konum Alınıyor..." : "Mevcut Konumu Kaydet"}
                                 </button>
                             ) : (
-                                <div className="bg-gray-50 p-3 rounded border text-sm text-gray-600 flex justify-between items-center">
-                                    <span>{location.lat.toFixed(6)}, {location.lng.toFixed(6)}</span>
-                                    <button onClick={getLocation} className="text-xs text-indigo-600 underline">Güncelle</button>
+                                <div className="bg-slate-800 p-3 rounded border border-slate-700 text-sm text-slate-300 flex justify-between items-center">
+                                    <span className="font-mono">{location.lat.toFixed(6)}, {location.lng.toFixed(6)}</span>
+                                    <button onClick={getLocation} className="text-xs text-indigo-400 underline hover:text-indigo-300">Güncelle</button>
                                 </div>
                             )}
                         </div>
 
                         {/* Notlar */}
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Notlar (Opsiyonel)</label>
+                        <div className="bg-slate-900 p-4 rounded-lg shadow-sm border border-slate-800">
+                            <label className="block text-sm font-medium text-slate-400 mb-1">Notlar (Opsiyonel)</label>
                             <textarea
                                 {...register("notes")}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm h-24"
+                                className="w-full bg-slate-800 border-slate-700 text-slate-100 rounded-md px-3 py-2 text-sm h-24 focus:ring-1 focus:ring-indigo-500 outline-none"
                                 placeholder="Varsa ek açıklamalar..."
                             />
                         </div>
@@ -358,12 +358,12 @@ function SelectionCard({ title, desc, selected, onClick }: { title: string, desc
         <div
             onClick={onClick}
             className={`p-6 rounded-lg border-2 cursor-pointer transition-all ${selected
-                ? "border-indigo-600 bg-indigo-50 ring-1 ring-indigo-600"
-                : "border-gray-200 bg-white hover:border-indigo-300 hover:shadow-md"
+                ? "border-indigo-500 bg-indigo-500/10 ring-1 ring-indigo-500/50 shadow-lg shadow-indigo-500/10"
+                : "border-slate-800 bg-slate-900 hover:border-slate-700 hover:bg-slate-800/80"
                 }`}
         >
-            <h3 className={`text-lg font-bold mb-1 ${selected ? "text-indigo-900" : "text-gray-900"}`}>{title}</h3>
-            <p className={`text-sm ${selected ? "text-indigo-700" : "text-gray-500"}`}>{desc}</p>
+            <h3 className={`text-lg font-bold mb-1 ${selected ? "text-indigo-400" : "text-slate-100"}`}>{title}</h3>
+            <p className={`text-sm ${selected ? "text-indigo-300/80" : "text-slate-400"}`}>{desc}</p>
         </div>
     );
 }
@@ -371,8 +371,8 @@ function SelectionCard({ title, desc, selected, onClick }: { title: string, desc
 function Button({ children, onClick, disabled, type = "button", variant = "primary" }: any) {
     const base = "px-6 py-3 rounded-md font-bold text-sm transition-colors flex items-center justify-center min-w-[120px]";
     const styles = variant === "primary"
-        ? "bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50";
+        ? "bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-600/20"
+        : "bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700";
 
     return (
         <button type={type} onClick={onClick} disabled={disabled} className={`${base} ${styles}`}>

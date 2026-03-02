@@ -1,5 +1,6 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
+import { useThemeStore } from "@/stores/themeStore";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ProfileCompletion from "@/pages/auth/ProfileCompletion";
@@ -12,7 +13,7 @@ interface ActiveModule {
 
 // --- İkon Haritası ---
 const ModuleIcon = ({ moduleKey, className = "w-4 h-4" }: { moduleKey: string; className?: string }) => {
-    const icons: Record<string, JSX.Element> = {
+    const icons: Record<string, React.ReactNode> = {
         evrak_takip: (
             <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -53,6 +54,16 @@ const ModuleIcon = ({ moduleKey, className = "w-4 h-4" }: { moduleKey: string; c
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
         ),
+        isg_merkezi: (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+        ),
+        personel_takip: (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+        ),
     };
     return icons[moduleKey] ?? (
         <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,6 +74,7 @@ const ModuleIcon = ({ moduleKey, className = "w-4 h-4" }: { moduleKey: string; c
 
 export default function DashboardLayout() {
     const { signOut, user, profile, loading } = useAuthStore();
+    const { theme, toggleTheme } = useThemeStore();
     const navigate = useNavigate();
     const location = useLocation();
     const [companyName, setCompanyName] = useState<string>("");
@@ -172,6 +184,8 @@ export default function DashboardLayout() {
         org_chart: "/app/org-chart",
         work_permits: "/app/work-permits",
         education: "/app/education",
+        isg_merkezi: "/app/isg-merkezi",
+        personel_takip: "/app/personel-takip",
     };
 
     const getRoleLabel = () => {
@@ -182,10 +196,10 @@ export default function DashboardLayout() {
     };
 
     const getRoleBadgeColor = () => {
-        if (profile?.role === "system_admin") return "bg-rose-500/20 text-rose-300 border border-rose-500/30";
-        if (profile?.role === "company_manager") return "bg-violet-500/20 text-violet-300 border border-violet-500/30";
-        if (profile?.role === "subcontractor_manager") return "bg-amber-500/20 text-amber-300 border border-amber-500/30";
-        return "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+        if (profile?.role === "system_admin") return "bg-rose-500/10 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/20 dark:border-rose-500/30";
+        if (profile?.role === "company_manager") return "bg-violet-500/10 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300 border border-violet-500/20 dark:border-violet-500/30";
+        if (profile?.role === "subcontractor_manager") return "bg-amber-500/10 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/20 dark:border-amber-500/30";
+        return "bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 dark:border-emerald-500/30";
     };
 
     const groupedModules = activeModules.reduce((acc, mod) => {
@@ -201,13 +215,13 @@ export default function DashboardLayout() {
     const navLinkClass = (path: string) =>
         `flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-150 group ${isActive(path)
             ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25"
-            : "text-slate-400 hover:bg-slate-700/60 hover:text-slate-100"
+            : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-indigo-600 dark:hover:text-slate-100"
         }`;
 
     const userInitial = (user?.email ?? "?").charAt(0).toUpperCase();
 
     return (
-        <div className="min-h-screen flex bg-slate-950 print:bg-white relative">
+        <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950 print:bg-white relative transition-colors duration-300">
             {/* Mobile Overlay */}
             {isSidebarOpen && (
                 <div
@@ -218,14 +232,14 @@ export default function DashboardLayout() {
 
             {/* ─── Sidebar ─── */}
             <aside className={`
-                w-64 bg-slate-900 border-r border-slate-800 print:hidden
+                w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 print:hidden
                 fixed inset-y-0 left-0 z-50 flex flex-col
                 transform transition-transform duration-300 ease-in-out
                 md:relative md:translate-x-0
                 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
             `}>
                 {/* Logo / Brand */}
-                <div className="px-5 py-5 border-b border-slate-800">
+                <div className="px-5 py-5 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
@@ -234,8 +248,8 @@ export default function DashboardLayout() {
                                 </svg>
                             </div>
                             <div>
-                                <h1 className="text-sm font-bold text-white leading-none">Bulut Otomasyon</h1>
-                                <p className="text-[10px] text-slate-500 mt-0.5">Platform</p>
+                                <h1 className="text-sm font-bold text-slate-900 dark:text-white leading-none">Bulut Otomasyon</h1>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Platform</p>
                             </div>
                         </div>
                         <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-slate-500 hover:text-slate-300 p-1 rounded-md">
@@ -248,11 +262,11 @@ export default function DashboardLayout() {
                     {/* User info */}
                     {profile && (
                         <div className="mt-4 flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 border border-slate-600 flex items-center justify-center text-xs font-bold text-slate-300">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-600 dark:to-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-300">
                                 {userInitial}
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="text-xs font-medium text-slate-200 truncate">{user?.email}</p>
+                                <p className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate">{user?.email}</p>
                                 <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded-full mt-0.5 ${getRoleBadgeColor()}`}>
                                     {getRoleLabel()}
                                 </span>
@@ -283,7 +297,7 @@ export default function DashboardLayout() {
                     {profile?.role === "system_admin" && (
                         <>
                             <div className="pt-4 pb-1 px-2">
-                                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Yönetim</p>
+                                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-600">Yönetim</p>
                             </div>
                             {[
                                 {
@@ -320,7 +334,7 @@ export default function DashboardLayout() {
                     {profile?.role === "company_manager" && (
                         <>
                             <div className="pt-4 pb-1 px-2">
-                                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Şirket İşlemleri</p>
+                                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-600">Şirket İşlemleri</p>
                             </div>
                             {[
                                 {
@@ -356,7 +370,7 @@ export default function DashboardLayout() {
                     {sortedCategories.map(category => (
                         <div key={category}>
                             <div className="pt-4 pb-1 px-2">
-                                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">{category}</p>
+                                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-600">{category}</p>
                             </div>
                             {groupedModules[category].map(mod => {
                                 const route = moduleRoutes[mod.module_key] || `/app/${mod.module_key}`;
@@ -375,7 +389,7 @@ export default function DashboardLayout() {
                 </nav>
 
                 {/* Ayarlar & Çıkış */}
-                <div className="p-3 border-t border-slate-800 space-y-1">
+                <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-1">
                     <a href="/app/settings" onClick={handleNavigation} className={navLinkClass("/app/settings")}>
                         <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -396,9 +410,9 @@ export default function DashboardLayout() {
             </aside>
 
             {/* ─── Main Content ─── */}
-            <main className="flex-1 flex flex-col print:block w-full md:w-auto min-h-screen bg-slate-950">
+            <main className="flex-1 flex flex-col print:block w-full md:w-auto min-h-screen bg-slate-50 dark:bg-slate-950">
                 {/* Top Header */}
-                <header className="h-14 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex items-center justify-between px-4 sm:px-6 print:hidden sticky top-0 z-30">
+                <header className="h-14 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 sm:px-6 print:hidden sticky top-0 z-30">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -408,19 +422,34 @@ export default function DashboardLayout() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
                         </button>
-                        <div className="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-300">
-                            <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+                            <svg className="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                             </svg>
-                            <span className="text-slate-600">/</span>
+                            <span className="text-slate-300 dark:text-slate-600">/</span>
                             <span>Hoşgeldiniz</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className="hidden sm:block text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-full border border-slate-700">
+                        <button
+                            onClick={toggleTheme}
+                            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm border border-slate-200 dark:border-slate-700"
+                            title={theme === 'light' ? 'Karanlık moda geç' : 'Aydınlık moda geç'}
+                        >
+                            {theme === 'light' ? (
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                </svg>
+                            ) : (
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                            )}
+                        </button>
+                        <span className="hidden sm:block text-xs text-slate-500 bg-slate-50 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">
                             {user?.email}
                         </span>
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white shadow-md">
+                        <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-md">
                             {userInitial}
                         </div>
                     </div>

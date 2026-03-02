@@ -95,45 +95,50 @@ export default function CourseParticipants({ courseId }: { courseId: string }) {
         }
     };
 
-    if (loading) return <div className="text-gray-500 text-sm">Katılımcı listesi yükleniyor...</div>;
+    if (loading) return <div className="text-slate-500 text-sm">Katılımcı listesi yükleniyor...</div>;
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-4">
-                <p className="text-sm text-gray-600">Bu eğitimi alması gereken personelleri seçin.</p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                    <h3 className="text-sm font-bold text-white uppercase tracking-widest">Katılımcı Atama</h3>
+                    <p className="text-xs text-slate-500 mt-1">Bu eğitimi alması gereken personelleri seçin.</p>
+                </div>
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700 disabled:opacity-50 transition"
+                    className="px-6 py-2.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-500 shadow-lg shadow-indigo-600/20 disabled:opacity-50 transition-all uppercase tracking-widest flex items-center justify-center min-w-[140px]"
                 >
                     {saving ? "Kaydediliyor..." : "Seçimi Kaydet"}
                 </button>
             </div>
 
-            <div className="border border-gray-200 rounded-lg overflow-hidden max-h-[500px] overflow-y-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50 sticky top-0">
+            <div className="border border-slate-800 rounded-xl overflow-hidden shadow-2xl max-h-[500px] overflow-y-auto bg-slate-900">
+                <table className="min-w-full divide-y divide-slate-800">
+                    <thead className="bg-slate-800/50 sticky top-0 backdrop-blur-md">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Seç</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ad Soyad</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">TC Kimlik / Sicil</th>
+                            <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Seç</th>
+                            <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Ad Soyad</th>
+                            <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">TC Kimlik / Sicil</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-slate-800/50">
                         {allProfiles.map((p) => (
-                            <tr key={p.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => toggleSelection(p.id)}>
+                            <tr key={p.id} className="hover:bg-slate-800/60 cursor-pointer transition-colors group" onClick={() => toggleSelection(p.id)}>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedUserIds.has(p.id)}
-                                        readOnly
-                                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                                    />
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedUserIds.has(p.id)}
+                                            readOnly
+                                            className="h-4 w-4 bg-slate-800 border-slate-700 text-indigo-600 focus:ring-indigo-500 rounded transition-all cursor-pointer"
+                                        />
+                                    </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-200 group-hover:text-indigo-400 transition-colors">
                                     {p.first_name} {p.last_name}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-mono">
                                     {p.tc_no || "-"}
                                 </td>
                             </tr>
@@ -142,8 +147,9 @@ export default function CourseParticipants({ courseId }: { courseId: string }) {
                 </table>
             </div>
 
-            <div className="mt-3 text-sm text-gray-500">
-                Toplam <span className="font-semibold text-gray-900">{selectedUserIds.size}</span> personel seçildi.
+            <div className="mt-4 text-xs text-slate-500 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                Toplam <span className="font-bold text-slate-300">{selectedUserIds.size}</span> personel seçildi.
             </div>
         </div>
     );

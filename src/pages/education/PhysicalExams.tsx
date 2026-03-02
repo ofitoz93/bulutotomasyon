@@ -232,90 +232,90 @@ export default function PhysicalExams() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-lg shadow-sm border border-gray-200 gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-900 p-6 rounded-xl shadow-2xl border border-slate-800 gap-4">
                 <div>
-                    <h2 className="text-xl font-bold text-gray-800">Fiziki Sınıf Sınavları</h2>
-                    <p className="text-sm text-gray-500 mt-1">Sınıf içi eğitimler için tarih bazlı online testler ve QR kodlar oluşturun.</p>
+                    <h2 className="text-xl font-bold text-white">Fiziki Sınıf Sınavları</h2>
+                    <p className="text-sm text-slate-500 mt-1">Sınıf içi eğitimler için tarih bazlı online testler ve QR kodlar oluşturun.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                    <div className="flex bg-gray-50 border border-gray-200 rounded-lg p-1">
+                    <div className="flex bg-slate-800 border border-slate-700 rounded-lg p-1.5 shadow-inner">
                         <select
                             value={filterMonth}
                             onChange={(e) => setFilterMonth(e.target.value)}
-                            className="bg-transparent text-sm border-none focus:ring-0 cursor-pointer min-w-[100px]"
+                            className="bg-transparent text-sm text-slate-200 border-none focus:ring-0 cursor-pointer min-w-[100px] outline-none"
                         >
-                            <option value="all">Tüm Aylar</option>
-                            <option value="0">Ocak</option>
-                            <option value="1">Şubat</option>
-                            <option value="2">Mart</option>
-                            <option value="3">Nisan</option>
-                            <option value="4">Mayıs</option>
-                            <option value="5">Haziran</option>
-                            <option value="6">Temmuz</option>
-                            <option value="7">Ağustos</option>
-                            <option value="8">Eylül</option>
-                            <option value="9">Ekim</option>
-                            <option value="10">Kasım</option>
-                            <option value="11">Aralık</option>
+                            <option value="all" className="bg-slate-900">Tüm Aylar</option>
+                            <option value="0" className="bg-slate-900">Ocak</option>
+                            <option value="1" className="bg-slate-900">Şubat</option>
+                            <option value="2" className="bg-slate-900">Mart</option>
+                            <option value="3" className="bg-slate-900">Nisan</option>
+                            <option value="4" className="bg-slate-900">Mayıs</option>
+                            <option value="5" className="bg-slate-900">Haziran</option>
+                            <option value="6" className="bg-slate-900">Temmuz</option>
+                            <option value="7" className="bg-slate-900">Ağustos</option>
+                            <option value="8" className="bg-slate-900">Eylül</option>
+                            <option value="9" className="bg-slate-900">Ekim</option>
+                            <option value="10" className="bg-slate-900">Kasım</option>
+                            <option value="11" className="bg-slate-900">Aralık</option>
                         </select>
-                        <div className="w-px h-6 bg-gray-300 mx-1 self-center"></div>
+                        <div className="w-px h-6 bg-slate-700 mx-1 self-center"></div>
                         <select
                             value={filterYear}
                             onChange={(e) => setFilterYear(e.target.value)}
-                            className="bg-transparent text-sm border-none focus:ring-0 cursor-pointer min-w-[80px]"
+                            className="bg-transparent text-sm text-slate-200 border-none focus:ring-0 cursor-pointer min-w-[80px] outline-none"
                         >
                             {[...Array(5)].map((_, i) => (
-                                <option key={i} value={(currentYear - 2 + i).toString()}>{currentYear - 2 + i}</option>
+                                <option key={i} value={(currentYear - 2 + i).toString()} className="bg-slate-900">{currentYear - 2 + i}</option>
                             ))}
                         </select>
                     </div>
                     <button
                         onClick={() => setShowForm(!showForm)}
-                        className="flex-shrink-0 flex items-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
+                        className="flex-shrink-0 flex items-center px-6 py-2.5 bg-indigo-600 text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-indigo-500 shadow-lg shadow-indigo-600/20 transition-all"
                     >
-                        {showForm ? 'İptal' : <><Plus className="w-5 h-5 mr-1" /> Yeni Sınav</>}
+                        {showForm ? 'İptal' : <><Plus className="w-4 h-4 mr-2" /> Yeni Sınav</>}
                     </button>
                 </div>
             </div>
 
             {showForm && (
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-indigo-200">
-                    <h3 className="font-semibold text-lg border-b pb-3 mb-4">Yeni Sınav Oluştur</h3>
-                    <form onSubmit={handleCreate} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="bg-slate-900 p-8 rounded-xl shadow-2xl border border-indigo-500/30">
+                    <h3 className="font-bold text-lg text-white border-b border-slate-800 pb-4 mb-6 uppercase tracking-wider">Yeni Sınav Oluştur</h3>
+                    <form onSubmit={handleCreate} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div className="lg:col-span-3">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Eğitim / Sınav Adı</label>
-                                <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full px-3 py-2 border rounded-md focus:ring-1 focus:ring-indigo-500" placeholder="Örn: İs İskelesi Güvenliği Eğitimi Sınavı" />
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Eğitim / Sınav Adı</label>
+                                <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-slate-800 border-slate-700 text-slate-200 px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all placeholder-slate-600" placeholder="Örn: İs İskelesi Güvenliği Eğitimi Sınavı" />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Tarih</label>
-                                <input required type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full px-3 py-2 border rounded-md focus:ring-1 focus:ring-indigo-500" />
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Tarih</label>
+                                <input required type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full bg-slate-800 border-slate-700 text-slate-200 px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all" />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Saat</label>
-                                <input required type="time" value={time} onChange={e => setTime(e.target.value)} className="w-full px-3 py-2 border rounded-md focus:ring-1 focus:ring-indigo-500" />
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Saat</label>
+                                <input required type="time" value={time} onChange={e => setTime(e.target.value)} className="w-full bg-slate-800 border-slate-700 text-slate-200 px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all" />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Geçme Notu</label>
-                                <input required type="number" min="0" max="100" value={passingScore} onChange={e => setPassingScore(Number(e.target.value))} className="w-full px-3 py-2 border rounded-md focus:ring-1 focus:ring-indigo-500" />
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Geçme Notu</label>
+                                <input required type="number" min="0" max="100" value={passingScore} onChange={e => setPassingScore(Number(e.target.value))} className="w-full bg-slate-800 border-slate-700 text-slate-200 px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all" />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Süre (Dakika, 0=Süresiz)</label>
-                                <input required type="number" min="0" value={timeLimit} onChange={e => setTimeLimit(Number(e.target.value))} className="w-full px-3 py-2 border rounded-md focus:ring-1 focus:ring-indigo-500" />
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Süre (Dakika, 0=Süresiz)</label>
+                                <input required type="number" min="0" value={timeLimit} onChange={e => setTimeLimit(Number(e.target.value))} className="w-full bg-slate-800 border-slate-700 text-slate-200 px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all" />
                             </div>
 
                             <div className="lg:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Taahhütname Metni (İsteğe Bağlı)</label>
-                                <input type="text" value={agreementText} onChange={e => setAgreementText(e.target.value)} className="w-full px-3 py-2 border rounded-md focus:ring-1 focus:ring-indigo-500" placeholder="Sınav öncesi zorunlu kabul metni..." />
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Taahhütname Metni (İsteğe Bağlı)</label>
+                                <input type="text" value={agreementText} onChange={e => setAgreementText(e.target.value)} className="w-full bg-slate-800 border-slate-700 text-slate-200 px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all placeholder-slate-600" placeholder="Sınav öncesi zorunlu kabul metni..." />
                             </div>
                         </div>
 
-                        <div className="flex justify-end pt-2">
-                            <button type="submit" disabled={submitting} className="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition disabled:opacity-50">
+                        <div className="flex justify-end pt-4">
+                            <button type="submit" disabled={submitting} className="px-10 py-3.5 bg-indigo-600 text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-indigo-500 shadow-xl shadow-indigo-600/20 transition-all disabled:opacity-50 active:scale-95">
                                 {submitting ? "Kaydediliyor..." : "Sınavı Oluştur"}
                             </button>
                         </div>
@@ -324,16 +324,16 @@ export default function PhysicalExams() {
             )}
 
             {loading ? (
-                <div className="text-gray-500 p-8 text-center bg-white rounded-lg border border-gray-200">Kayıtlar yükleniyor...</div>
+                <div className="text-slate-500 p-12 text-center bg-slate-900 rounded-xl border border-slate-800 shadow-inner italic">Kayıtlar yükleniyor...</div>
             ) : exams.length === 0 ? (
-                <div className="text-gray-500 p-8 text-center bg-white rounded-lg border border-gray-200">Hiç fiziki sınav kaydı bulunmuyor.</div>
+                <div className="text-slate-500 p-12 text-center bg-slate-900 rounded-xl border border-slate-800 shadow-inner italic uppercase tracking-widest text-xs font-bold">Hiç fiziki sınav kaydı bulunmuyor.</div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {exams.filter(exam => {
                         if (!exam.start_date) return true;
-                        const date = new Date(exam.start_date);
-                        const matchYear = filterYear === "all" || date.getFullYear().toString() === filterYear;
-                        const matchMonth = filterMonth === "all" || date.getMonth().toString() === filterMonth;
+                        const dateNum = new Date(exam.start_date);
+                        const matchYear = filterYear === "all" || dateNum.getFullYear().toString() === filterYear;
+                        const matchMonth = filterMonth === "all" || dateNum.getMonth().toString() === filterMonth;
                         return matchYear && matchMonth;
                     }).map(exam => {
                         const baseUrl = window.location.origin;
@@ -342,46 +342,46 @@ export default function PhysicalExams() {
                         const formattedDate = exam.start_date ? new Date(exam.start_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Belirtilmemiş';
 
                         return (
-                            <div key={exam.id} className="bg-white rounded-xl shadow-sm border border-gray-200 hover:border-indigo-300 transition overflow-hidden flex flex-col">
-                                <div className="p-5 flex-grow">
-                                    <h3 className="text-lg font-bold text-gray-800 mb-3 line-clamp-2">{exam.title}</h3>
+                            <div key={exam.id} className="bg-slate-900 rounded-2xl shadow-xl border border-slate-800 hover:border-indigo-500/50 transition-all duration-300 overflow-hidden flex flex-col group">
+                                <div className="p-6 flex-grow">
+                                    <h3 className="text-lg font-bold text-white mb-4 line-clamp-2 group-hover:text-indigo-400 transition-colors">{exam.title}</h3>
 
-                                    <div className="space-y-2 mb-4">
-                                        <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                                            <Calendar className="w-4 h-4 text-indigo-500" /> {formattedDate}
+                                    <div className="space-y-3 mb-6">
+                                        <div className="flex items-center gap-3 text-sm text-slate-300 bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                                            <Calendar className="w-4 h-4 text-indigo-400" /> {formattedDate}
                                         </div>
-                                        <div className="flex items-center gap-4 text-sm text-gray-600 px-1">
-                                            <span className="flex items-center"><Award className="w-4 h-4 text-green-500 mr-1" /> {exam.passing_score} Geçme Notu</span>
-                                            <span className="flex items-center"><Clock className="w-4 h-4 text-orange-500 mr-1" /> {exam.course_exams?.[0]?.time_limit_minutes || 'Süresiz'} </span>
+                                        <div className="flex items-center gap-6 text-[11px] text-slate-400 px-1 font-bold uppercase tracking-wider">
+                                            <span className="flex items-center"><Award className="w-4 h-4 text-emerald-500 mr-2" /> {exam.passing_score} Geçme</span>
+                                            <span className="flex items-center"><Clock className="w-4 h-4 text-amber-500 mr-2" /> {exam.course_exams?.[0]?.time_limit_minutes || 'Süresiz'} </span>
                                         </div>
                                     </div>
 
                                     {examId && (
                                         <div className="flex gap-2">
-                                            <a href={`/app/education/manage/${exam.id}?tab=exam`} className="flex-1 text-center bg-indigo-50 text-indigo-700 py-2 rounded-lg text-sm font-medium hover:bg-indigo-100 transition">
-                                                Soruları Düzenle
+                                            <a href={`/app/education/manage/${exam.id}?tab=exam`} className="flex-1 text-center bg-indigo-500/10 text-indigo-400 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-indigo-500/20 border border-indigo-500/20 transition-all">
+                                                Düzenle
                                             </a>
-                                            <a href={`/app/education/manage/${exam.id}?tab=report`} className="flex-1 text-center bg-emerald-50 text-emerald-700 py-2 rounded-lg text-sm font-medium hover:bg-emerald-100 transition">
-                                                Sonuç Raporu
+                                            <a href={`/app/education/manage/${exam.id}?tab=report`} className="flex-1 text-center bg-emerald-500/10 text-emerald-400 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-emerald-500/20 border border-emerald-500/20 transition-all">
+                                                Rapor
                                             </a>
                                         </div>
                                     )}
                                 </div>
 
-                                <div className="bg-gray-50 p-4 border-t border-gray-100 flex items-center justify-between">
+                                <div className="bg-slate-800/50 p-4 border-t border-slate-800/50 flex items-center justify-between">
                                     <div className="flex gap-2">
                                         {examId && (
                                             <>
-                                                <button onClick={() => handlePrintQRCode(examId)} className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded bg-white border border-gray-200 shadow-sm" title="QR Yazdır">
+                                                <button onClick={() => handlePrintQRCode(examId)} className="p-2.5 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-xl bg-slate-800 border border-slate-700 transition-all" title="QR Yazdır">
                                                     <QrCode className="w-4 h-4" />
                                                 </button>
-                                                <button onClick={() => handleDownloadQRCode(examId, exam.title)} className="p-2 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded bg-white border border-gray-200 shadow-sm" title="Büyük QR İndir">
+                                                <button onClick={() => handleDownloadQRCode(examId, exam.title)} className="p-2.5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl bg-slate-800 border border-slate-700 transition-all" title="QR İndir">
                                                     <Download className="w-4 h-4" />
                                                 </button>
                                             </>
                                         )}
                                     </div>
-                                    <button onClick={() => handleDelete(exam.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition">
+                                    <button onClick={() => handleDelete(exam.id)} className="p-2.5 text-slate-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all">
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>

@@ -140,69 +140,69 @@ export default function AnnouncementsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Sol Taraf: Duyuru Gönderme Formu */}
-                <div className="lg:col-span-1 border rounded-lg bg-white shadow p-5">
-                    <h2 className="text-lg font-semibold mb-4 border-b pb-2">Yeni Duyuru Gönder</h2>
+                <div className="lg:col-span-1 border border-gray-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 shadow p-5">
+                    <h2 className="text-lg font-semibold mb-4 border-b border-gray-100 dark:border-slate-800 pb-2 text-gray-900 dark:text-white">Yeni Duyuru Gönder</h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Duyuru Başlığı</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Duyuru Başlığı *</label>
                             <input
                                 type="text"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white rounded-md px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-500"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">İçerik</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">İçerik *</label>
                             <textarea
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
                                 rows={4}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white rounded-md px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-500"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Hedef Kitle</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Hedef Kitle</label>
                             <div className="space-y-2">
                                 <label className="flex items-center">
                                     <input
                                         type="radio"
                                         checked={targetType === "global"}
                                         onChange={() => setTargetType("global")}
-                                        className="text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                                        className="text-indigo-600 focus:ring-indigo-500 h-4 w-4 bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700"
                                     />
-                                    <span className="ml-2 text-sm text-gray-700">Tüm Şirket Yöneticileri</span>
+                                    <span className="ml-2 text-sm text-gray-700 dark:text-slate-300">Tüm Şirket Yöneticileri</span>
                                 </label>
                                 <label className="flex items-center">
                                     <input
                                         type="radio"
                                         checked={targetType === "specific"}
                                         onChange={() => setTargetType("specific")}
-                                        className="text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                                        className="text-indigo-600 focus:ring-indigo-500 h-4 w-4 bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700"
                                     />
-                                    <span className="ml-2 text-sm text-gray-700">Belirli Bir Şirkete Özel</span>
+                                    <span className="ml-2 text-sm text-gray-700 dark:text-slate-300">Belirli Bir Şirkete Özel</span>
                                 </label>
                             </div>
                         </div>
 
                         {targetType === "specific" && (
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Şirket Seçin</label>
-                                <div className="border border-gray-300 rounded-md overflow-hidden">
-                                    <div className="p-2 border-b bg-gray-50">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Şirket Seçin</label>
+                                <div className="border border-gray-300 dark:border-slate-700 rounded-md overflow-hidden">
+                                    <div className="p-2 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50">
                                         <input
                                             type="text"
                                             placeholder="Şirket adı ara..."
                                             value={companySearchTerm}
                                             onChange={(e) => setCompanySearchTerm(e.target.value)}
-                                            className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                            className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded px-2 py-1 text-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 dark:text-white"
                                         />
                                     </div>
-                                    <div className="max-h-48 overflow-y-auto p-2 space-y-1">
+                                    <div className="max-h-48 overflow-y-auto p-2 space-y-1 bg-white dark:bg-slate-900">
                                         {companies
                                             .filter(c => c.name.toLowerCase().includes(companySearchTerm.toLowerCase()))
                                             .map(c => {
@@ -210,7 +210,7 @@ export default function AnnouncementsPage() {
                                                 return (
                                                     <label
                                                         key={c.id}
-                                                        className={`flex items-center p-2 rounded cursor-pointer transition-colors ${isSelected ? 'bg-indigo-50 border-indigo-100' : 'hover:bg-gray-50'} border border-transparent`}
+                                                        className={`flex items-center p-2 rounded cursor-pointer transition-colors ${isSelected ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-100 dark:border-indigo-500/30' : 'hover:bg-gray-50 dark:hover:bg-slate-800/50'} border border-transparent`}
                                                     >
                                                         <input
                                                             type="checkbox"
@@ -222,24 +222,24 @@ export default function AnnouncementsPage() {
                                                                     setSelectedCompanyIds(prev => prev.filter(id => id !== c.id));
                                                                 }
                                                             }}
-                                                            className="text-indigo-600 focus:ring-indigo-500 h-4 w-4 rounded border-gray-300"
+                                                            className="text-indigo-600 focus:ring-indigo-500 h-4 w-4 rounded border-gray-300 dark:border-slate-700 dark:bg-slate-800"
                                                         />
-                                                        <span className="ml-2 text-sm text-gray-700">{c.name}</span>
+                                                        <span className="ml-2 text-sm text-gray-700 dark:text-slate-300">{c.name}</span>
                                                     </label>
                                                 );
                                             })
                                         }
                                         {companies.length > 0 && companies.filter(c => c.name.toLowerCase().includes(companySearchTerm.toLowerCase())).length === 0 && (
-                                            <div className="text-center text-sm text-gray-500 py-2">Sonuç bulunamadı.</div>
+                                            <div className="text-center text-sm text-gray-500 dark:text-slate-500 py-2">Sonuç bulunamadı.</div>
                                         )}
                                     </div>
-                                    <div className="p-2 border-t bg-gray-50 flex justify-between items-center">
-                                        <span className="text-xs text-gray-600">{selectedCompanyIds.length} şirket seçildi</span>
+                                    <div className="p-2 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 flex justify-between items-center">
+                                        <span className="text-xs text-gray-600 dark:text-slate-400">{selectedCompanyIds.length} şirket seçildi</span>
                                         {selectedCompanyIds.length > 0 && (
                                             <button
                                                 type="button"
                                                 onClick={() => setSelectedCompanyIds([])}
-                                                className="text-xs text-red-600 hover:underline"
+                                                className="text-xs text-red-600 dark:text-red-400 hover:underline"
                                             >
                                                 Tümünü Temizle
                                             </button>
@@ -260,9 +260,9 @@ export default function AnnouncementsPage() {
                 </div>
 
                 {/* Sağ Taraf: Geçmiş Duyurular */}
-                <div className="lg:col-span-2 border rounded-lg bg-white shadow overflow-hidden">
-                    <div className="p-5 border-b bg-gray-50 flex justify-between items-center">
-                        <h2 className="text-lg font-semibold">Gönderilmiş Duyurular</h2>
+                <div className="lg:col-span-2 border border-gray-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 shadow overflow-hidden">
+                    <div className="p-5 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/30 flex justify-between items-center">
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Gönderilmiş Duyurular</h2>
                     </div>
 
                     {loading ? (
@@ -275,23 +275,23 @@ export default function AnnouncementsPage() {
                                 <div
                                     key={ann.id}
                                     onClick={() => openModal(ann)}
-                                    className="p-5 hover:bg-gray-50 transition relative group cursor-pointer"
+                                    className="p-5 hover:bg-gray-50 dark:hover:bg-slate-800/30 transition relative group cursor-pointer border-b border-gray-100 dark:border-slate-800 last:border-0"
                                 >
                                     <div className="flex justify-between items-start mb-2">
-                                        <h3 className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">{ann.title}</h3>
+                                        <h3 className="font-medium text-gray-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{ann.title}</h3>
                                         <div className="flex items-center gap-3">
-                                            <span className={`text-xs px-2 py-1 rounded-full ${ann.is_global ? "bg-green-100 text-green-800" : "bg-purple-100 text-purple-800"}`}>
+                                            <span className={`text-xs px-2 py-1 rounded-full ${ann.is_global ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-purple-500/15 text-purple-600 dark:text-purple-400"}`}>
                                                 {ann.is_global ? "Tüm Şirketler" : "Özel Hedefli"}
                                             </span>
                                         </div>
                                     </div>
-                                    <p className="text-sm text-gray-600 whitespace-pre-wrap mb-3 line-clamp-2">{ann.content}</p>
+                                    <p className="text-sm text-gray-600 dark:text-slate-400 whitespace-pre-wrap mb-3 line-clamp-2">{ann.content}</p>
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-3">
-                                            <span className="text-xs text-gray-400">
+                                            <span className="text-xs text-gray-400 dark:text-slate-500">
                                                 {new Date(ann.created_at).toLocaleString('tr-TR')}
                                             </span>
-                                            <span className="text-xs text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <span className="text-xs text-indigo-500 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 Detayları Gör &rarr;
                                             </span>
                                         </div>
@@ -300,7 +300,7 @@ export default function AnnouncementsPage() {
                                                 e.stopPropagation(); // prevent modal opening
                                                 handleDelete(ann.id);
                                             }}
-                                            className="text-red-500 hover:text-red-700 text-sm opacity-0 group-hover:opacity-100 transition"
+                                            className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm opacity-0 group-hover:opacity-100 transition"
                                         >
                                             Sil
                                         </button>
@@ -314,14 +314,14 @@ export default function AnnouncementsPage() {
 
             {/* Duyuru Detay Modalı */}
             {isModalOpen && selectedAnn && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
                     <div
-                        className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden transform transition-all"
+                        className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg shadow-xl w-full max-w-md overflow-hidden transform transition-all"
                         role="dialog"
                         aria-modal="true"
                     >
-                        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                            <h3 className="text-lg font-medium text-gray-900 truncate pr-4">
+                        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white truncate pr-4">
                                 {selectedAnn.title}
                             </h3>
                             <button
@@ -335,25 +335,25 @@ export default function AnnouncementsPage() {
                         </div>
 
                         <div className="px-6 py-5">
-                            <div className="flex items-center gap-3 mb-4 text-sm text-gray-500 bg-gray-50 p-3 rounded-md">
-                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-white bg-red-500">
+                            <div className="flex items-center gap-3 mb-4 text-sm text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 p-3 rounded-md border border-gray-100 dark:border-slate-700">
+                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-white bg-red-600">
                                     S
                                 </div>
                                 <div>
-                                    <p className="font-medium text-gray-900">Sistem Yönetimi</p>
+                                    <p className="font-medium text-gray-900 dark:text-slate-200">Sistem Yönetimi</p>
                                     <p className="text-xs mt-0.5">{new Date(selectedAnn.created_at).toLocaleString('tr-TR')}</p>
                                 </div>
                             </div>
 
-                            <div className="mt-4 proze text-sm text-gray-700 whitespace-pre-wrap break-words max-h-96 overflow-y-auto pr-2">
+                            <div className="mt-4 proze text-sm text-gray-700 dark:text-slate-300 whitespace-pre-wrap break-words max-h-96 overflow-y-auto pr-2">
                                 {selectedAnn.content}
                             </div>
                         </div>
 
-                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+                        <div className="px-6 py-4 bg-gray-50 dark:bg-slate-800/30 border-t border-gray-100 dark:border-slate-800 flex justify-end">
                             <button
                                 onClick={closeModal}
-                                className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 dark:hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
                                 Kapat
                             </button>
