@@ -61,6 +61,9 @@ export default function DocumentTrackingPage() {
     const [editingDoc, setEditingDoc] = useState<Document | null>(null);
     const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
 
+    const [filterScope, setFilterScope] = useState<"kurumsal" | "sahsi">("kurumsal");
+    const [searchQuery, setSearchQuery] = useState("");
+
     // Permissions State
     const [myPermissions, setMyPermissions] = useState<DocumentPermission>({
         user_id: user?.id || "", can_view_all_corporate: false, can_edit_all_corporate: false, can_delete_all_corporate: false
@@ -306,6 +309,21 @@ export default function DocumentTrackingPage() {
         corporate: documents.filter(d => d.scope === "kurumsal").length,
         personal: documents.filter(d => d.scope === "sahsi").length,
     };
+
+    const filteredDocs = documents.filter(doc => {
+        if (doc.scope !== filterScope) return false;
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            return (
+                doc.title?.toLowerCase().includes(query) ||
+                doc.document_types?.name.toLowerCase().includes(query) ||
+                doc.locations?.name.toLowerCase().includes(query) ||
+                doc.profiles?.first_name?.toLowerCase().includes(query) ||
+                doc.profiles?.last_name?.toLowerCase().includes(query)
+            );
+        }
+        return true;
+    });
 
     // === Type/Location Add ===
     const handleAddType = async () => {

@@ -24,6 +24,7 @@ import WorkPermitDetail from "@/pages/work-permits/WorkPermitDetail";
 import WorkPermitSettings from "@/pages/work-permits/WorkPermitSettings";
 import QuickPermitApprove from "@/pages/auth/QuickPermitApprove";
 import PublicWorkPermitForm from "@/pages/auth/PublicWorkPermitForm";
+import PublicADREntryForm from "@/pages/auth/PublicADREntryForm";
 // Action Tracking
 import ActionLayout from "@/pages/actions/ActionLayout";
 import ActionDashboard from "@/pages/actions/ActionDashboard";
@@ -50,6 +51,9 @@ import AuditTracking from "@/pages/isg-merkezi/AuditTracking";
 import RiskAssessments from "@/pages/isg-merkezi/RiskAssessments";
 import CorrectiveActions from "@/pages/isg-merkezi/CorrectiveActions";
 import MeasurementRecords from "@/pages/isg-merkezi/MeasurementRecords";
+import PKDLayout from "@/pages/pkd/PKDLayout";
+import PKDDashboard from "@/pages/pkd/PKDDashboard";
+import NewPKDForm from "@/pages/pkd/NewPKDForm";
 import PersonnelLayout from "@/pages/personnel/PersonnelLayout";
 import PersonnelList from "@/pages/personnel/PersonnelList";
 import PersonnelDetail from "@/pages/personnel/PersonnelDetail";
@@ -116,6 +120,7 @@ function App() {
           <Route path="update-password" element={<UpdatePassword />} />
           <Route path="quick-permit-approve" element={<QuickPermitApprove />} />
           <Route path="public-work-permit" element={<PublicWorkPermitForm />} />
+          <Route path="public-adr-entry" element={<PublicADREntryForm />} />
         </Route>
 
         <Route path="/app" element={<DashboardLayout />}>
@@ -153,6 +158,11 @@ function App() {
             <Route path="manage/:id" element={<CourseDetail />} />
             <Route path="course/:id" element={<CoursePlayer />} />
             <Route path="course/:id/exam" element={<CourseExamPlayer />} />
+          </Route>
+
+          <Route path="pkd_yonetimi" element={<PKDLayout />}>
+            <Route index element={<PKDDashboard />} />
+            <Route path="new" element={<NewPKDForm />} />
           </Route>
 
           <Route path="isg-merkezi" element={<ISGCenterLayout />}>

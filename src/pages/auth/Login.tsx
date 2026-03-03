@@ -126,6 +126,13 @@ export default function Login() {
                 >
                     Yeni İş İzni Başvurusu
                 </button>
+                <button
+                    type="button"
+                    onClick={() => navigate('/auth/public-adr-entry')}
+                    className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                >
+                    Yeni ADR Formu Girişi
+                </button>
             </div>
         </form>
     );
