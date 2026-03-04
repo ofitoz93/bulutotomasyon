@@ -3,6 +3,16 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Clock, CheckCircle, AlertCircle, Award, User, ShieldCheck } from "lucide-react";
 
+// Helper function to shuffle an array (Fisher-Yates)
+function shuffleArray<T>(array: T[]): T[] {
+    const newArr = [...array];
+    for (let i = newArr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+    }
+    return newArr;
+}
+
 export default function PublicExamPage() {
     const { id } = useParams<{ id: string }>(); // This is courseId or examId? Let's use examId
 
@@ -26,6 +36,7 @@ export default function PublicExamPage() {
     const [submitting, setSubmitting] = useState(false);
     const [result, setResult] = useState<any>(null);
     const [agreed, setAgreed] = useState(false);
+    const [isExpired, setIsExpired] = useState(false);
 
     useEffect(() => {
         if (id) fetchExamData();
@@ -57,20 +68,15 @@ export default function PublicExamPage() {
             }
             setExam(eData);
 
-            const { data: cData } = await supabase.from("courses").select("id, title, passing_score, start_date").eq("id", eData.course_id).single();
+            const { data: cData } = await supabase.from("courses").select("id, title, passing_score, start_date, end_date").eq("id", eData.course_id).single();
             setCourse(cData);
 
             // Check expiration
-            if (cData?.start_date && eData.exam_type === 'physical_only') {
-                const examDate = new Date(cData.start_date);
-                // We add 24 hours to the start_date to allow users to take it until end of day/next day.
-                const expiryDate = new Date(examDate.getTime() + 24 * 60 * 60 * 1000);
+            if (cData?.end_date && eData.exam_type === 'physical_only') {
+                const expiryDate = new Date(cData.end_date);
                 if (new Date() > expiryDate) {
-                    setTcError("Bu sınavın tarihi geçmiştir. Sınava katılım süresi dolmuştur.");
-                    // Keep loading false but we can render an error screen instead of login.
-                    // For now, setting tcError will show it on the login screen.
-                    // To completely block, maybe set step to a new error step, but setting tcError and clearing questions is enough.
-                    setQuestions([]);
+                    setIsExpired(true);
+                    setLoading(false);
                     return;
                 }
             }
@@ -82,8 +88,14 @@ export default function PublicExamPage() {
                 .order("order_num", { ascending: true });
 
             if (qData) {
-                qData.forEach(q => q.exam_answers.sort((a: any, b: any) => a.order_num - b.order_num));
-                setQuestions(qData);
+                // Her sorunun kendi içindeki şıklarını karıştır
+                qData.forEach(q => {
+                    q.exam_answers = shuffleArray([...(q.exam_answers || [])]);
+                });
+
+                // Soruların dizilimini de karıştır
+                const shuffledQuestions = shuffleArray(qData);
+                setQuestions(shuffledQuestions);
             }
         } catch (error) {
             console.error(error);
@@ -205,6 +217,15 @@ export default function PublicExamPage() {
     const handleAgree = async () => { };
 
     if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950"><p className="text-slate-500 dark:text-slate-400 animate-pulse">Yükleniyor...</p></div>;
+    if (isExpired) return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-xl border border-rose-100 dark:border-slate-800 max-w-md text-center">
+                <AlertCircle className="w-16 h-16 text-rose-500 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Süresi Dolmuş Sınav</h2>
+                <p className="text-slate-500 dark:text-slate-400 text-lg">Bu sınavın veya eğitimin tarihi geçmiştir. Katılıma kapatılmıştır.</p>
+            </div>
+        </div>
+    );
     if (!exam || !course) return <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950"><p className="text-slate-500 dark:text-slate-400">Sınav bulunamadı.</p></div>;
 
     return (

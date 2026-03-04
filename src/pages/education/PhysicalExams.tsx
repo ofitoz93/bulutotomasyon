@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/authStore";
 import { Plus, Trash2, Calendar, Clock, Download, QrCode, Award } from "lucide-react";
@@ -14,11 +14,18 @@ type PhysicalExam = {
         time_limit_minutes: number;
         agreement_text: string;
     }[];
+}
+
+interface AgreementTemplate {
+    id: string;
+    title: string;
+    agreement_text: string;
 };
 
 export default function PhysicalExams() {
     const { profile } = useAuthStore();
     const [exams, setExams] = useState<PhysicalExam[]>([]);
+    const [templates, setTemplates] = useState<AgreementTemplate[]>([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
 
@@ -34,15 +41,39 @@ export default function PhysicalExams() {
     const [passingScore, setPassingScore] = useState(70);
     const [timeLimit, setTimeLimit] = useState(0);
     const [agreementText, setAgreementText] = useState("");
+    const [selectedClassId, setSelectedClassId] = useState<string>("");
+    const [classes, setClasses] = useState<{ id: string, name: string }[]>([]);
     const [submitting, setSubmitting] = useState(false);
 
-    // QR Print Ref
-    const printRef = useRef<HTMLDivElement>(null);
+    // QR State
     const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
 
     useEffect(() => {
-        if (profile?.tenant_id) fetchExams();
+        if (profile?.tenant_id) {
+            fetchExams();
+            fetchTemplates();
+        }
     }, [profile]);
+
+    const fetchTemplates = async () => {
+        try {
+            const { data } = await supabase
+                .from("exam_agreement_templates")
+                .select("*")
+                .eq("tenant_id", profile?.tenant_id)
+                .order("title");
+            if (data) setTemplates(data);
+
+            const { data: clsData } = await supabase
+                .from("education_classes")
+                .select("id, name")
+                .eq("tenant_id", profile?.tenant_id)
+                .order("name");
+            if (clsData) setClasses(clsData);
+        } catch (error) {
+            console.error("Error fetching templates or classes:", error);
+        }
+    };
 
     const fetchExams = async () => {
         setLoading(true);
@@ -88,20 +119,8 @@ export default function PhysicalExams() {
             const endDate = new Date(startDate);
             endDate.setDate(startDate.getDate() + 1);
 
-            // 1. Create a dummy class/type if we don't have one specifically for physical exams, 
-            // or just pick the first available one to satisfy FK constraints.
-            // Ideally we should create a default "Fiziki Sınıf Eğitimleri" type/class.
-            const { data: types } = await supabase.from("education_types").select("id").eq("tenant_id", profile!.tenant_id).limit(1);
-            let classId = null;
-            if (types && types.length > 0) {
-                const { data: classes } = await supabase.from("education_classes").select("id").eq("type_id", types[0].id).limit(1);
-                if (classes && classes.length > 0) {
-                    classId = classes[0].id;
-                }
-            }
-
-            if (!classId) {
-                alert("Önce Eğitim Ayarları sayfasından en az bir Eğitim Türü ve Sınıfı oluşturmalısınız.");
+            if (!selectedClassId) {
+                alert("Lütfen sınav için bir Eğitim Sınıfı seçin.");
                 setSubmitting(false);
                 return;
             }
@@ -111,7 +130,7 @@ export default function PhysicalExams() {
                 .from("courses")
                 .insert([{
                     tenant_id: profile!.tenant_id,
-                    class_id: classId,
+                    class_id: selectedClassId,
                     title: title,
                     start_date: startDate.toISOString(),
                     end_date: endDate.toISOString(),
@@ -125,18 +144,70 @@ export default function PhysicalExams() {
             if (courseError) throw courseError;
 
             // 3. Insert Exam attached to course
-            const { error: examError } = await supabase
+            const { data: newExamData, error: examError } = await supabase
                 .from("course_exams")
                 .insert([{
                     course_id: newCourse.id,
                     exam_type: 'physical_only',
                     time_limit_minutes: timeLimit,
                     agreement_text: agreementText,
-                }]);
+                }])
+                .select()
+                .single();
 
             if (examError) throw examError;
 
-            alert("Fiziki sınav başarıyla oluşturuldu! Şimdi soruları ekleyebilirsiniz.");
+            // 4. Fetch the class templates and duplicate to the new exam
+            const { data: sourceQs, error: qError } = await supabase
+                .from("class_question_templates")
+                .select("*")
+                .eq("class_id", selectedClassId);
+
+            if (qError) throw qError;
+
+            if (sourceQs && sourceQs.length > 0) {
+                for (const q of sourceQs) {
+                    // Insert the duplicated question pointing to the NEW exam
+                    const { data: newQ, error: newQError } = await supabase
+                        .from("exam_questions")
+                        .insert([{
+                            exam_id: newExamData.id,
+                            question_text: q.question_text,
+                            image_url: q.image_url,
+                            order_num: q.order_num
+                        }])
+                        .select()
+                        .single();
+
+                    if (newQError) throw newQError;
+
+                    // Fetch source answers for this question
+                    const { data: sourceAns, error: aError } = await supabase
+                        .from("class_answer_templates")
+                        .select("*")
+                        .eq("question_template_id", q.id);
+
+                    if (aError) throw aError;
+
+                    if (sourceAns && sourceAns.length > 0) {
+                        const answersToInsert = sourceAns.map(a => ({
+                            question_id: newQ.id,
+                            answer_text: a.answer_text,
+                            image_url: a.image_url,
+                            is_correct: a.is_correct,
+                            order_num: a.order_num
+                        }));
+
+                        const { error: insertAError } = await supabase
+                            .from("exam_answers")
+                            .insert(answersToInsert);
+
+                        if (insertAError) throw insertAError;
+                    }
+                }
+            }
+
+            alert("Fiziki sınav başarıyla oluşturuldu!");
             setShowForm(false);
             resetForm();
             fetchExams();
@@ -166,18 +237,22 @@ export default function PhysicalExams() {
         setPassingScore(70);
         setTimeLimit(0);
         setAgreementText("");
+        setSelectedClassId("");
     };
 
     const handlePrintQRCode = (examId: string) => {
         setSelectedExamId(examId);
         setTimeout(() => {
+            const container = document.getElementById(`qr-container-${examId}`);
+            if (!container) return;
+
             const printWindow = window.open('', '', 'width=600,height=600');
-            if (printWindow && printRef.current) {
+            if (printWindow) {
                 printWindow.document.write(`
                     <html>
                         <head><title>QR Yazdır</title></head>
                         <body style="display:flex; justify-content:center; align-items:center; height:100vh; margin:0;">
-                            ${printRef.current.innerHTML}
+                            ${container.innerHTML}
                         </body>
                     </html>
                 `);
@@ -188,6 +263,8 @@ export default function PhysicalExams() {
                     printWindow.close();
                     setSelectedExamId(null);
                 }, 500);
+            } else {
+                setSelectedExamId(null);
             }
         }, 100);
     };
@@ -195,8 +272,12 @@ export default function PhysicalExams() {
     const handleDownloadQRCode = (examId: string, titleStr: string) => {
         setSelectedExamId(examId);
         setTimeout(() => {
-            const svgElement = printRef.current?.querySelector('svg');
-            if (!svgElement) return;
+            const container = document.getElementById(`qr-container-${examId}`);
+            const svgElement = container?.querySelector('svg');
+            if (!svgElement) {
+                setSelectedExamId(null);
+                return;
+            }
 
             const clonedSvg = svgElement.cloneNode(true) as SVGElement;
             clonedSvg.setAttribute('width', '1024');
@@ -210,7 +291,10 @@ export default function PhysicalExams() {
                 canvas.width = 1024;
                 canvas.height = 1024;
                 const ctx = canvas.getContext('2d');
-                if (!ctx) return;
+                if (!ctx) {
+                    setSelectedExamId(null);
+                    return;
+                }
 
                 ctx.fillStyle = "white";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -308,9 +392,51 @@ export default function PhysicalExams() {
                                 <input required type="number" min="0" value={timeLimit} onChange={e => setTimeLimit(Number(e.target.value))} className="w-full bg-slate-800 border-slate-700 text-slate-200 px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all" />
                             </div>
 
-                            <div className="lg:col-span-2">
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Taahhütname Metni (İsteğe Bağlı)</label>
-                                <input type="text" value={agreementText} onChange={e => setAgreementText(e.target.value)} className="w-full bg-slate-800 border-slate-700 text-slate-200 px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all placeholder-slate-600" placeholder="Sınav öncesi zorunlu kabul metni..." />
+                            <div className="lg:col-span-2 space-y-3">
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Taahhütname Metni (İsteğe Bağlı)</label>
+
+                                <select
+                                    className="w-full bg-slate-800 border-slate-700 text-slate-200 px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all"
+                                    onChange={(e) => {
+                                        const t = templates.find(temp => temp.id === e.target.value);
+                                        if (t) setAgreementText(t.agreement_text);
+                                        // Option to clear out is left to manual editing by user
+                                    }}
+                                    defaultValue=""
+                                >
+                                    <option value="" disabled>-- Hazır Şablonlardan Seç --</option>
+                                    {templates.map(t => (
+                                        <option key={t.id} value={t.id}>{t.title}</option>
+                                    ))}
+                                </select>
+
+                                <textarea
+                                    value={agreementText}
+                                    onChange={e => setAgreementText(e.target.value)}
+                                    rows={3}
+                                    className="w-full bg-slate-800 border-slate-700 text-slate-200 px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all placeholder-slate-600 resize-none"
+                                    placeholder="Sınav öncesi zorunlu kabul metni veya şablon seçin..."
+                                />
+                            </div>
+
+                            <div className="lg:col-span-1">
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Hangi Eğitim Sınıfı?</label>
+                                <select
+                                    required
+                                    value={selectedClassId}
+                                    onChange={e => setSelectedClassId(e.target.value)}
+                                    className="w-full bg-slate-800 border-slate-700 text-slate-200 px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 outline-none transition-all"
+                                >
+                                    <option value="" disabled>-- Sınıf Seçin --</option>
+                                    {classes.map(c => (
+                                        <option key={c.id} value={c.id}>
+                                            {c.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="text-[10px] text-slate-500 mt-2 leading-relaxed">
+                                    Seçtiğiniz sınıf için <strong className="text-emerald-400">Eğitim Ayarları</strong>'nda önceden belirlediğiniz soru havuzu bu yeni sınava otomatik tanımlanır.
+                                </p>
                             </div>
                         </div>
 
@@ -386,13 +512,11 @@ export default function PhysicalExams() {
                                     </button>
                                 </div>
                                 {selectedExamId === examId && (
-                                    <div className="hidden">
-                                        <div ref={printRef}>
-                                            <div style={{ textAlign: 'center', fontFamily: 'sans-serif' }}>
-                                                <h2 style={{ marginBottom: '20px' }}>{exam.title}</h2>
-                                                <QRCodeSVG value={publicLink} size={400} />
-                                                <p style={{ marginTop: '20px', fontSize: '14px', color: '#666' }}>Sınava katılmak için kameranızı bu koda okutun.</p>
-                                            </div>
+                                    <div id={`qr-container-${examId}`} className="hidden">
+                                        <div style={{ textAlign: 'center', fontFamily: 'sans-serif' }}>
+                                            <h2 style={{ marginBottom: '20px' }}>{exam.title}</h2>
+                                            <QRCodeSVG value={publicLink} size={400} />
+                                            <p style={{ marginTop: '20px', fontSize: '14px', color: '#666' }}>Sınava katılmak için kameranızı bu koda okutun.</p>
                                         </div>
                                     </div>
                                 )}

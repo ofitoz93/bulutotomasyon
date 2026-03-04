@@ -92,7 +92,20 @@ function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      const currentSession = useAuthStore.getState().session;
+
+      // Sekme uykudan uyanınca Supabase TOKEN_REFRESHED veya INITIAL_SESSION yapar.
+      // Aynı kullanıcı zaten oturum açıksa HIÇBIR ŞEY YAPMA — sayfayı yenileme, bileşenleri sıfırlama.
+      // Supabase kütüphanesi tokeni arka planda kendi yönetir, bize haber vermesine gerek yok.
+      if (
+        session?.user?.id === currentSession?.user?.id &&
+        (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')
+      ) {
+        return; // Tamamen sessiz geç, hiçbir state güncelleme yapma
+      }
+
+      // Gerçek giriş/çıkış olaylarında normal akışa devam et
       setSession(session);
       if (session) {
         supabase.from('profiles').select('*').eq('id', session.user.id).single().then(({ data }) => {
