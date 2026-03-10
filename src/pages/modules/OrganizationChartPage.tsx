@@ -62,18 +62,30 @@ export default function OrganizationChartPage() {
     const [savingMember, setSavingMember] = useState(false);
 
     useEffect(() => {
-        if (profile?.tenant_id) fetchData();
-    }, [profile?.tenant_id]);
+        if (profile?.tenant_id || profile?.role === "system_admin") fetchData();
+    }, [profile?.tenant_id, profile?.role]);
 
     const fetchData = async () => {
-        if (!profile?.tenant_id) return;
+        if (!profile?.tenant_id && profile?.role !== "system_admin") return;
         setLoading(true);
         try {
+            let depQuery = supabase.from("departments").select("*");
+            let roleQuery = supabase.from("org_roles").select("*");
+            let memQuery = supabase.from("department_members").select("*, profiles!inner(id, first_name, last_name, email), org_roles(id, name, level_weight)");
+            let usersQuery = supabase.from("profiles").select("id, first_name, last_name, email, tc_no, company_employee_no");
+
+            if (profile?.role !== "system_admin") {
+                depQuery = depQuery.eq("tenant_id", profile!.tenant_id);
+                roleQuery = roleQuery.eq("tenant_id", profile!.tenant_id);
+                memQuery = memQuery.eq("tenant_id", profile!.tenant_id);
+                usersQuery = usersQuery.eq("tenant_id", profile!.tenant_id);
+            }
+
             const [depRes, rolesRes, memRes, usersRes] = await Promise.all([
-                supabase.from("departments").select("*").eq("tenant_id", profile.tenant_id).order("name"),
-                supabase.from("org_roles").select("*").eq("tenant_id", profile.tenant_id).order("level_weight", { ascending: false }),
-                supabase.from("department_members").select("*, profiles!inner(id, first_name, last_name, email), org_roles(id, name, level_weight)").eq("tenant_id", profile.tenant_id),
-                isManager ? supabase.from("profiles").select("id, first_name, last_name, email, tc_no, company_employee_no").eq("tenant_id", profile.tenant_id) : Promise.resolve({ data: [] })
+                depQuery.order("name"),
+                roleQuery.order("level_weight", { ascending: false }),
+                memQuery,
+                isManager ? usersQuery : Promise.resolve({ data: [] })
             ]);
             setDepartments(depRes.data || []);
             setRoles(rolesRes.data || []);

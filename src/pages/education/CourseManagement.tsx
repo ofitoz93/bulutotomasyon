@@ -21,15 +21,15 @@ export default function CourseManagement() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (profile?.tenant_id) {
+        if (profile?.tenant_id || profile?.role === "system_admin") {
             fetchCourses();
         }
-    }, [profile]);
+    }, [profile?.tenant_id, profile?.role]);
 
     const fetchCourses = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
+            let query = supabase
                 .from("courses")
                 .select(`
                     id, title, start_date, end_date, passing_score, status,
@@ -37,9 +37,13 @@ export default function CourseManagement() {
                         name,
                         education_types ( name )
                     )
-                `)
-                .eq("tenant_id", profile?.tenant_id)
-                .order("created_at", { ascending: false });
+                `);
+
+            if (profile?.role !== "system_admin") {
+                query = query.eq("tenant_id", profile!.tenant_id);
+            }
+
+            const { data, error } = await query.order("created_at", { ascending: false });
 
             if (error) throw error;
             setCourses(data || []);

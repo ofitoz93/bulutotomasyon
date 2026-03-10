@@ -49,11 +49,11 @@ export default function PhysicalExams() {
     const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
 
     useEffect(() => {
-        if (profile?.tenant_id) {
+        if (profile?.tenant_id || profile?.role === "system_admin") {
             fetchExams();
-            fetchTemplates();
+            if (profile?.tenant_id) fetchTemplates();
         }
-    }, [profile]);
+    }, [profile?.tenant_id, profile?.role]);
 
     const fetchTemplates = async () => {
         try {
@@ -79,10 +79,12 @@ export default function PhysicalExams() {
         setLoading(true);
         try {
             // Fetch courses that have an exam of type 'physical_only'
-            const { data: eData } = await supabase
+            let examQuery = supabase
                 .from("course_exams")
                 .select("course_id, id, time_limit_minutes, agreement_text")
                 .eq("exam_type", "physical_only");
+
+            const { data: eData } = await examQuery;
 
             if (!eData || eData.length === 0) {
                 setExams([]);
@@ -91,11 +93,16 @@ export default function PhysicalExams() {
 
             const courseIds = eData.map(e => e.course_id);
 
-            const { data: cData } = await supabase
+            let courseQuery = supabase
                 .from("courses")
                 .select("id, title, start_date, passing_score")
-                .in("id", courseIds)
-                .order("start_date", { ascending: false });
+                .in("id", courseIds);
+
+            if (profile?.role !== "system_admin") {
+                courseQuery = courseQuery.eq("tenant_id", profile!.tenant_id);
+            }
+
+            const { data: cData } = await courseQuery.order("start_date", { ascending: false });
 
             if (cData) {
                 const combined = cData.map(c => ({
@@ -119,18 +126,26 @@ export default function PhysicalExams() {
             const endDate = new Date(startDate);
             endDate.setDate(startDate.getDate() + 1);
 
+            if (!profile?.tenant_id) {
+                alert("Sistem yöneticisi olarak sınav oluşturmak için önce bir firma bağlamı seçmelisiniz.");
+                setSubmitting(false);
+                return;
+            }
+
             if (!selectedClassId) {
                 alert("Lütfen sınav için bir Eğitim Sınıfı seçin.");
                 setSubmitting(false);
                 return;
             }
 
+            let classId = selectedClassId;
+
             // 2. Insert Course
             const { data: newCourse, error: courseError } = await supabase
                 .from("courses")
                 .insert([{
                     tenant_id: profile!.tenant_id,
-                    class_id: selectedClassId,
+                    class_id: classId,
                     title: title,
                     start_date: startDate.toISOString(),
                     end_date: endDate.toISOString(),

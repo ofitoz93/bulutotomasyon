@@ -28,22 +28,28 @@ export default function PersonnelList() {
     const [filterSub, setFilterSub] = useState<string>("all");
 
     useEffect(() => {
-        if (profile?.tenant_id) fetchData();
-    }, [profile?.tenant_id]);
+        if (profile?.tenant_id || profile?.role === "system_admin") fetchData();
+    }, [profile?.tenant_id, profile?.role]);
 
     const fetchData = async () => {
         setLoading(true);
         try {
+            let profilesQuery = supabase
+                .from("profiles")
+                .select("*, subcontractors(name)");
+
+            let subQuery = supabase
+                .from("subcontractors")
+                .select("id, name");
+
+            if (profile?.role !== "system_admin") {
+                profilesQuery = profilesQuery.eq("tenant_id", profile!.tenant_id);
+                subQuery = subQuery.eq("parent_company_id", profile!.tenant_id);
+            }
+
             const [profilesRes, subRes] = await Promise.all([
-                supabase
-                    .from("profiles")
-                    .select("*, subcontractors(name)")
-                    .eq("tenant_id", profile!.tenant_id)
-                    .order("first_name", { ascending: true }),
-                supabase
-                    .from("subcontractors")
-                    .select("id, name")
-                    .eq("parent_company_id", profile!.tenant_id)
+                profilesQuery.order("first_name", { ascending: true }),
+                subQuery
             ]);
 
             setPersonnel(profilesRes.data || []);

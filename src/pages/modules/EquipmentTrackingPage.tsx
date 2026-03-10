@@ -124,8 +124,8 @@ export default function EquipmentTrackingPage() {
     const qrCanvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
-        if (profile?.tenant_id) fetchAll();
-    }, [profile?.tenant_id]);
+        if (profile?.tenant_id || profile?.role === "system_admin") fetchAll();
+    }, [profile?.tenant_id, profile?.role]);
 
     // Kategori ekle (inline)
     const handleSaveCategory = async () => {
@@ -145,14 +145,26 @@ export default function EquipmentTrackingPage() {
         finally { setNewCatLoading(false); }
     };
     const fetchAll = async () => {
-        if (!profile?.tenant_id) return;
+        if (!profile?.tenant_id && profile?.role !== "system_admin") return;
         setLoading(true);
         try {
+            let catQuery = supabase.from("equipment_categories").select("*");
+            let defQuery = supabase.from("equipment_definitions").select("id, name");
+            let equipQuery = supabase.from("equipments").select("*, equipment_categories(name)").eq("is_active", true);
+            let inspectorQuery = supabase.from("equipment_inspectors").select("*");
+
+            if (profile?.role !== "system_admin") {
+                catQuery = catQuery.eq("tenant_id", profile!.tenant_id);
+                defQuery = defQuery.eq("tenant_id", profile!.tenant_id);
+                equipQuery = equipQuery.eq("tenant_id", profile!.tenant_id);
+                inspectorQuery = inspectorQuery.eq("tenant_id", profile!.tenant_id);
+            }
+
             const [catRes, defRes, equipRes, inspectorRes] = await Promise.all([
-                supabase.from("equipment_categories").select("*").eq("tenant_id", profile.tenant_id).order("name"),
-                supabase.from("equipment_definitions").select("id, name").eq("tenant_id", profile.tenant_id).order("name"),
-                supabase.from("equipments").select("*, equipment_categories(name)").eq("tenant_id", profile.tenant_id).eq("is_active", true).order("created_at", { ascending: false }),
-                supabase.from("equipment_inspectors").select("*").eq("tenant_id", profile.tenant_id).order("name"),
+                catQuery.order("name"),
+                defQuery.order("name"),
+                equipQuery.order("created_at", { ascending: false }),
+                inspectorQuery.order("name"),
             ]);
             setCategories(catRes.data || []);
             setDefinitions(defRes.data || []);

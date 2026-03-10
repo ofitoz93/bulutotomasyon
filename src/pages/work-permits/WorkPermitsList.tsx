@@ -11,35 +11,48 @@ export default function WorkPermitsList() {
     const [filter, setFilter] = useState<'all' | 'pending' | 'approved'>('all');
 
     useEffect(() => {
-        if (!profile?.tenant_id) return;
-
         const fetchPermits = async () => {
-            let query = supabase
-                .from('work_permits')
-                .select(`
-                    id, 
-                    work_date, 
-                    department, 
-                    company_name, 
-                    status, 
-                    created_at,
-                    project_id,
-                    created_by,
-                    profiles:created_by (first_name, last_name),
-                    action_projects:project_id (name)
-                `)
-                .eq('tenant_id', profile.tenant_id)
-                .order('created_at', { ascending: false });
+            // Sistem yöneticisi değilse ve tenant_id yoksa işlemi durdur
+            if (!profile?.role) return;
+            if (profile.role !== 'system_admin' && !profile.tenant_id) return;
 
-            if (filter !== 'all') {
-                query = query.eq('status', filter);
-            }
+            setLoading(true);
+            try {
+                let query = supabase
+                    .from('work_permits')
+                    .select(`
+                        id, 
+                        work_date, 
+                        department, 
+                        company_name, 
+                        status, 
+                        created_at,
+                        project_id,
+                        created_by,
+                        profiles:created_by (first_name, last_name),
+                        action_projects:project_id (name)
+                    `);
 
-            const { data, error } = await query;
-            if (!error && data) {
-                setPermits(data as any);
+                // Sistem yöneticisi değilse sadece kendi şirketinin verilerini getir
+                if (profile.role !== 'system_admin' && profile.tenant_id) {
+                    query = query.eq('tenant_id', profile.tenant_id);
+                }
+
+                if (filter !== 'all') {
+                    query = query.eq('status', filter);
+                }
+
+                query = query.order('created_at', { ascending: false });
+
+                const { data, error } = await query;
+                if (!error && data) {
+                    setPermits(data as any);
+                }
+            } catch (error) {
+                console.error("Error fetching permits:", error);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
 
         fetchPermits();
@@ -60,8 +73,8 @@ export default function WorkPermitsList() {
         <button
             onClick={() => setFilter(value)}
             className={`px-3 py-1.5 text-sm rounded-lg font-medium transition-colors ${filter === value
-                    ? `${activeColor} text-white`
-                    : "bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700"
+                ? `${activeColor} text-white`
+                : "bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700"
                 }`}
         >
             {label}

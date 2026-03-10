@@ -49,7 +49,7 @@ type ModalMode = "add" | "edit" | "renew";
 
 export default function DocumentTrackingPage() {
     const { profile, user } = useAuthStore();
-    const isManager = profile?.role === "company_manager";
+    const isManager = profile?.role === "company_manager" || profile?.role === "system_admin";
     const [documents, setDocuments] = useState<Document[]>([]);
     const [archivedDocs, setArchivedDocs] = useState<Document[]>([]);
     const [docTypes, setDocTypes] = useState<DocumentType[]>([]);
@@ -89,12 +89,12 @@ export default function DocumentTrackingPage() {
     const [showNewLocation, setShowNewLocation] = useState(false);
 
     useEffect(() => {
-        if (user?.id && profile?.tenant_id) {
+        if (user?.id && (profile?.tenant_id || profile?.role === "system_admin")) {
             fetchAll();
         } else if (user?.id && !isManager) {
             fetchAll();
         }
-    }, [user?.id, profile?.id, profile?.tenant_id]);
+    }, [user?.id, profile?.id, profile?.tenant_id, profile?.role]);
 
     const fetchAll = async () => {
         try {

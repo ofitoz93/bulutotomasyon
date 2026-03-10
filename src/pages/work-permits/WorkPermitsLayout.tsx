@@ -3,25 +3,10 @@ import { useAuthStore } from "@/stores/authStore";
 
 export default function WorkPermitsLayout() {
     const location = useLocation();
-    const { isSystemAdmin } = useAuthStore();
-
-    if (isSystemAdmin()) {
-        return (
-            <div className="flex flex-col items-center justify-center p-12 text-center h-full">
-                <div className="w-16 h-16 bg-amber-500/15 border border-amber-500/30 rounded-2xl flex items-center justify-center mb-4">
-                    <svg className="w-8 h-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <h2 className="text-xl font-bold text-white">Sistem Yöneticisi Görünümü</h2>
-                <p className="text-slate-400 mt-2 max-w-md text-sm">
-                    Sistem yöneticileri şirkete özel iş izinlerini doğrudan kullanamazlar. İş İzni yönetimi şirket çalışanları ve yöneticileri içindir.
-                </p>
-            </div>
-        );
-    }
-
     const { isCompanyManager } = useAuthStore();
+
+    // Sistem yöneticileri için özel kısıtlama kaldırıldı.
+    // Artık sistem yöneticileri de iş izinlerini görüntüleyebilir.
 
     return (
         <div className="space-y-6">

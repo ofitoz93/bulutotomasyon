@@ -55,56 +55,67 @@ export default function EducationSettings() {
     const [selectedClassForQuestions, setSelectedClassForQuestions] = useState<{ id: string, name: string } | null>(null);
 
     useEffect(() => {
-        if (profile?.tenant_id) {
+        if (profile?.tenant_id || profile?.role === "system_admin") {
             fetchSettings();
         }
-    }, [profile]);
+    }, [profile?.tenant_id, profile?.role]);
 
     const fetchSettings = async () => {
         setLoading(true);
         try {
             // Fetch Types
-            const { data: typesData, error: typesError } = await supabase
+            let typesQuery = supabase
                 .from("education_types")
                 .select("*")
-                .eq("tenant_id", profile?.tenant_id)
                 .order("name", { ascending: true });
-
-            if (typesError) throw typesError;
-            setTypes(typesData || []);
 
             // Fetch Classes with embedded type
-            const { data: classesData, error: classesError } = await supabase
+            let classesQuery = supabase
                 .from("education_classes")
                 .select("*, type:education_types(id, name)")
-                .eq("tenant_id", profile?.tenant_id)
                 .order("name", { ascending: true });
 
-            if (classesError) throw classesError;
-            setClasses(classesData || []);
-
-            // Fetch Agreement Templates
-            const { data: templateData } = await supabase
-                .from("exam_agreement_templates")
-                .select("*")
-                .eq("tenant_id", profile?.tenant_id)
-                .order("created_at", { ascending: false });
-            setAgreementTemplates(templateData || []);
-
             // Fetch users for manager assignment
-            const { data: usersData } = await supabase
+            let usersQuery = supabase
                 .from("profiles")
                 .select("id, first_name, last_name, email")
-                .eq("tenant_id", profile?.tenant_id)
                 .order("first_name", { ascending: true });
-            setUsers(usersData || []);
 
             // Fetch education managers
-            const { data: managersData } = await supabase
+            let managersQuery = supabase
                 .from("education_managers")
-                .select("id, user_id, profiles(first_name, last_name, email)")
-                .eq("tenant_id", profile?.tenant_id);
-            setManagers(managersData || []);
+                .select("id, user_id, profiles(first_name, last_name, email)");
+
+            // Fetch Agreement Templates
+            let templatesQuery = supabase
+                .from("exam_agreement_templates")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (profile?.role !== "system_admin") {
+                typesQuery = typesQuery.eq("tenant_id", profile!.tenant_id);
+                classesQuery = classesQuery.eq("tenant_id", profile!.tenant_id);
+                usersQuery = usersQuery.eq("tenant_id", profile!.tenant_id);
+                managersQuery = managersQuery.eq("tenant_id", profile!.tenant_id);
+                templatesQuery = templatesQuery.eq("tenant_id", profile!.tenant_id);
+            }
+
+            const [typesRes, classesRes, usersRes, managersRes, templatesRes] = await Promise.all([
+                typesQuery,
+                classesQuery,
+                usersQuery,
+                managersQuery,
+                templatesQuery
+            ]);
+
+            if (typesRes.error) throw typesRes.error;
+            if (classesRes.error) throw classesRes.error;
+
+            setTypes(typesRes.data || []);
+            setClasses(classesRes.data || []);
+            setUsers(usersRes.data || []);
+            setManagers(managersRes.data || []);
+            setAgreementTemplates(templatesRes.data || []);
 
         } catch (error) {
             console.error("Error fetching education settings:", error);
