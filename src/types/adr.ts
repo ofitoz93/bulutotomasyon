@@ -22,6 +22,7 @@ export interface ADRForm {
     approved_at?: string;
     approved_by?: string;
     notes?: string;
+    driver_signature?: string; // base64 PNG data URL
 
     // Virtual / Joined fields
     profiles?: { first_name: string; last_name: string };

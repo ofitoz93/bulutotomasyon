@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/authStore";
 import QuestionBlock from "@/components/adr/QuestionBlock";
 import ImageUploader from "@/components/adr/ImageUploader";
+import SignaturePad from "@/components/adr/SignaturePad";
 import {
     TANK_ALICI_FORM,
     AMBALAJ_ALICI_FORM,
@@ -14,7 +15,7 @@ import {
     DOLDURAN_FORM,
     type ADRFormDefinition
 } from "@/components/adr/formDefinitions";
-import { ArrowLeft, CheckCircle, MapPin } from "lucide-react";
+import { ArrowLeft, CheckCircle, MapPin, PenLine } from "lucide-react";
 
 export default function NewADRForm() {
     const navigate = useNavigate();
@@ -24,6 +25,8 @@ export default function NewADRForm() {
     const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null);
     const [locationLoading, setLocationLoading] = useState(false);
     const [images, setImages] = useState<{ url: string; name: string }[]>([]);
+    const [driverSignature, setDriverSignature] = useState<string | null>(null);
+    const [driverSignatureError, setDriverSignatureError] = useState(false);
 
     // Form Data
     const { register, handleSubmit, watch, setValue, control, formState: { errors } } = useForm({
@@ -84,6 +87,12 @@ export default function NewADRForm() {
             alert("Lütfen konum bilgisini ekleyin.");
             return;
         }
+        if (!driverSignature) {
+            setDriverSignatureError(true);
+            alert("Lütfen şoför imzasını ekleyin.");
+            return;
+        }
+        setDriverSignatureError(false);
 
         setLoading(true);
         try {
@@ -101,6 +110,7 @@ export default function NewADRForm() {
                 status: "pending",
                 plate_no: data.plate_no,
                 driver_name: data.driver_name,
+                driver_signature: driverSignature,
                 location_lat: location.lat,
                 location_lng: location.lng,
                 notes: data.notes
@@ -326,6 +336,41 @@ export default function NewADRForm() {
                                     <span className="font-mono">{location.lat.toFixed(6)}, {location.lng.toFixed(6)}</span>
                                     <button onClick={getLocation} className="text-xs text-indigo-400 underline hover:text-indigo-300">Güncelle</button>
                                 </div>
+                            )}
+                        </div>
+
+                        {/* Şoför İmzası */}
+                        <div className={`bg-slate-900 p-4 rounded-lg shadow-sm border transition-colors ${
+                            driverSignatureError ? "border-rose-500/50" : "border-slate-800"
+                        }`}>
+                            <div className="flex items-center gap-2 mb-4">
+                                <PenLine className="w-4 h-4 text-indigo-400" />
+                                <h3 className="text-sm font-bold text-slate-300 uppercase">Şoför Bilgileri ve İmza</h3>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-slate-400 mb-1">
+                                    Şoför Adı Soyadı <span className="text-rose-400">*</span>
+                                </label>
+                                <input
+                                    {...register("driver_name", { required: true })}
+                                    className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                                    placeholder="Ad Soyad"
+                                />
+                                {errors.driver_name && <span className="text-rose-500 text-xs mt-1 block">Şoför adı soyadı gerekli</span>}
+                            </div>
+
+                            <SignaturePad
+                                label="Şoför İmzası"
+                                required
+                                value={driverSignature || undefined}
+                                onChange={(dataUrl) => {
+                                    setDriverSignature(dataUrl);
+                                    setDriverSignatureError(false);
+                                }}
+                            />
+                            {driverSignatureError && (
+                                <p className="text-rose-500 text-xs mt-2">Şoför imzası zorunludur</p>
                             )}
                         </div>
 

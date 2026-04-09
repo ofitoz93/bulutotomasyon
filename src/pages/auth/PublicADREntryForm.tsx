@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { supabase } from "@/lib/supabase";
 import QuestionBlock from "@/components/adr/QuestionBlock";
 import ImageUploader from "@/components/adr/ImageUploader";
+import SignaturePad from "@/components/adr/SignaturePad";
 import {
     TANK_ALICI_FORM,
     AMBALAJ_ALICI_FORM,
@@ -12,7 +13,7 @@ import {
     DOLDURAN_FORM,
     type ADRFormDefinition
 } from "@/components/adr/formDefinitions";
-import { ArrowLeft, CheckCircle, MapPin, UserCheck, ShieldAlert } from "lucide-react";
+import { ArrowLeft, CheckCircle, MapPin, UserCheck, ShieldAlert, PenLine } from "lucide-react";
 
 export default function PublicADREntryForm() {
     const navigate = useNavigate();
@@ -22,6 +23,8 @@ export default function PublicADREntryForm() {
     const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null);
     const [locationLoading, setLocationLoading] = useState(false);
     const [images, setImages] = useState<{ url: string; name: string }[]>([]);
+    const [driverSignature, setDriverSignature] = useState<string | null>(null);
+    const [driverSignatureError, setDriverSignatureError] = useState(false);
 
     // Identity Data
     const [identityNo, setIdentityNo] = useState("");
@@ -112,6 +115,14 @@ export default function PublicADREntryForm() {
             alert("Lütfen konum bilgisini ekleyin.");
             return;
         }
+        if (!driverSignature) {
+            setDriverSignatureError(true);
+            // Scroll to signature area
+            document.getElementById('public-signature-section')?.scrollIntoView({ behavior: 'smooth' });
+            alert("Şoför imzası zorunludur. Lütfen imzayı ekleyin.");
+            return;
+        }
+        setDriverSignatureError(false);
 
         setLoading(true);
         try {
@@ -130,7 +141,8 @@ export default function PublicADREntryForm() {
                 p_location_lng: location.lng,
                 p_notes: data.notes,
                 p_form_answers: data.answers,
-                p_form_media: mediaArray
+                p_form_media: mediaArray,
+                p_driver_signature: driverSignature
             });
 
             if (submitError) {
@@ -397,6 +409,33 @@ export default function PublicADREntryForm() {
                                 )}
                             </div>
 
+                            {/* Şoför İmzası */}
+                            <div
+                                id="public-signature-section"
+                                className={`bg-slate-900 p-6 rounded-xl shadow-lg border transition-colors ${
+                                    driverSignatureError ? 'border-rose-500/60' : 'border-slate-800'
+                                }`}
+                            >
+                                <div className="flex items-center gap-2 mb-4">
+                                    <PenLine className="w-5 h-5 text-indigo-400" />
+                                    <h3 className="font-semibold text-slate-300">Şoför İmzası</h3>
+                                    <span className="text-rose-400 text-sm ml-1">*</span>
+                                </div>
+                                <SignaturePad
+                                    label="Şoför İmzası"
+                                    required
+                                    value={driverSignature || undefined}
+                                    onChange={(dataUrl) => {
+                                        setDriverSignature(dataUrl);
+                                        setDriverSignatureError(false);
+                                    }}
+                                />
+                                {driverSignatureError && (
+                                    <p className="text-rose-500 text-sm mt-2 font-medium">⚠️ Şoför imzası zorunludur</p>
+                                )}
+                                <p className="text-xs text-slate-600 mt-3">Tablette veya telefonda parmak ile, bilgisayarda mouse ile imza atabilirsiniz.</p>
+                            </div>
+
                             {/* Notlar */}
                             <div className="bg-slate-900 p-6 rounded-xl shadow-lg border border-slate-800">
                                 <label className="block font-semibold text-slate-300 mb-3">Ek Notlar (Opsiyonel)</label>
@@ -409,7 +448,7 @@ export default function PublicADREntryForm() {
 
                             <div className="flex justify-end pt-6 gap-3 border-t border-slate-800">
                                 <Button variant="secondary" onClick={() => setStep(3)}>Sorulara Dön</Button>
-                                <Button onClick={handleSubmit(onSubmitFinal)} disabled={loading || !location}>
+                                <Button onClick={handleSubmit(onSubmitFinal)} disabled={loading || !location || !driverSignature}>
                                     {loading ? "Kaydediliyor..." : "FORMU GÖNDER"}
                                 </Button>
                             </div>
