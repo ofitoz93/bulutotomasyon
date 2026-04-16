@@ -25,7 +25,19 @@ export default function TMGDPublicPortal() {
         sender_name: "", sender_signature: "",
         carrier_company: "", driver_name: "", driver_plate: "", driver_signature: "",
         total_1136_points: 0,
-        adr_checklist: {} as Record<string, string>
+        adr_checklist: {
+            ambalaj_hasar: 'evet',
+            etiketleme_uygunluk: 'evet',
+            arac_plaka_levha: 'evet',
+            ambalaj_sizdirmazlik: 'evet',
+            palet_konteyner: 'evet',
+            yuk_guvenligi: 'evet',
+            karisik_yukleme: 'evet',
+            sizinti_onlem: 'evet',
+            tasima_evraki: 'evet',
+            src5: 'evet',
+            mali_sorumluluk: 'evet'
+        } as Record<string, string>
     };
     
     const [doc, setDoc] = useState(emptyDoc);
