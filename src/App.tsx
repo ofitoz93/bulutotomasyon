@@ -6,6 +6,7 @@ import UpdatePassword from "@/pages/auth/UpdatePassword";
 import CompaniesPage from "@/pages/admin/CompaniesPage";
 import ModulesPage from "@/pages/admin/ModulesPage";
 import SystemAnnouncementsPage from "@/pages/admin/AnnouncementsPage";
+import LegalRequirementsPage from "@/pages/admin/LegalRequirementsPage";
 import TeamPage from "@/pages/manager/TeamPage";
 import SubcontractorsPage from "@/pages/manager/SubcontractorsPage";
 import ManagerAnnouncementsPage from "@/pages/manager/ManagerAnnouncementsPage";
@@ -207,6 +208,7 @@ function App() {
           <Route path="companies" element={<CompaniesPage />} />
           <Route path="modules" element={<ModulesPage />} />
           <Route path="announcements" element={<SystemAnnouncementsPage />} />
+          <Route path="legal-requirements" element={<LegalRequirementsPage />} />
           <Route index element={<Navigate to="/admin/companies" replace />} />
         </Route>
 
