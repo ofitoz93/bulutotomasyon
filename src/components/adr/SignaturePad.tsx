@@ -50,9 +50,9 @@ export default function SignaturePad({ value, onChange, label = "İmza", require
 
         padRef.current = new SignaturePadLib(canvas, {
             backgroundColor: "rgba(0,0,0,0)",
-            penColor: "#0f172a", // Darker slate/black ink
-            minWidth: 1.5,
-            maxWidth: 3,
+            penColor: "#000000", // Tamamen saf siyah
+            minWidth: 2,         // Daha kalın fırça
+            maxWidth: 4,         // Daha kalın fırça
         });
 
         padRef.current.addEventListener("endStroke", () => {
