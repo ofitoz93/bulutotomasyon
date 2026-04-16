@@ -15,6 +15,12 @@ export default function SignaturePad({ value, onChange, label = "İmza", require
     const containerRef = useRef<HTMLDivElement>(null);
     const [isEmpty, setIsEmpty] = useState(true);
     const [isSaved, setIsSaved] = useState(!!value);
+    
+    // Store latest onChange to prevent stale closure data loss
+    const onChangeRef = useRef(onChange);
+    useEffect(() => {
+        onChangeRef.current = onChange;
+    }, [onChange]);
 
     const resizeCanvas = useCallback(() => {
         const canvas = canvasRef.current;
@@ -52,7 +58,7 @@ export default function SignaturePad({ value, onChange, label = "İmza", require
         padRef.current.addEventListener("endStroke", () => {
             setIsEmpty(padRef.current?.isEmpty() ?? true);
             setIsSaved(false);
-            onChange(null); // Reset saved state when drawing
+            onChangeRef.current(null); // Reset saved state when drawing using fresh ref
         });
 
         resizeCanvas();

@@ -528,7 +528,7 @@ export default function TMGDPublicPortal() {
                             <input placeholder="Yetkili Kişi" value={doc.sender_name} onChange={e=>setDoc({...doc, sender_name: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm mb-4"/>
                             
                             <div className="bg-slate-50 dark:bg-slate-900 p-2 rounded-xl">
-                                <SignaturePad label="Gönderici (Sizin) İmzanız" value={doc.sender_signature} onChange={s => setDoc({...doc, sender_signature: s||""})} required />
+                                <SignaturePad label="Gönderici (Sizin) İmzanız" value={doc.sender_signature} onChange={s => setDoc(prev => ({...prev, sender_signature: s||""}))} required />
                             </div>
                         </div>
                     </div>
@@ -543,7 +543,7 @@ export default function TMGDPublicPortal() {
 
                         <div className="mt-8 pt-4 border-t border-slate-200 dark:border-slate-700">
                             <div className="bg-slate-50 dark:bg-slate-900 p-2 rounded-xl">
-                                <SignaturePad label="Teslim Alan (Sürücü) İmzası" value={doc.driver_signature} onChange={s => setDoc({...doc, driver_signature: s||""})} required />
+                                <SignaturePad label="Teslim Alan (Sürücü) İmzası" value={doc.driver_signature} onChange={s => setDoc(prev => ({...prev, driver_signature: s||""}))} required />
                             </div>
                         </div>
                     </div>
