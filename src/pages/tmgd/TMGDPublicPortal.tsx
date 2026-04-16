@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Lock, FileText, Printer, Plus, Trash2, ArrowRight, Home, Edit2 } from "lucide-react";
@@ -24,7 +24,8 @@ export default function TMGDPublicPortal() {
         is_multimodal: false, is_limited: false, is_excepted: false, is_env_hazardous: false,
         sender_name: "", sender_signature: "",
         carrier_company: "", driver_name: "", driver_plate: "", driver_signature: "",
-        total_1136_points: 0
+        total_1136_points: 0,
+        adr_checklist: {} as Record<string, string>
     };
     
     const [doc, setDoc] = useState(emptyDoc);
@@ -386,6 +387,96 @@ export default function TMGDPublicPortal() {
                     </div>
                 </div>
 
+                {/* --- 2. SAYFA: ARAÇ KONTROL FORMU --- */}
+                <div className="max-w-[210mm] mx-auto bg-white mb-10 print:mb-0 shadow-lg print:shadow-none min-h-[297mm] p-[10mm] force-print-theme text-black print:break-before-page">
+                    <div className="flex justify-between items-center border-b-2 border-black pb-4 mb-6">
+                        {clientData?.tmgd_logo_url ? <img src={clientData.tmgd_logo_url} className="h-14 object-contain" alt="TMGD Logo" /> : <div className="font-bold text-xl">TMGD Firması</div>}
+                        <h1 className="text-xl font-black text-center flex-1 leading-tight">TEHLİKELİ MADDE / ATIK GÖNDERİMİ<br/><span className="text-lg">ARAÇ KONTROL FORMU</span></h1>
+                        {clientData?.logo_url ? <img src={clientData.logo_url} className="h-14 object-contain" alt="Client Logo" /> : <div className="font-bold text-xl">{clientData?.title}</div>}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+                        <div className="border border-black p-3 space-y-2">
+                            <div><b>Gönderen Firma:</b> {clientData?.title}</div>
+                            <div><b>Adres:</b> {clientData?.address}</div>
+                            <div><b>Yetkili Sorumlu:</b> {doc.sender_name}</div>
+                        </div>
+                        <div className="border border-black p-3 space-y-2">
+                            <div><b>Tarih:</b> {new Date(doc.date).toLocaleDateString("tr-TR")}</div>
+                            <div><b>Taşıyıcı Lojistik:</b> {doc.carrier_company || "-"}</div>
+                            <div><b>Sürücü Adı / Çekici Plaka:</b> {doc.driver_name} / {doc.driver_plate}</div>
+                        </div>
+                    </div>
+
+                    <div className="mb-4 text-xs font-bold bg-gray-200 border border-black p-2 text-center uppercase tracking-wide">
+                        Gönderim (Yükleyen) Kontrol Aşamaları
+                    </div>
+
+                    <table className="w-full text-xs box-border border-collapse border border-black mb-10">
+                        <thead className="bg-gray-100 font-bold text-left">
+                            <tr>
+                                <th className="border border-black p-2 w-3/4">Kontrol Kriteri</th>
+                                <th className="border border-black p-2 w-1/4 text-center">Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {[
+                                { group: 'Ambalaj Uygunluğu', items: [
+                                    { key: 'ambalaj_hasar', text: 'Ambalaj dış yüzeyinde hasar var mı?' },
+                                    { key: 'etiketleme_uygunluk', text: 'Etiketlemeler uygun mu?' }
+                                ]},
+                                { group: 'Taşıt ve Ambalaj İşaret-Etiket Zorunlulukları', items: [
+                                    { key: 'arac_plaka_levha', text: 'Araç ön/arka turuncu plaka var mı?' },
+                                    { key: 'ambalaj_sizdirmazlik', text: 'Ambalaj sızdırmazlığı uygun mu?' },
+                                    { key: 'palet_konteyner', text: 'Palet/Konteyner uygun mu?' },
+                                    { key: 'yuk_guvenligi', text: 'Yükler güvenli yerleştirildi mi?' }
+                                ]},
+                                { group: 'Karışık Yükleme/Ambalajlama & Belge Kontrolü', items: [
+                                    { key: 'karisik_yukleme', text: 'İzin verilen sınıflar kontrol edildi mi?' },
+                                    { key: 'sizinti_onlem', text: 'Sızıntı riskine karşı önlem alındı mı?' },
+                                    { key: 'tasima_evraki', text: 'Taşıma Evrakı (ADR 5.4.1) düzenlendi mi?' },
+                                    { key: 'src5', text: 'Sürücünün SRC-5 Belgesi var mı?' },
+                                    { key: 'mali_sorumluluk', text: 'Tehlikeli Madde Zorunlu Mali Sorumluluk Sigortası var mı?' }
+                                ]}
+                            ].map((g, gi) => (
+                                <React.Fragment key={gi}>
+                                    <tr>
+                                        <td colSpan={2} className="border border-black p-1.5 bg-gray-50 font-bold uppercase text-[10px] text-gray-700">{g.group}</td>
+                                    </tr>
+                                    {g.items.map((it) => {
+                                        const val = doc.adr_checklist?.[it.key];
+                                        let badgeColor = "font-normal";
+                                        if (val === 'evet') badgeColor = "font-bold text-black";
+                                        if (val === 'hayır') badgeColor = "font-bold text-gray-800 line-through";
+                                        return (
+                                            <tr key={it.key}>
+                                                <td className="border border-black p-2">{it.text}</td>
+                                                <td className="border border-black p-2 text-center uppercase">
+                                                    <span className={badgeColor}>{val || "-"}</span>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
+                                </React.Fragment>
+                            ))}
+                        </tbody>
+                    </table>
+
+                    <div className="grid grid-cols-2 gap-8 text-sm mt-auto border-t border-black pt-6">
+                        <div className="text-center">
+                            <h4 className="font-bold pb-2 mb-2 uppercase">Gönderici Sorumlusu</h4>
+                            <div className="mb-4">{doc.sender_name}</div>
+                            {doc.sender_signature && <img src={doc.sender_signature} className="h-24 mx-auto object-contain" alt="imza"/>}
+                        </div>
+                        <div className="text-center">
+                            <h4 className="font-bold pb-2 mb-2 uppercase">Teslim Alan Sürücü</h4>
+                            <div className="mb-1">{doc.driver_name}</div>
+                            <div className="mb-3 text-xs">Plaka: <span className="font-mono font-bold uppercase">{doc.driver_plate}</span></div>
+                            {doc.driver_signature && <img src={doc.driver_signature} className="h-24 mx-auto object-contain" alt="imza"/>}
+                        </div>
+                    </div>
+                </div>
+
                 <div className="fixed bottom-6 right-6 flex gap-3 print:hidden z-50">
                     <button onClick={backToDashboard} className="px-6 py-3 bg-white text-slate-800 rounded-full shadow-lg border border-slate-200 hover:bg-slate-50 font-bold flex items-center gap-2">
                         <Home className="w-5 h-5"/> Menüye Dön
@@ -557,12 +648,14 @@ export default function TMGDPublicPortal() {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 space-y-4">
-                        <h2 className="text-md font-bold mb-4 text-slate-800 dark:text-slate-100 border-b pb-2">Taşıyıcı ve Sürücü</h2>
-                        <div><label className="block text-sm font-medium mb-1">Taşıyıcı Lojistik Firma</label><input value={doc.carrier_company} onChange={e=>setDoc({...doc, carrier_company: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"/></div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div><label className="block text-sm font-medium mb-1">Araç Plakası</label><input value={doc.driver_plate} onChange={e=>setDoc({...doc, driver_plate: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm font-mono font-bold uppercase"/></div>
-                            <div><label className="block text-sm font-medium mb-1">Sürücü Adı</label><input value={doc.driver_name} onChange={e=>setDoc({...doc, driver_name: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"/></div>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 flex flex-col justify-between">
+                        <div className="space-y-4">
+                            <h2 className="text-md font-bold mb-4 text-slate-800 dark:text-slate-100 border-b pb-2">Taşıyıcı ve Sürücü</h2>
+                            <div><label className="block text-sm font-medium mb-1">Taşıyıcı Lojistik Firma</label><input value={doc.carrier_company} onChange={e=>setDoc({...doc, carrier_company: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"/></div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div><label className="block text-sm font-medium mb-1">Araç Plakası</label><input value={doc.driver_plate} onChange={e=>setDoc({...doc, driver_plate: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm font-mono font-bold uppercase"/></div>
+                                <div><label className="block text-sm font-medium mb-1">Sürücü Adı</label><input value={doc.driver_name} onChange={e=>setDoc({...doc, driver_name: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"/></div>
+                            </div>
                         </div>
 
                         <div className="mt-8 pt-4 border-t border-slate-200 dark:border-slate-700">
@@ -573,16 +666,80 @@ export default function TMGDPublicPortal() {
                     </div>
                 </div>
 
+                {/* ARAÇ KONTROL FORMU (YÜKLEYEN-GÖNDEREN) */}
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                    <div className="flex items-center gap-3 mb-6 border-b border-slate-200 dark:border-slate-700 pb-4">
+                        <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center">
+                            <FileText className="w-5 h-5 text-indigo-600" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Araç Kontrol Formu (Yükleyen-Gönderen)</h2>
+                            <p className="text-sm text-slate-500">Mevzuata uygun olarak sevkiyat kontrol aşamalarını işaretleyiniz. İşaretlenen veriler çıktı sayfasına otomatik yansır.</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        {[
+                            { title: 'Ambalaj Uygunluğu', items: [
+                                { key: 'ambalaj_hasar', text: 'Ambalaj dış yüzeyinde hasar var mı?' },
+                                { key: 'etiketleme_uygunluk', text: 'Etiketlemeler uygun mu?' }
+                            ]},
+                            { title: 'Taşıt ve Ambalaj İşaret-Etiket Zorunlulukları', items: [
+                                { key: 'arac_plaka_levha', text: 'Araç ön/arka turuncu plaka var mı?' },
+                                { key: 'ambalaj_sizdirmazlik', text: 'Ambalaj sızdırmazlığı uygun mu?' },
+                                { key: 'palet_konteyner', text: 'Palet/Konteyner uygun mu?' },
+                                { key: 'yuk_guvenligi', text: 'Yükler güvenli yerleştirildi mi?' }
+                            ]},
+                            { title: 'Karışık Yükleme/Ambalajlama & Belge', items: [
+                                { key: 'karisik_yukleme', text: 'İzin verilen sınıflar kontrol edildi mi?' },
+                                { key: 'sizinti_onlem', text: 'Sızıntı riskine karşı önlem alındı mı?' },
+                                { key: 'tasima_evraki', text: 'Taşıma Evrakı Var mı?' },
+                                { key: 'src5', text: 'SRC-5 Belgesi Var mı?' },
+                                { key: 'mali_sorumluluk', text: 'Sigorta Poliçesi Var mı?' }
+                            ]}
+                        ].map((section, idx) => (
+                            <div key={idx} className="bg-slate-50 dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <h3 className="font-bold text-sm text-indigo-600 uppercase mb-4">{section.title}</h3>
+                                <div className="space-y-4">
+                                    {section.items.map(item => (
+                                        <div key={item.key} className="flex flex-col gap-2">
+                                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-tight block">{item.text}</label>
+                                            <div className="flex gap-4">
+                                                {['Evet', 'Hayır', 'Kısmen'].map((opt) => (
+                                                    <label key={opt} className="flex items-center gap-2 cursor-pointer bg-white dark:bg-slate-800 px-3 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 hover:border-indigo-500 transition-colors">
+                                                        <input 
+                                                            type="radio" 
+                                                            name={`chk_${item.key}`} 
+                                                            value={opt.toLowerCase()} 
+                                                            checked={doc.adr_checklist?.[item.key] === opt.toLowerCase()}
+                                                            onChange={(e) => setDoc(prev => ({
+                                                                ...prev, 
+                                                                adr_checklist: { ...prev.adr_checklist, [item.key]: e.target.value }
+                                                            }))}
+                                                            className="text-indigo-600"
+                                                        />
+                                                        <span className="text-xs font-medium">{opt}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
                 {/* Form Action */}
                 <div className="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-4 fixed bottom-0 left-0 right-0 z-20 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] print:hidden">
                     <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div className="text-sm font-medium text-slate-500">Mevzuat: ADR 5.4.1</div>
+                        <div className="text-sm font-medium text-slate-500">Mevzuat: ADR 5.4.1 & Kontrol Formu</div>
                         <button 
                             disabled={loading || !doc.sender_signature || !doc.driver_signature || items.length === 0} 
                             onClick={handleSubmitDoc} 
                             className="w-full sm:w-auto bg-indigo-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition disabled:opacity-50 flex gap-2 items-center justify-center"
                         >
-                            {loading ? "Kaydediliyor..." : (currentDocId ? "Güncellemeyi Kaydet" : "Evrakı Oluştur")} <ArrowRight className="w-5 h-5"/>
+                            {loading ? "Kaydediliyor..." : (currentDocId ? "Güncellemeyi Kaydet" : "2 Sayfa Evrakı Oluştur")} <ArrowRight className="w-5 h-5"/>
                         </button>
                     </div>
                 </div>
