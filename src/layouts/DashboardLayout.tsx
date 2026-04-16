@@ -193,6 +193,7 @@ export default function DashboardLayout() {
         pkd_yonetimi: "/app/pkd_yonetimi",
         work_permits: "/app/work-permits",
         yasal_sartlar: "/admin/legal-requirements",
+        tmgd: "/app/tmgd",
     };
 
     const getRoleLabel = () => {

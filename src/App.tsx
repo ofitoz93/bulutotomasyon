@@ -61,6 +61,8 @@ import PersonnelDetail from "@/pages/personnel/PersonnelDetail";
 import HealthRecords from "@/pages/personnel/HealthRecords";
 import PPETracking from "@/pages/personnel/PPETracking";
 import BulkOperations from "@/pages/personnel/BulkOperations";
+import TMGDAdminPage from "@/pages/tmgd/TMGDAdminPage";
+import TMGDPublicPortal from "@/pages/tmgd/TMGDPublicPortal";
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useThemeStore } from "@/stores/themeStore";
@@ -142,6 +144,7 @@ function App() {
           <Route path="evrak-takip" element={<DocumentTrackingPage />} />
           <Route path="ekipman-takip" element={<EquipmentTrackingPage />} />
           <Route path="org-chart" element={<OrganizationChartPage />} />
+          <Route path="tmgd" element={<TMGDAdminPage />} />
           <Route path="adr">
             <Route index element={<ADRDashboard />} />
             <Route path="new" element={<NewADRForm />} />
@@ -201,6 +204,7 @@ function App() {
         </Route>
 
         <Route path="/qr/:token" element={<QRScanPage />} />
+        <Route path="/tmgd/:slug" element={<TMGDPublicPortal />} />
         <Route path="/public/exam/:id" element={<PublicExamPage />} />
 
         {/* Admin Routes */}
