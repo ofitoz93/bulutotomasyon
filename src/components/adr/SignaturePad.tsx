@@ -50,7 +50,7 @@ export default function SignaturePad({ value, onChange, label = "İmza", require
 
         padRef.current = new SignaturePadLib(canvas, {
             backgroundColor: "rgba(0,0,0,0)",
-            penColor: "#e2e8f0",
+            penColor: "#0f172a", // Darker slate/black ink
             minWidth: 1.5,
             maxWidth: 3,
         });
@@ -101,7 +101,7 @@ export default function SignaturePad({ value, onChange, label = "İmza", require
     return (
         <div className="space-y-2">
             <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-slate-400">
+                <label className="block text-sm font-medium text-slate-500 dark:text-slate-400">
                     {label}
                     {required && <span className="text-rose-400 ml-1">*</span>}
                 </label>
@@ -120,8 +120,8 @@ export default function SignaturePad({ value, onChange, label = "İmza", require
                 ref={containerRef}
                 className={`relative w-full rounded-lg border-2 transition-colors overflow-hidden ${
                     isSaved
-                        ? "border-emerald-500/50 bg-slate-800/40"
-                        : "border-dashed border-slate-600 bg-slate-800/80 hover:border-indigo-500/50"
+                        ? "border-emerald-500/50 bg-white dark:bg-slate-100"
+                        : "border-dashed border-slate-300 dark:border-slate-400 bg-slate-50 dark:bg-slate-100 hover:border-indigo-500/50"
                 }`}
                 style={{ height: 200, touchAction: "none" }}
             >
@@ -132,8 +132,8 @@ export default function SignaturePad({ value, onChange, label = "İmza", require
                 />
                 {isEmpty && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
-                        <p className="text-slate-600 text-sm font-medium">Buraya imzanızı atın</p>
-                        <p className="text-slate-700 text-xs mt-1">Parmağınız veya mouse ile çizin</p>
+                        <p className="text-slate-400 dark:text-slate-500 text-sm font-medium">Buraya imzanızı atın</p>
+                        <p className="text-slate-300 dark:text-slate-400 text-xs mt-1">Parmağınız veya mouse ile çizin</p>
                     </div>
                 )}
                 {isSaved && (

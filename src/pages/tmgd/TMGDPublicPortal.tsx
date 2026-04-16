@@ -36,6 +36,12 @@ export default function TMGDPublicPortal() {
 
     const totalQuantity = items.reduce((acc, curr) => acc + (curr.quantity || 0), 0);
 
+    const uniqueReceivers = Array.from(new Map(pastDocs.map(d => [d.receiver_title, {
+        title: d.receiver_title,
+        address: d.receiver_address,
+        tel: d.receiver_tel
+    }])).values()).filter((r: any) => r.title);
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
@@ -432,7 +438,25 @@ export default function TMGDPublicPortal() {
                         <div>
                             <h3 className="font-bold text-sm text-slate-500 uppercase mb-3">Alıcı Bilgileri</h3>
                             <div className="space-y-3">
-                                <input placeholder="Alıcı Ünvanı / Firma Adı" value={doc.receiver_title} onChange={e=>setDoc({...doc, receiver_title: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"/>
+                                <input 
+                                    list="past-receivers" 
+                                    placeholder="Alıcı Ünvanı / Firma Adı" 
+                                    value={doc.receiver_title} 
+                                    onChange={e=>{
+                                        const val = e.target.value;
+                                        const found = uniqueReceivers.find(r => r.title === val);
+                                        if (found) {
+                                            setDoc({...doc, receiver_title: val, receiver_address: found.address || "", receiver_tel: found.tel || ""});
+                                        } else {
+                                            setDoc({...doc, receiver_title: val});
+                                        }
+                                    }} 
+                                    className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"
+                                />
+                                <datalist id="past-receivers">
+                                    {uniqueReceivers.map(r => <option key={r.title} value={r.title} />)}
+                                </datalist>
+
                                 <input placeholder="Açık Adres" value={doc.receiver_address} onChange={e=>setDoc({...doc, receiver_address: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"/>
                                 <input placeholder="Telefon / İletişim" value={doc.receiver_tel} onChange={e=>setDoc({...doc, receiver_tel: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"/>
                             </div>
