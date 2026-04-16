@@ -120,7 +120,7 @@ export default function ADRDashboard() {
                                     <span className="text-xs">{new Date(form.created_at).toLocaleString('tr-TR')}</span>
                                 </div>
                                 <div className="text-xs text-slate-600 mt-1.5">
-                                    Hazırlayan: {form.profiles ? `${form.profiles.first_name || ""} ${form.profiles.last_name || ""}`.trim() : "Bilinmiyor"}
+                                    Hazırlayan: {form.profiles ? `${form.profiles.first_name || ""} ${form.profiles.last_name || ""}`.trim() : "Müşteri Portalı"}
                                 </div>
                             </div>
                         ))}

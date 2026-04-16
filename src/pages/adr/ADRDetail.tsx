@@ -182,7 +182,7 @@ export default function ADRDetail() {
             const info = [
                 [`Araç Plakası`, form.plate_no || "-"],
                 [`Şoför`, form.driver_name || "-"],
-                [`Hazırlayan`, form.profiles ? `${form.profiles.first_name || ""} ${form.profiles.last_name || ""}`.trim() : "-"],
+                [`Hazırlayan`, form.profiles ? `${form.profiles.first_name || ""} ${form.profiles.last_name || ""}`.trim() : "Müşteri Portalı"],
             ];
             doc.setFontSize(8.5);
             info.forEach(([label, value], i) => {
@@ -392,7 +392,7 @@ export default function ADRDetail() {
                             {form.status === 'approved' ? 'ONAYLANDI' : form.status === 'rejected' ? 'REDDEDİLDİ' : 'ONAY BEKLİYOR'}
                         </span>
                     </div>
-                    <p className="text-sm text-slate-500">{form.form_type} • {new Date(form.created_at).toLocaleString('tr-TR')} • Hazırlayan: {form.profiles ? `${form.profiles.first_name || ""} ${form.profiles.last_name || ""}`.trim() : "Bilinmiyor"}</p>
+                    <p className="text-sm text-slate-500">{form.form_type} • {new Date(form.created_at).toLocaleString('tr-TR')} • Hazırlayan: {form.profiles ? `${form.profiles.first_name || ""} ${form.profiles.last_name || ""}`.trim() : "Müşteri Portalı"}</p>
                 </div>
 
                 <div className="flex items-center gap-2">
