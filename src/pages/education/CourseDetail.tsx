@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { ArrowLeft, BookOpen, Users, FileText, Settings, Rocket, BarChart2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Users, FileText, Settings, Rocket, BarChart2, QrCode } from "lucide-react";
 import CourseParticipants from "./components/CourseParticipants";
 import CourseContent from "./components/CourseContent";
 import CourseExam from "./components/CourseExam";
@@ -91,6 +91,16 @@ export default function CourseDetail() {
                 </div>
 
                 <div className="flex space-x-3">
+                    {/* Yoklama İmza QR Butonu */}
+                    <a
+                        href={`/public/class-sign/${course.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center px-4 py-2 bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-600/30 transition shadow-sm"
+                    >
+                        <QrCode className="w-4 h-4 mr-2" />
+                        Yoklama QR
+                    </a>
                     {course.status === 'draft' && (
                         <button
                             onClick={handlePublish}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { Users, CheckCircle2, Clock, AlertCircle, Printer } from "lucide-react";
+import { Users, CheckCircle2, Clock, AlertCircle, Printer, PenLine } from "lucide-react";
 
 export default function CourseReport({ courseId }: { courseId: string }) {
     const [participants, setParticipants] = useState<any[]>([]);
@@ -18,10 +18,10 @@ export default function CourseReport({ courseId }: { courseId: string }) {
     const fetchReportData = async () => {
         setLoading(true);
         try {
-            // Get participants
+            // Get participants (imza alanları dahil)
             const { data: pData, error: pError } = await supabase
                 .from("course_participants")
-                .select("user_id, profiles(first_name, last_name, tc_no)")
+                .select("user_id, is_signed, signed_at, signature_data, profiles(first_name, last_name, tc_no)")
                 .eq("course_id", courseId);
             if (pError) console.error("participants error:", pError);
 
@@ -325,10 +325,13 @@ export default function CourseReport({ courseId }: { courseId: string }) {
             profile: p.profiles,
             isGuest: false,
             progressPercent,
-            totalTimeSpent, // in seconds
+            totalTimeSpent,
             examScore: eR?.score,
             examStatus: eR?.status,
-            agreed: eR?.agreed
+            agreed: eR?.agreed,
+            isSigned: p.is_signed || false,
+            signedAt: p.signed_at || null,
+            signatureData: p.signature_data || null,
         };
     });
 
@@ -359,7 +362,10 @@ export default function CourseReport({ courseId }: { courseId: string }) {
             totalTimeSpent,
             examScore: eR.score,
             examStatus: eR.status,
-            agreed: eR.agreed
+            agreed: eR.agreed,
+            isSigned: false,
+            signedAt: null,
+            signatureData: null,
         };
     });
 
@@ -368,7 +374,7 @@ export default function CourseReport({ courseId }: { courseId: string }) {
     return (
         <div className="space-y-6">
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-lg flex items-center transition-all hover:border-slate-700">
                     <div className="w-12 h-12 bg-indigo-500/10 text-indigo-400 rounded-lg flex items-center justify-center mr-4 shadow-inner">
                         <Users className="w-6 h-6" />
@@ -408,6 +414,17 @@ export default function CourseReport({ courseId }: { courseId: string }) {
                         <p className="text-2xl font-black text-white">{participants.length > 0 ? (participants.length - examResults.filter(e => enrolledUsers.some(u => u.id === e.user_id)).length) : 0}</p>
                     </div>
                 </div>
+
+                {/* İmzalayanlar özet kartı */}
+                <div className="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-lg flex items-center transition-all hover:border-slate-700">
+                    <div className="w-12 h-12 bg-violet-500/10 text-violet-400 rounded-lg flex items-center justify-center mr-4 shadow-inner">
+                        <PenLine className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">İmzalayanlar</p>
+                        <p className="text-2xl font-black text-white">{participants.filter((p: any) => p.is_signed).length} / {participants.length}</p>
+                    </div>
+                </div>
             </div>
 
             {/* detailed Table */}
@@ -427,6 +444,7 @@ export default function CourseReport({ courseId }: { courseId: string }) {
                                 <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">İçerik İlerleme</th>
                                 <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Harcanan Süre</th>
                                 <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sınav Sorucu</th>
+                                <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">İmza</th>
                                 <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Taahhütname</th>
                                 <th scope="col" className="px-6 py-4 text-right text-[10px] font-bold text-slate-500 uppercase tracking-widest">İşlemler</th>
                             </tr>
@@ -474,6 +492,35 @@ export default function CourseReport({ courseId }: { courseId: string }) {
                                             </span>
                                         )}
                                     </td>
+
+                                    {/* İmza Kolonu */}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        {row.isSigned ? (
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-emerald-400 flex items-center font-bold text-xs gap-1.5">
+                                                    <PenLine className="w-3.5 h-3.5" />
+                                                    İmza Atıldı
+                                                </span>
+                                                {row.signedAt && (
+                                                    <span className="text-[10px] text-slate-500 font-mono">
+                                                        {new Date(row.signedAt).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                )}
+                                                {row.signatureData && (
+                                                    <img
+                                                        src={row.signatureData}
+                                                        alt="İmza"
+                                                        className="mt-1 h-8 w-auto bg-white rounded border border-slate-700 px-1"
+                                                        title="İmzayı görmek için üzerine gelin"
+                                                    />
+                                                )}
+                                            </div>
+                                        ) : (
+                                            // İmzalanmadıysa hiçbir şey gösterme
+                                            <span className="text-slate-700">—</span>
+                                        )}
+                                    </td>
+
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
                                         {row.agreed === true ? (
                                             <span className="text-emerald-400 flex items-center font-bold text-xs"><CheckCircle2 className="w-4 h-4 mr-1.5" /> Onaylı</span>

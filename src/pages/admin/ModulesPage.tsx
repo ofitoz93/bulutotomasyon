@@ -195,10 +195,12 @@ export default function ModulesPage() {
     // Modül Düzenleme
     const openEditModal = (mod: Module) => {
         setEditingModule(mod);
+        // Önce join'dan gelen category id'yi kullan, yoksa doğrudan category_id kolonunu kullan
+        const categoryId = mod.module_categories?.id || mod.category_id || "";
         setEditForm({
             name: mod.name,
             description: mod.description || "",
-            category_id: mod.category_id || (mod.module_categories?.id || "") // Öncelik ID'de
+            category_id: categoryId
         });
         setEditModal(true);
     };
@@ -207,17 +209,28 @@ export default function ModulesPage() {
         if (!editingModule) return;
         setSaveLoading(true);
         try {
-            const { error } = await supabase.from("modules").update({
+            const updatePayload: Record<string, any> = {
                 name: editForm.name,
-                description: editForm.description,
-                category_id: editForm.category_id || null // Empty string -> null
-            }).eq("key", editingModule.key);
+                description: editForm.description || null,
+                category_id: editForm.category_id || null, // Boş string -> null
+            };
+
+            console.log("Modül güncelleniyor:", editingModule.key, updatePayload);
+
+            const { data, error } = await supabase
+                .from("modules")
+                .update(updatePayload)
+                .eq("key", editingModule.key)
+                .select();
+
+            console.log("Güncelleme sonucu:", data, error);
 
             if (error) throw error;
             setEditModal(false);
-            fetchAll();
+            await fetchAll();
         } catch (error: any) {
-            alert("Hata: " + error.message);
+            console.error("Modül güncelleme hatası:", error);
+            alert("Hata: " + (error.message || JSON.stringify(error)));
         } finally {
             setSaveLoading(false);
         }

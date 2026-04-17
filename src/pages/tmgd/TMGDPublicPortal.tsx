@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { Lock, FileText, Printer, Plus, Trash2, ArrowRight, Home, Edit2 } from "lucide-react";
+import { Lock, FileText, Printer, Plus, Trash2, ArrowRight, Home, Edit2, Eye, Search, AlertTriangle } from "lucide-react";
 import SignaturePad from "@/components/adr/SignaturePad";
 
 export default function TMGDPublicPortal() {
@@ -45,7 +45,15 @@ export default function TMGDPublicPortal() {
     
     // Current state indicators
     const [currentDocId, setCurrentDocId] = useState<string | null>(null);
-    const [printDocId, setPrintDocId] = useState<string | null>(null);
+
+    // Search & Filter State
+    const [searchQuery, setSearchQuery] = useState("");
+    const [dateFrom, setDateFrom] = useState("");
+    const [dateTo, setDateTo] = useState("");
+    const [includeArchive, setIncludeArchive] = useState(false);
+
+    // Düzenleme Onay Modal
+    const [showEditConfirm, setShowEditConfirm] = useState(false);
 
     const totalQuantity = items.reduce((acc, curr) => acc + (curr.quantity || 0), 0);
 
@@ -54,6 +62,36 @@ export default function TMGDPublicPortal() {
         address: d.receiver_address,
         tel: d.receiver_tel
     }])).values()).filter((r: any) => r.title);
+
+    // 5 Yıl filtresi + arama
+    const fiveYearsAgo = new Date();
+    fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
+
+    const filteredDocs = pastDocs.filter(d => {
+        const docDate = new Date(d.date);
+
+        // 5 yıl arşiv filtresi (arşiv modu açık değilse)
+        if (!includeArchive && docDate < fiveYearsAgo) return false;
+
+        // Tarih aralığı
+        if (dateFrom && docDate < new Date(dateFrom)) return false;
+        if (dateTo && docDate > new Date(dateTo + "T23:59:59")) return false;
+
+        // Metin arama
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            return (
+                (d.receiver_title || "").toLowerCase().includes(q) ||
+                (d.waybill_no || "").toLowerCase().includes(q) ||
+                (d.driver_plate || "").toLowerCase().includes(q) ||
+                (d.driver_name || "").toLowerCase().includes(q) ||
+                (d.order_no || "").toLowerCase().includes(q)
+            );
+        }
+        return true;
+    });
+
+    const archivedCount = pastDocs.filter(d => new Date(d.date) < fiveYearsAgo).length;
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -67,7 +105,6 @@ export default function TMGDPublicPortal() {
         }
         setClientData(data);
         
-        // Fetch products & past docs
         const [{ data: prodData }, { data: docsData }] = await Promise.all([
             supabase.rpc("tmgd_public_get_products", { p_client_id: data.id }),
             supabase.rpc("tmgd_public_get_docs", { p_client_id: data.id })
@@ -94,7 +131,7 @@ export default function TMGDPublicPortal() {
         setStep("form");
     };
 
-    const handlePrintOldDoc = (d: any) => {
+    const handleViewDoc = (d: any) => {
         setDoc(d);
         setItems(d.items || []);
         setCurrentDocId(d.id);
@@ -114,7 +151,6 @@ export default function TMGDPublicPortal() {
         const newItems = items.map(item => {
             if (item.id !== id) return item;
             const updated = { ...item, [field]: value };
-            
             if (field === "product_id" || field === "quantity") {
                 const prod = catalog.find(p => p.id === updated.product_id);
                 if (prod && updated.quantity > 0) {
@@ -134,6 +170,7 @@ export default function TMGDPublicPortal() {
         setDoc(prev => ({...prev, total_1136_points: total }));
     };
 
+    // Yeni evrak oluşturma / Düzenleme onay akışı
     const handleSubmitDoc = async () => {
         if (!doc.date || !doc.sender_signature || !doc.driver_signature) {
             alert("Lütfen tarih ve tüm imzaları onaylayarak tamamlayın.");
@@ -148,30 +185,38 @@ export default function TMGDPublicPortal() {
             return;
         }
         
-        setLoading(true);
         if (currentDocId) {
-            // Update
-            const { error } = await supabase.rpc("tmgd_public_update_doc", {
-                p_doc_id: currentDocId, p_client_id: clientData.id, p_doc: doc, p_items: items
-            });
-            if (error) alert("Güncelleme hatası: " + error.message);
-            else setStep("print");
-        } else {
-            // Create
-            const { data: generatedDocId, error } = await supabase.rpc("tmgd_public_create_doc", {
-                p_client_id: clientData.id, p_doc: doc, p_items: items
-            });
-            if (error) alert("Oluşturma hatası: " + error.message);
-            else {
-                setCurrentDocId(generatedDocId);
-                setStep("print");
-            }
+            // Düzenleme modunda → önce onay modal göster
+            setShowEditConfirm(true);
+            return;
+        }
+        
+        // Yeni evrak oluşturma
+        setLoading(true);
+        const { data: generatedDocId, error } = await supabase.rpc("tmgd_public_create_doc", {
+            p_client_id: clientData.id, p_doc: doc, p_items: items
+        });
+        if (error) alert("Oluşturma hatası: " + error.message);
+        else {
+            setCurrentDocId(generatedDocId);
+            setStep("print");
         }
         setLoading(false);
     };
 
+    // Düzenleme onaylandıktan sonra kayıt
+    const handleConfirmEdit = async () => {
+        setShowEditConfirm(false);
+        setLoading(true);
+        const { error } = await supabase.rpc("tmgd_public_update_doc", {
+            p_doc_id: currentDocId, p_client_id: clientData.id, p_doc: doc, p_items: items
+        });
+        if (error) alert("Güncelleme hatası: " + error.message);
+        else setStep("print");
+        setLoading(false);
+    };
+
     const backToDashboard = async () => {
-        // Refresh docs
         setLoading(true);
         const { data: docsData } = await supabase.rpc("tmgd_public_get_docs", { p_client_id: clientData.id });
         if (docsData) setPastDocs(docsData);
@@ -229,19 +274,80 @@ export default function TMGDPublicPortal() {
                 </header>
 
                 <main className="max-w-5xl mx-auto p-4 md:p-6 space-y-6">
+                    {/* Hoş geldiniz + Yeni Evrak */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
                         <div>
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Hoş Geldiniz, {clientData?.title}</h2>
-                            <p className="text-slate-500 text-sm mt-1">Sisteme kayıtlı geçmiş tehlikeli madde sevkiyat evraklarınızı yönetin veya yenisini oluşturun.</p>
+                            <p className="text-slate-500 text-sm mt-1">Sisteme kayıtlı tehlikeli madde sevkiyat evraklarınızı yönetin veya yenisini oluşturun.</p>
                         </div>
                         <button onClick={handleCreateNew} className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 whitespace-nowrap">
                             <Plus className="w-5 h-5"/> Yeni Taşıma Evrakı
                         </button>
                     </div>
 
+                    {/* Arama & Filtre */}
+                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-4">
+                        <div className="flex flex-col md:flex-row gap-3">
+                            {/* Metin arama */}
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={e => setSearchQuery(e.target.value)}
+                                    placeholder="İrsaliye no, plaka, alıcı adı, sipariş no..."
+                                    className="w-full pl-9 pr-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                />
+                            </div>
+                            {/* Tarih aralığı */}
+                            <div className="flex gap-2 items-center">
+                                <input
+                                    type="date"
+                                    value={dateFrom}
+                                    onChange={e => setDateFrom(e.target.value)}
+                                    className="px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    title="Başlangıç tarihi"
+                                />
+                                <span className="text-slate-400 text-sm">—</span>
+                                <input
+                                    type="date"
+                                    value={dateTo}
+                                    onChange={e => setDateTo(e.target.value)}
+                                    className="px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    title="Bitiş tarihi"
+                                />
+                            </div>
+                            {/* Arşiv toggle */}
+                            {archivedCount > 0 && (
+                                <label className="flex items-center gap-2 cursor-pointer px-3 py-2.5 border border-amber-300 dark:border-amber-700 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-sm font-medium text-amber-800 dark:text-amber-400 whitespace-nowrap select-none">
+                                    <input
+                                        type="checkbox"
+                                        checked={includeArchive}
+                                        onChange={e => setIncludeArchive(e.target.checked)}
+                                        className="text-amber-600 rounded"
+                                    />
+                                    Arşivde Ara ({archivedCount} kayıt)
+                                </label>
+                            )}
+                        </div>
+                        {(searchQuery || dateFrom || dateTo) && (
+                            <div className="mt-2 flex items-center gap-2">
+                                <span className="text-xs text-slate-500">{filteredDocs.length} sonuç bulundu</span>
+                                <button onClick={() => { setSearchQuery(""); setDateFrom(""); setDateTo(""); }} className="text-xs text-indigo-500 hover:text-indigo-700 font-medium">Filtreyi Temizle</button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Evrak Listesi */}
                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                            <h3 className="font-bold text-slate-800 dark:text-slate-200">Geçmiş Evraklarınız ({pastDocs.length})</h3>
+                        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
+                            <h3 className="font-bold text-slate-800 dark:text-slate-200">
+                                Geçmiş Evraklarınız
+                                <span className="ml-2 text-slate-400 font-normal text-sm">({filteredDocs.length} / {pastDocs.length})</span>
+                            </h3>
+                            {!includeArchive && archivedCount === 0 && (
+                                <span className="text-xs text-slate-400">Son 5 yıl gösteriliyor</span>
+                            )}
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm whitespace-nowrap">
@@ -255,27 +361,50 @@ export default function TMGDPublicPortal() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                                    {pastDocs.length === 0 ? (
-                                        <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">Henüz oluşturulmuş evrakınız bulunmamaktadır.</td></tr>
-                                    ) : pastDocs.map(d => (
-                                        <tr key={d.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
-                                            <td className="px-6 py-3 font-medium text-slate-900 dark:text-white">{new Date(d.date).toLocaleDateString('tr-TR')}</td>
-                                            <td className="px-6 py-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{d.driver_plate || '-'}</td>
-                                            <td className="px-6 py-3">{d.waybill_no || '-'}</td>
-                                            <td className="px-6 py-3 max-w-[200px] truncate" title={d.receiver_title}>{d.receiver_title}</td>
-                                            <td className="px-6 py-3 text-right flex justify-end gap-2">
-                                                <button onClick={() => handleEditDoc(d)} className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center gap-1.5 text-xs font-medium">
-                                                    <Edit2 className="w-3.5 h-3.5"/> Düzenle
-                                                </button>
-                                                <button onClick={() => handlePrintOldDoc(d)} className="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded hover:bg-indigo-100 dark:hover:bg-indigo-500/20 flex items-center gap-1.5 text-xs font-medium">
-                                                    <Printer className="w-3.5 h-3.5"/> Yazdır
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {filteredDocs.length === 0 ? (
+                                        <tr><td colSpan={5} className="px-6 py-10 text-center text-slate-500">
+                                            {pastDocs.length === 0
+                                                ? "Henüz oluşturulmuş evrakınız bulunmamaktadır."
+                                                : "Arama kriterlerinize uygun evrak bulunamadı."}
+                                        </td></tr>
+                                    ) : filteredDocs.map(d => {
+                                        const isOld = new Date(d.date) < fiveYearsAgo;
+                                        return (
+                                            <tr key={d.id} className={`hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors ${isOld ? 'opacity-60' : ''}`}>
+                                                <td className="px-6 py-3 font-medium text-slate-900 dark:text-white">
+                                                    {new Date(d.date).toLocaleDateString('tr-TR')}
+                                                    {isOld && <span className="ml-2 text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold">ARŞİV</span>}
+                                                </td>
+                                                <td className="px-6 py-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{d.driver_plate || '-'}</td>
+                                                <td className="px-6 py-3">{d.waybill_no || '-'}</td>
+                                                <td className="px-6 py-3 max-w-[180px] truncate" title={d.receiver_title}>{d.receiver_title}</td>
+                                                <td className="px-6 py-3 text-right">
+                                                    <div className="flex justify-end gap-1.5">
+                                                        <button onClick={() => handleViewDoc(d)} className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded hover:bg-emerald-100 dark:hover:bg-emerald-500/20 flex items-center gap-1.5 text-xs font-medium" title="Görüntüle / İndir">
+                                                            <Eye className="w-3.5 h-3.5"/> Görüntüle
+                                                        </button>
+                                                        <button onClick={() => handleEditDoc(d)} className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center gap-1.5 text-xs font-medium" title="Düzenle">
+                                                            <Edit2 className="w-3.5 h-3.5"/> Düzenle
+                                                        </button>
+                                                        <button onClick={() => { handleViewDoc(d); setTimeout(() => window.print(), 800); }} className="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded hover:bg-indigo-100 dark:hover:bg-indigo-500/20 flex items-center gap-1.5 text-xs font-medium" title="Yazdır">
+                                                            <Printer className="w-3.5 h-3.5"/> Yazdır
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
+                        {archivedCount > 0 && !includeArchive && (
+                            <div className="px-6 py-3 border-t border-slate-200 dark:border-slate-700 bg-amber-50/50 dark:bg-amber-900/10">
+                                <p className="text-xs text-amber-700 dark:text-amber-400">
+                                    <span className="font-bold">{archivedCount} adet arşivlenmiş kayıt</span> gizleniyor (5 yıldan eski).
+                                    <button onClick={() => setIncludeArchive(true)} className="ml-2 underline font-semibold hover:no-underline">Arşivde Ara</button>
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </main>
             </div>
@@ -489,11 +618,24 @@ export default function TMGDPublicPortal() {
                     </div>
                 </div>
 
+                {/* Print Aksiyon Butonları */}
                 <div className="fixed bottom-6 right-6 flex gap-3 print:hidden z-50">
-                    <button onClick={backToDashboard} className="px-6 py-3 bg-white text-slate-800 rounded-full shadow-lg border border-slate-200 hover:bg-slate-50 font-bold flex items-center gap-2">
-                        <Home className="w-5 h-5"/> Menüye Dön
+                    <button
+                        onClick={() => setStep("form")}
+                        className="px-6 py-3 bg-white text-slate-800 rounded-full shadow-lg border border-slate-200 hover:bg-slate-50 font-bold flex items-center gap-2"
+                    >
+                        <Edit2 className="w-5 h-5"/> Düzenle
                     </button>
-                    <button onClick={() => window.print()} className="px-8 py-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 font-bold flex items-center gap-2 relative overflow-hidden group">
+                    <button
+                        onClick={backToDashboard}
+                        className="px-6 py-3 bg-white text-slate-800 rounded-full shadow-lg border border-slate-200 hover:bg-slate-50 font-bold flex items-center gap-2"
+                    >
+                        <Home className="w-5 h-5"/> Panele Dön
+                    </button>
+                    <button
+                        onClick={() => window.print()}
+                        className="px-8 py-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 font-bold flex items-center gap-2 relative overflow-hidden group"
+                    >
                         <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 rounded-full"></span>
                         <Printer className="w-5 h-5 relative z-10"/> <span className="relative z-10">A4 Yazdır / Kaydet</span>
                     </button>
@@ -586,7 +728,7 @@ export default function TMGDPublicPortal() {
 
                     <div className="p-6 space-y-4">
                         {items.length === 0 && <div className="text-center p-8 text-slate-500 italic">Yük eklemek için "Yük Ekle" butonuna tıklayınız.</div>}
-                        {items.map((item, index) => {
+                        {items.map((item) => {
                             const p = catalog.find(c => c.id === item.product_id);
                             return (
                                 <div key={item.id} className="relative bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
@@ -751,11 +893,47 @@ export default function TMGDPublicPortal() {
                             onClick={handleSubmitDoc} 
                             className="w-full sm:w-auto bg-indigo-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition disabled:opacity-50 flex gap-2 items-center justify-center"
                         >
-                            {loading ? "Kaydediliyor..." : (currentDocId ? "Güncellemeyi Kaydet" : "2 Sayfa Evrakı Oluştur")} <ArrowRight className="w-5 h-5"/>
+                            {loading ? "Kaydediliyor..." : (currentDocId ? "Düzenlemeyi Kaydet" : "2 Sayfa Evrakı Oluştur")} <ArrowRight className="w-5 h-5"/>
                         </button>
                     </div>
                 </div>
             </main>
+
+            {/* ─── Düzenleme Onay Modal ─── */}
+            {showEditConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 max-w-md w-full p-8">
+                        <div className="flex items-center gap-4 mb-5">
+                            <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                                <AlertTriangle className="w-6 h-6 text-amber-500" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Düzenlemeyi Onaylayın</h3>
+                                <p className="text-sm text-slate-500">Bu işlem geri alınamaz.</p>
+                            </div>
+                        </div>
+                        <p className="text-slate-700 dark:text-slate-300 mb-6 leading-relaxed">
+                            Bu evrakta değişiklik yaptınız. Düzenlemeyi onaylıyor musunuz?<br/>
+                            <span className="text-xs text-slate-400 mt-1 block">Mevcut evrak güncellenecek ve yeni veriler kaydedilecektir.</span>
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowEditConfirm(false)}
+                                className="flex-1 px-5 py-3 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+                            >
+                                İptal
+                            </button>
+                            <button
+                                onClick={handleConfirmEdit}
+                                disabled={loading}
+                                className="flex-1 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/20 transition disabled:opacity-50"
+                            >
+                                {loading ? "Kaydediliyor..." : "Evet, Kaydet"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

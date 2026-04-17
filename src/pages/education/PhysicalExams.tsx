@@ -480,6 +480,7 @@ export default function PhysicalExams() {
                         const baseUrl = window.location.origin;
                         const examId = exam.course_exams?.[0]?.id;
                         const publicLink = examId ? `${baseUrl}/public/exam/${examId}` : "";
+                        const signLink = `${baseUrl}/public/class-sign/${exam.id}`;
                         const formattedDate = exam.start_date ? new Date(exam.start_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Belirtilmemiş';
 
                         return (
@@ -511,12 +512,23 @@ export default function PhysicalExams() {
 
                                 <div className="bg-slate-800/50 p-4 border-t border-slate-800/50 flex items-center justify-between">
                                     <div className="flex gap-2">
+                                        {/* Yoklama İmza QR */}
+                                        <a
+                                            href={signLink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-1.5 px-3 py-2 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-xl bg-slate-800 border border-slate-700 transition-all text-xs font-bold"
+                                            title="Yoklama İmza Sayfası"
+                                        >
+                                            <QrCode className="w-3.5 h-3.5" />
+                                            Yoklama
+                                        </a>
                                         {examId && (
                                             <>
-                                                <button onClick={() => handlePrintQRCode(examId)} className="p-2.5 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-xl bg-slate-800 border border-slate-700 transition-all" title="QR Yazdır">
+                                                <button onClick={() => handlePrintQRCode(examId)} className="p-2.5 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-xl bg-slate-800 border border-slate-700 transition-all" title="Sınav QR Yazdır">
                                                     <QrCode className="w-4 h-4" />
                                                 </button>
-                                                <button onClick={() => handleDownloadQRCode(examId, exam.title)} className="p-2.5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl bg-slate-800 border border-slate-700 transition-all" title="QR İndir">
+                                                <button onClick={() => handleDownloadQRCode(examId, exam.title)} className="p-2.5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl bg-slate-800 border border-slate-700 transition-all" title="Sınav QR İndir">
                                                     <Download className="w-4 h-4" />
                                                 </button>
                                             </>

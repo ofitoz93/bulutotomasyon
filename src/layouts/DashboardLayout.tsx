@@ -111,18 +111,21 @@ export default function DashboardLayout() {
 
         const fetchModules = async () => {
             if (profile.role === "system_admin") {
-                const { data } = await supabase.from("modules").select("key, name, category");
+                const { data } = await supabase
+                    .from("modules")
+                    .select("key, name, category, module_categories(name)");
                 if (data) {
                     setActiveModules(data.map((m: any) => ({
                         module_key: m.key,
                         name: m.name,
-                        category: m.category || "Genel"
+                        // Önce yeni category_id join'unu kullan, yoksa eski category kolonuna düş
+                        category: m.module_categories?.name || m.category || "Genel"
                     })));
                 }
             } else if (profile.role === "company_manager" && profile.tenant_id) {
                 const { data } = await supabase
                     .from("company_modules")
-                    .select("module_key, is_active, is_indefinite, expires_at, category_override, modules(name, category)")
+                    .select("module_key, is_active, is_indefinite, expires_at, category_override, modules(name, category, module_categories(name))")
                     .eq("company_id", profile.tenant_id)
                     .eq("is_active", true);
 
@@ -136,7 +139,8 @@ export default function DashboardLayout() {
                     setActiveModules(valid.map((m: any) => ({
                         module_key: m.module_key,
                         name: m.modules?.name || m.module_key,
-                        category: m.category_override || m.modules?.category || "Genel"
+                        // Önce category_override, sonra yeni join, sonra eski category kolonu
+                        category: m.category_override || m.modules?.module_categories?.name || m.modules?.category || "Genel"
                     })));
                 }
             } else if ((profile.role === "employee" || profile.role === "subcontractor_manager") && profile.tenant_id) {
@@ -150,7 +154,7 @@ export default function DashboardLayout() {
                     const keys = accessData.map(a => a.module_key);
                     const { data: moduleDetails } = await supabase
                         .from("company_modules")
-                        .select("module_key, category_override, modules(name, category)")
+                        .select("module_key, category_override, modules(name, category, module_categories(name))")
                         .eq("company_id", profile.tenant_id)
                         .in("module_key", keys)
                         .eq("is_active", true);
@@ -159,7 +163,8 @@ export default function DashboardLayout() {
                         setActiveModules(moduleDetails.map((m: any) => ({
                             module_key: m.module_key,
                             name: m.modules?.name || m.module_key,
-                            category: m.category_override || m.modules?.category || "Genel"
+                            // Önce category_override, sonra yeni join, sonra eski category kolonu
+                            category: m.category_override || m.modules?.module_categories?.name || m.modules?.category || "Genel"
                         })));
                     }
                 }

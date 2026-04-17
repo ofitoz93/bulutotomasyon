@@ -44,6 +44,7 @@ import CoursePlayer from "@/pages/education/CoursePlayer";
 import CourseExamPlayer from "@/pages/education/CourseExamPlayer";
 import PublicExamPage from "@/pages/education/PublicExamPage";
 import PhysicalExams from "@/pages/education/PhysicalExams";
+import PublicClassSign from "@/pages/education/PublicClassSign";
 import ISGCenterLayout from "@/pages/isg-merkezi/ISGCenterLayout";
 import ISGDashboard from "@/pages/isg-merkezi/ISGDashboard";
 import AccidentTracking from "@/pages/isg-merkezi/AccidentTracking";
@@ -206,6 +207,7 @@ function App() {
         <Route path="/qr/:token" element={<QRScanPage />} />
         <Route path="/tmgd/:slug" element={<TMGDPublicPortal />} />
         <Route path="/public/exam/:id" element={<PublicExamPage />} />
+        <Route path="/public/class-sign/:courseId" element={<PublicClassSign />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<DashboardLayout />}>
