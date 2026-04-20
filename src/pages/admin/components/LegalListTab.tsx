@@ -30,6 +30,7 @@ export type LegalRegulationWithTrackings = {
     gazette_date: string | null;
     gazette_number: string | null;
     last_modification_date: string | null;
+    last_modification_number: string | null;
     effective_date: string | null;
     is_active: boolean;
     created_at: string;
@@ -47,7 +48,7 @@ export default function LegalListTab() {
     const [editingReg, setEditingReg] = useState<any>(null);
     const [errorMsg, setErrorMsg] = useState("");
     const [isSaving, setIsSaving] = useState(false);
-    const [regFormData, setRegFormData] = useState({ name: "", gazette_date: "", gazette_number: "", last_modification_date: "", effective_date: "", is_active: true });
+    const [regFormData, setRegFormData] = useState({ name: "", gazette_date: "", gazette_number: "", last_modification_date: "", last_modification_number: "", effective_date: "", is_active: true });
     const [articlesData, setArticlesData] = useState<LegalArticle[]>([]);
 
     // Tracking Form
@@ -58,6 +59,12 @@ export default function LegalListTab() {
     const [trackFormData, setTrackFormData] = useState({
         location: "", current_status: "", is_applicable: true, is_compliant: "null" as "true"|"false"|"null", action_required: "", responsible_persons: "", due_date: ""
     });
+    const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
+    const [responsibleSuggestions, setResponsibleSuggestions] = useState<{id: string, name: string}[]>([]);
+    const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+    const [manualLocInput, setManualLocInput] = useState("");
+    const [selectedResponsibles, setSelectedResponsibles] = useState<string[]>([]);
+    const [manualRespInput, setManualRespInput] = useState("");
 
     useEffect(() => {
         fetchData();
@@ -79,7 +86,39 @@ export default function LegalListTab() {
                 return { ...reg, articles: regArts };
             });
             setRegulations(compiled as LegalRegulationWithTrackings[]);
+
+            // Extract unique locations
+            if (tracksData) {
+                const uniqueLocs = Array.from(new Set(tracksData.map(t => t.location))).filter(Boolean).sort();
+                setLocationSuggestions(uniqueLocs);
+            }
         }
+
+        // Fetch Responsibles (Existing + Profiles)
+        const suggestions = new Set<string>();
+        
+        // From existing tracks
+        if (tracksData) {
+            tracksData.forEach(t => {
+                if (t.responsible_persons) {
+                    t.responsible_persons.split(",").forEach(s => {
+                        const name = s.trim();
+                        if (name) suggestions.add(name);
+                    });
+                }
+            });
+        }
+
+        // From profiles
+        const { data: profsData } = await supabase.from("profiles").select("first_name, last_name").eq("is_active", true);
+        if (profsData) {
+            profsData.forEach(p => {
+                const name = `${p.first_name || ""} ${p.last_name || ""}`.trim();
+                if (name) suggestions.add(name);
+            });
+        }
+
+        setResponsibleSuggestions(Array.from(suggestions).sort().map(name => ({ id: name, name })));
         setLoading(false);
     };
 
@@ -89,8 +128,13 @@ export default function LegalListTab() {
         setErrorMsg(""); setIsSaving(true);
         try {
             const regPayload = {
-                name: regFormData.name, gazette_date: regFormData.gazette_date || null, gazette_number: regFormData.gazette_number || null,
-                last_modification_date: regFormData.last_modification_date || null, effective_date: regFormData.effective_date || null, is_active: regFormData.is_active
+                name: regFormData.name, 
+                gazette_date: regFormData.gazette_date || null, 
+                gazette_number: regFormData.gazette_number || null,
+                last_modification_date: regFormData.last_modification_date || null, 
+                last_modification_number: regFormData.last_modification_number || null,
+                effective_date: regFormData.effective_date || null, 
+                is_active: regFormData.is_active
             };
             let currentRegId = editingReg?.id;
             if (editingReg) {
@@ -129,14 +173,22 @@ export default function LegalListTab() {
     const openEditReg = (reg: LegalRegulationWithTrackings, e: React.MouseEvent) => {
         e.stopPropagation();
         setEditingReg(reg);
-        setRegFormData({ name: reg.name, gazette_date: reg.gazette_date || "", gazette_number: reg.gazette_number || "", last_modification_date: reg.last_modification_date || "", effective_date: reg.effective_date || "", is_active: reg.is_active });
+        setRegFormData({ 
+            name: reg.name, 
+            gazette_date: reg.gazette_date || "", 
+            gazette_number: reg.gazette_number || "", 
+            last_modification_date: reg.last_modification_date || "", 
+            last_modification_number: reg.last_modification_number || "",
+            effective_date: reg.effective_date || "", 
+            is_active: reg.is_active 
+        });
         setArticlesData(JSON.parse(JSON.stringify(reg.articles || [])));
         setErrorMsg(""); setIsRegModalOpen(true);
     };
 
     const openAddReg = () => {
         setEditingReg(null);
-        setRegFormData({ name: "", gazette_date: "", gazette_number: "", last_modification_date: "", effective_date: "", is_active: true });
+        setRegFormData({ name: "", gazette_date: "", gazette_number: "", last_modification_date: "", last_modification_number: "", effective_date: "", is_active: true });
         setArticlesData([{ article_number: "", provision: "", period: "", is_active: true }]);
         setErrorMsg(""); setIsRegModalOpen(true);
     };
@@ -144,7 +196,15 @@ export default function LegalListTab() {
     const openAddArticleFromList = (reg: LegalRegulationWithTrackings, e: React.MouseEvent) => {
         e.stopPropagation();
         setEditingReg(reg);
-        setRegFormData({ name: reg.name, gazette_date: reg.gazette_date || "", gazette_number: reg.gazette_number || "", last_modification_date: reg.last_modification_date || "", effective_date: reg.effective_date || "", is_active: reg.is_active });
+        setRegFormData({ 
+            name: reg.name, 
+            gazette_date: reg.gazette_date || "", 
+            gazette_number: reg.gazette_number || "", 
+            last_modification_date: reg.last_modification_date || "", 
+            last_modification_number: reg.last_modification_number || "",
+            effective_date: reg.effective_date || "", 
+            is_active: reg.is_active 
+        });
         const curArts = JSON.parse(JSON.stringify(reg.articles || []));
         setArticlesData([...curArts, { article_number: "", provision: "", period: "", is_active: true }]);
         setErrorMsg(""); setIsRegModalOpen(true);
@@ -155,24 +215,77 @@ export default function LegalListTab() {
     const openAddTrack = (art: LegalArticleWithTrackings, reg: LegalRegulationWithTrackings) => {
         setActArtForTrack(art); setActRegForTrack(reg); setEditingTrack(null);
         setTrackFormData({ location: "", current_status: "", is_applicable: true, is_compliant: "null", action_required: "", responsible_persons: "", due_date: "" });
+        setSelectedLocations([]);
+        setManualLocInput("");
+        setSelectedResponsibles([]);
+        setManualRespInput("");
         setIsTrackModalOpen(true);
     };
     const openEditTrack = (t: LegalTracking, art: LegalArticleWithTrackings, reg: LegalRegulationWithTrackings) => {
         setActArtForTrack(art); setActRegForTrack(reg); setEditingTrack(t);
         setTrackFormData({ location: t.location, current_status: t.current_status || "", is_applicable: t.is_applicable, is_compliant: t.is_compliant === true ? "true" : t.is_compliant === false ? "false" : "null", action_required: t.action_required || "", responsible_persons: t.responsible_persons || "", due_date: t.due_date || "" });
+        
+        // Parse comma-separated locations
+        const locs = t.location ? t.location.split(",").map(s => s.trim()).filter(Boolean) : [];
+        setSelectedLocations(locs);
+        setManualLocInput("");
+
+        // Parse comma-separated responsibles
+        const resps = t.responsible_persons ? t.responsible_persons.split(",").map(s => s.trim()).filter(Boolean) : [];
+        setSelectedResponsibles(resps);
+        setManualRespInput("");
+        
         setIsTrackModalOpen(true);
     };
     const saveTrack = async (e: React.FormEvent) => {
         e.preventDefault();
         if(!actArtForTrack?.id) return;
-        const payload = {
-            article_id: actArtForTrack.id, location: trackFormData.location, current_status: trackFormData.current_status || null,
-            is_applicable: trackFormData.is_applicable, is_compliant: trackFormData.is_compliant === "true" ? true : trackFormData.is_compliant === "false" ? false : null,
-            action_required: trackFormData.action_required || null, responsible_persons: trackFormData.responsible_persons || null, due_date: trackFormData.due_date || null
+        if(selectedLocations.length === 0) {
+            alert("Lütfen en az bir lokasyon ekleyiniz.");
+            return;
+        }
+
+        const commonPayload = {
+            article_id: actArtForTrack.id, 
+            current_status: trackFormData.current_status || null,
+            is_applicable: trackFormData.is_applicable, 
+            is_compliant: trackFormData.is_compliant === "true" ? true : trackFormData.is_compliant === "false" ? false : null,
+            action_required: trackFormData.action_required || null, 
+            responsible_persons: selectedResponsibles.length > 0 ? selectedResponsibles.join(", ") : null, 
+            due_date: trackFormData.due_date || null
         };
-        if(editingTrack) await supabase.from("legal_tracking").update(payload).eq("id", editingTrack.id);
-        else await supabase.from("legal_tracking").insert([payload]);
-        setIsTrackModalOpen(false); fetchData();
+
+        try {
+            if(editingTrack) {
+                // 1. Update existing record with the first location
+                await supabase.from("legal_tracking").update({
+                    ...commonPayload,
+                    location: selectedLocations[0]
+                }).eq("id", editingTrack.id);
+
+                // 2. Insert others as new records if any
+                if (selectedLocations.length > 1) {
+                    const extraInserts = selectedLocations.slice(1).map(loc => ({
+                        ...commonPayload,
+                        location: loc
+                    }));
+                    await supabase.from("legal_tracking").insert(extraInserts);
+                }
+            } else {
+                // New records: Bulk insert all
+                const inserts = selectedLocations.map(loc => ({
+                    ...commonPayload,
+                    location: loc
+                }));
+                await supabase.from("legal_tracking").insert(inserts);
+            }
+            
+            setIsTrackModalOpen(false); 
+            fetchData();
+        } catch (err) {
+            console.error(err);
+            alert("Kaydedilirken bir hata oluştu.");
+        }
     };
     const deleteTrack = async (id: string) => {
         if(!confirm("Kaydı silmek istiyor musunuz?")) return;
@@ -235,7 +348,12 @@ export default function LegalListTab() {
                                                 {reg.gazette_date && <span><strong>RG Tarihi:</strong> {reg.gazette_date}</span>}
                                                 {reg.gazette_number && <span><strong>RG Sayı:</strong> {reg.gazette_number}</span>}
                                                 {reg.effective_date && <span><strong>Yürürlük:</strong> {reg.effective_date}</span>}
-                                                {reg.last_modification_date && <span><strong>Son Değişiklik:</strong> {reg.last_modification_date}</span>}
+                                                {reg.last_modification_date && (
+                                                    <span>
+                                                        <strong>Son Değişiklik:</strong> {reg.last_modification_date}
+                                                        {reg.last_modification_number && ` (${reg.last_modification_number})`}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-4 ml-4">
@@ -344,7 +462,14 @@ export default function LegalListTab() {
                                         <div className="space-y-1"><label className="text-xs">Resmi Gazete Tarihi</label><input type="date" value={regFormData.gazette_date} onChange={e => setRegFormData({...regFormData, gazette_date: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm bg-transparent border-slate-300 dark:border-slate-600" /></div>
                                         <div className="space-y-1"><label className="text-xs">Sayısı</label><input type="text" value={regFormData.gazette_number} onChange={e => setRegFormData({...regFormData, gazette_number: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm bg-transparent border-slate-300 dark:border-slate-600" /></div>
                                         <div className="space-y-1"><label className="text-xs">Yürürlük Tarihi</label><input type="date" value={regFormData.effective_date} onChange={e => setRegFormData({...regFormData, effective_date: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm bg-transparent border-slate-300 dark:border-slate-600" /></div>
-                                        <div className="space-y-1"><label className="text-xs">Son Değişiklik</label><input type="date" value={regFormData.last_modification_date} onChange={e => setRegFormData({...regFormData, last_modification_date: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm bg-transparent border-slate-300 dark:border-slate-600" /></div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs">Son Değişiklik Tarihi</label>
+                                            <input type="date" value={regFormData.last_modification_date} onChange={e => setRegFormData({...regFormData, last_modification_date: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm bg-transparent border-slate-300 dark:border-slate-600" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs">Son Değişiklik Sayısı</label>
+                                            <input type="text" placeholder="Örn: 32456" value={regFormData.last_modification_number} onChange={e => setRegFormData({...regFormData, last_modification_number: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm bg-transparent border-slate-300 dark:border-slate-600" />
+                                        </div>
                                     </div>
                                     <div><input type="checkbox" checked={regFormData.is_active} onChange={e => setRegFormData({...regFormData, is_active: e.target.checked})} className="mr-2"/>Geçerliliğini koruyor</div>
                                 </div>
@@ -376,13 +501,123 @@ export default function LegalListTab() {
                         <div className="p-4 overflow-y-auto max-h-[70vh]">
                             <form id="trackForm" onSubmit={saveTrack} className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1"><label className="text-xs">Lokasyon Adı *</label><input required value={trackFormData.location} onChange={e=>setTrackFormData({...trackFormData, location:e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm bg-transparent" /></div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold">Lokasyon(lar) *</label>
+                                    <div className="flex gap-2">
+                                        <div className="relative flex-1">
+                                            <input 
+                                                type="text"
+                                                list="locSuggestions"
+                                                value={manualLocInput}
+                                                onChange={e => setManualLocInput(e.target.value)}
+                                                onKeyDown={e => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        if (manualLocInput.trim() && !selectedLocations.includes(manualLocInput.trim())) {
+                                                            setSelectedLocations([...selectedLocations, manualLocInput.trim()]);
+                                                            setManualLocInput("");
+                                                        }
+                                                    }
+                                                }}
+                                                placeholder="Lokasyon yazın ve Enter'a basın..."
+                                                className="w-full px-3 py-2 border rounded-lg text-sm bg-transparent"
+                                            />
+                                            <datalist id="locSuggestions">
+                                                {locationSuggestions.map(loc => (
+                                                    <option key={loc} value={loc} />
+                                                ))}
+                                            </datalist>
+                                        </div>
+                                        <button 
+                                            type="button"
+                                            onClick={() => {
+                                                if (manualLocInput.trim() && !selectedLocations.includes(manualLocInput.trim())) {
+                                                    setSelectedLocations([...selectedLocations, manualLocInput.trim()]);
+                                                    setManualLocInput("");
+                                                }
+                                            }}
+                                            className="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 rounded-lg text-sm hover:bg-indigo-50 hover:text-indigo-600"
+                                        >
+                                            Ekle
+                                        </button>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 pt-1">
+                                        {selectedLocations.map((loc, i) => (
+                                            <span key={i} className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-md text-xs font-medium border border-emerald-100 dark:border-emerald-800">
+                                                {loc}
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => setSelectedLocations(selectedLocations.filter((_, idx) => idx !== i))}
+                                                    className="hover:text-rose-600"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </span>
+                                        ))}
+                                        {selectedLocations.length === 0 && <span className="text-xs text-slate-400 italic">Henüz lokasyon eklenmedi.</span>}
+                                    </div>
+                                </div>
                                     <div className="space-y-1"><label className="text-xs">Uygunluk Durumu</label><select value={trackFormData.is_compliant} onChange={e=>setTrackFormData({...trackFormData, is_compliant:e.target.value as any})} className="w-full px-3 py-2 border rounded-lg text-sm bg-transparent"><option value="null">Bekliyor</option><option value="true">Uygun</option><option value="false">Uygun Değil</option></select></div>
                                 </div>
                                 <div className="space-y-1"><label className="text-xs">Mevcut Durum</label><textarea value={trackFormData.current_status} onChange={e=>setTrackFormData({...trackFormData, current_status:e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm bg-transparent h-14" /></div>
                                 <div className="space-y-1"><label className="text-xs">Alınacak Aksiyon</label><textarea value={trackFormData.action_required} onChange={e=>setTrackFormData({...trackFormData, action_required:e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm bg-transparent h-14" /></div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1"><label className="text-xs">Sorumlu</label><input value={trackFormData.responsible_persons} onChange={e=>setTrackFormData({...trackFormData, responsible_persons:e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm bg-transparent" /></div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold">Sorumlu(lar)</label>
+                                    <div className="flex gap-2">
+                                        <div className="relative flex-1">
+                                            <input 
+                                                type="text"
+                                                list="respSuggestions"
+                                                value={manualRespInput}
+                                                onChange={e => setManualRespInput(e.target.value)}
+                                                onKeyDown={e => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        if (manualRespInput.trim() && !selectedResponsibles.includes(manualRespInput.trim())) {
+                                                            setSelectedResponsibles([...selectedResponsibles, manualRespInput.trim()]);
+                                                            setManualRespInput("");
+                                                        }
+                                                    }
+                                                }}
+                                                placeholder="İsim yazın ve Enter'a basın..."
+                                                className="w-full px-3 py-2 border rounded-lg text-sm bg-transparent"
+                                            />
+                                            <datalist id="respSuggestions">
+                                                {responsibleSuggestions.map(s => (
+                                                    <option key={s.id} value={s.name} />
+                                                ))}
+                                            </datalist>
+                                        </div>
+                                        <button 
+                                            type="button"
+                                            onClick={() => {
+                                                if (manualRespInput.trim() && !selectedResponsibles.includes(manualRespInput.trim())) {
+                                                    setSelectedResponsibles([...selectedResponsibles, manualRespInput.trim()]);
+                                                    setManualRespInput("");
+                                                }
+                                            }}
+                                            className="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 rounded-lg text-sm hover:bg-indigo-50 hover:text-indigo-600"
+                                        >
+                                            Ekle
+                                        </button>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 pt-1">
+                                        {selectedResponsibles.map((name, i) => (
+                                            <span key={i} className="inline-flex items-center gap-1.5 px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-md text-xs font-medium border border-indigo-100 dark:border-indigo-800">
+                                                {name}
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => setSelectedResponsibles(selectedResponsibles.filter((_, idx) => idx !== i))}
+                                                    className="hover:text-rose-600"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </span>
+                                        ))}
+                                        {selectedResponsibles.length === 0 && <span className="text-xs text-slate-400 italic">Henüz sorumlu eklenmedi.</span>}
+                                    </div>
+                                </div>
                                     <div className="space-y-1"><label className="text-xs">Termin Tarihi</label><input type="date" value={trackFormData.due_date} onChange={e=>setTrackFormData({...trackFormData, due_date:e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm bg-transparent" /></div>
                                 </div>
                                 <div><input type="checkbox" checked={trackFormData.is_applicable} onChange={e=>setTrackFormData({...trackFormData, is_applicable:e.target.checked})} className="mr-2 text-indigo-600" />Lokasyonda Aranmaktadır</div>
