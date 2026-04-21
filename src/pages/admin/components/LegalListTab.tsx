@@ -72,7 +72,7 @@ export default function LegalListTab() {
 
     const fetchData = async () => {
         setLoading(true);
-        const { data: regsData, error: regsError } = await supabase.from("legal_regulations").select("*").order("name", { ascending: true });
+        const { data: regsData, error: regsError } = await supabase.from("legal_regulations").select("*").order("created_at", { ascending: false });
         if (regsError) { console.error(regsError); setLoading(false); return; }
 
         const { data: artsData } = await supabase.from("legal_articles").select("*").order("created_at", { ascending: true });
@@ -101,7 +101,7 @@ export default function LegalListTab() {
         if (tracksData) {
             tracksData.forEach(t => {
                 if (t.responsible_persons) {
-                    t.responsible_persons.split(",").forEach(s => {
+                    t.responsible_persons.split(",").forEach((s: string) => {
                         const name = s.trim();
                         if (name) suggestions.add(name);
                     });

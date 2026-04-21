@@ -198,6 +198,7 @@ export default function DashboardLayout() {
         pkd_yonetimi: "/app/pkd_yonetimi",
         work_permits: "/app/work-permits",
         yasal_sartlar: "/admin/legal-requirements",
+        akilli_mevzuat: "/app/mevzuat-arsivi",
         tmgd: "/app/tmgd",
     };
 
@@ -340,6 +341,10 @@ export default function DashboardLayout() {
                                     <span>{item.label}</span>
                                 </a>
                             ))}
+                            <a href="/admin/smart-legal" onClick={handleNavigation} className={navLinkClass("/admin/smart-legal")}>
+                                <span className="flex-shrink-0"><ModuleIcon moduleKey="akilli_mevzuat" /></span>
+                                <span>Akıllı Mevzuat (Admin)</span>
+                            </a>
                         </>
                     )}
 

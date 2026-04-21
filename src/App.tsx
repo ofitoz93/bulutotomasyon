@@ -64,6 +64,8 @@ import PPETracking from "@/pages/personnel/PPETracking";
 import BulkOperations from "@/pages/personnel/BulkOperations";
 import TMGDAdminPage from "@/pages/tmgd/TMGDAdminPage";
 import TMGDPublicPortal from "@/pages/tmgd/TMGDPublicPortal";
+import PDFRegulationPage from "@/pages/admin/PDFRegulationPage";
+import PDFRegulationView from "@/pages/personnel/PDFRegulationView";
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useThemeStore } from "@/stores/themeStore";
@@ -146,6 +148,7 @@ function App() {
           <Route path="ekipman-takip" element={<EquipmentTrackingPage />} />
           <Route path="org-chart" element={<OrganizationChartPage />} />
           <Route path="tmgd" element={<TMGDAdminPage />} />
+          <Route path="mevzuat-arsivi" element={<PDFRegulationView />} />
           <Route path="adr">
             <Route index element={<ADRDashboard />} />
             <Route path="new" element={<NewADRForm />} />
@@ -215,6 +218,7 @@ function App() {
           <Route path="modules" element={<ModulesPage />} />
           <Route path="announcements" element={<SystemAnnouncementsPage />} />
           <Route path="legal-requirements" element={<LegalRequirementsPage />} />
+          <Route path="smart-legal" element={<PDFRegulationPage />} />
           <Route index element={<Navigate to="/admin/companies" replace />} />
         </Route>
 
