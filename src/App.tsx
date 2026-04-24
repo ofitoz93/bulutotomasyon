@@ -14,6 +14,7 @@ import DocumentTrackingPage from "@/pages/modules/DocumentTrackingPage";
 import EquipmentTrackingPage from "@/pages/modules/EquipmentTrackingPage";
 import QRScanPage from "@/pages/QRScanPage";
 import Dashboard from "@/pages/Dashboard";
+import WaterManagementPage from "@/pages/modules/WaterManagementPage";
 import ADRDashboard from "@/pages/adr/ADRDashboard";
 import NewADRForm from "@/pages/adr/NewADRForm";
 import ADRDetail from "@/pages/adr/ADRDetail";
@@ -149,6 +150,7 @@ function App() {
           <Route path="org-chart" element={<OrganizationChartPage />} />
           <Route path="tmgd" element={<TMGDAdminPage />} />
           <Route path="mevzuat-arsivi" element={<PDFRegulationView />} />
+          <Route path="su-yonetimi" element={<WaterManagementPage />} />
           <Route path="adr">
             <Route index element={<ADRDashboard />} />
             <Route path="new" element={<NewADRForm />} />

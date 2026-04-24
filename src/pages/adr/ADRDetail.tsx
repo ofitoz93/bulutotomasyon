@@ -134,220 +134,232 @@ export default function ADRDetail() {
             const contentW = pageW - margin * 2;
             let y = margin;
 
-            const addText = (text: string, x: number, size: number, style: "normal" | "bold" = "normal", color: [number,number,number] = [30,30,40]) => {
+            const addText = (text: string, x: number, py: number, size: number, style: string = "normal", color: [number, number, number] = [30, 30, 40], align: string = "left") => {
                 doc.setFontSize(size);
                 doc.setFont("helvetica", style);
                 doc.setTextColor(...color);
-                doc.text(text, x, y);
+                doc.text(text, x, py, { align: align as any });
             };
 
             const checkNewPage = (neededHeight: number) => {
-                if (y + neededHeight > 285) {
+                if (y + neededHeight > 280) {
                     doc.addPage();
                     y = margin;
                 }
             };
 
+            // Colors
+            const colors = {
+                indigo: [67, 56, 202] as [number, number, number],
+                slate: [51, 65, 85] as [number, number, number],
+                lightSlate: [248, 250, 252] as [number, number, number],
+                emerald: [16, 185, 129] as [number, number, number],
+                rose: [239, 68, 68] as [number, number, number],
+                amber: [245, 158, 11] as [number, number, number],
+            };
+
             // ── Başlık ──
-            doc.setFillColor(67, 56, 202); // indigo-700
-            doc.rect(0, 0, pageW, 28, "F");
-            doc.setFontSize(16);
+            doc.setFillColor(...colors.indigo);
+            doc.rect(0, 0, pageW, 35, "F");
+            
+            doc.setFontSize(22);
             doc.setFont("helvetica", "bold");
             doc.setTextColor(255, 255, 255);
-            doc.text("ADR KONTROL FORMU", margin, 12);
+            doc.text("ADR KONTROL FORMU", margin, 18);
+            
             doc.setFontSize(9);
             doc.setFont("helvetica", "normal");
-            doc.text(`Plaka: ${form.plate_no}  •  ${form.form_type}  •  ${new Date(form.created_at).toLocaleString("tr-TR")}`, margin, 20);
-            y = 36;
+            doc.setTextColor(200, 200, 255);
+            doc.text(`${form.form_type} • Plaka: ${form.plate_no}`, margin, 27);
+            doc.text(`Tarih: ${new Date(form.created_at).toLocaleString("tr-TR")}`, pageW - margin, 27, { align: "right" });
+            y = 45;
 
             // ── Durum Bandı ──
-            const statusColor: [number,number,number] = form.status === "approved" ? [16,185,129] : form.status === "rejected" ? [239,68,68] : [245,158,11];
+            const statusColor = form.status === "approved" ? colors.emerald : form.status === "rejected" ? colors.rose : colors.amber;
             const statusText = form.status === "approved" ? "ONAYLANDI" : form.status === "rejected" ? "REDDEDİLDİ" : "ONAY BEKLİYOR";
             doc.setFillColor(...statusColor);
-            doc.roundedRect(margin, y, contentW, 10, 2, 2, "F");
-            doc.setFontSize(9);
+            doc.roundedRect(margin, y, contentW, 12, 1, 1, "F");
+            doc.setFontSize(10);
             doc.setFont("helvetica", "bold");
             doc.setTextColor(255, 255, 255);
-            doc.text(statusText, pageW / 2, y + 6.5, { align: "center" });
-            y += 16;
-
+            doc.text(statusText, pageW / 2, y + 8, { align: "center" });
+            y += 20;
+ 
             // ── Temel Bilgiler ──
-            doc.setFillColor(240, 240, 248);
-            doc.roundedRect(margin, y, contentW, 32, 2, 2, "F");
+            checkNewPage(40);
+            doc.setFillColor(...colors.lightSlate);
+            doc.roundedRect(margin, y, contentW, 35, 1, 1, "F");
             doc.setFontSize(9);
             doc.setFont("helvetica", "bold");
-            doc.setTextColor(80, 80, 120);
-            doc.text("TEMEL BİLGİLER", margin + 4, y + 7);
-
+            doc.setTextColor(...colors.indigo);
+            doc.text("TEMEL BİLGİLER", margin + 4, y + 8);
+            
+            doc.setDrawColor(...colors.indigo);
+            doc.setLineWidth(0.4);
+            doc.line(margin + 4, y + 10, margin + 25, y + 10);
+ 
             const info = [
                 [`Araç Plakası`, form.plate_no || "-"],
-                [`Şoför`, form.driver_name || "-"],
+                [`Şoför Adı`, form.driver_name || "-"],
                 [`Hazırlayan`, form.profiles ? `${form.profiles.first_name || ""} ${form.profiles.last_name || ""}`.trim() : "Müşteri Portalı"],
+                [`Form Tipi`, form.form_type],
+                [`Lokasyon`, `${form.location_lat || "-"}, ${form.location_lng || "-"}`],
+                [`Kayıt ID`, id?.slice(0, 8) || "-"]
             ];
+            
             doc.setFontSize(8.5);
             info.forEach(([label, value], i) => {
-                const col = i % 2 === 0 ? margin + 4 : pageW / 2;
+                const col = i % 2 === 0 ? margin + 4 : pageW / 2 + 5;
                 const row = Math.floor(i / 2);
                 doc.setFont("helvetica", "bold");
-                doc.setTextColor(100, 100, 150);
-                doc.text(label + ":", col, y + 16 + row * 9);
+                doc.setTextColor(...colors.slate);
+                doc.text(label + ":", col, y + 18 + row * 7);
                 doc.setFont("helvetica", "normal");
                 doc.setTextColor(30, 30, 50);
-                doc.text(value, col + 28, y + 16 + row * 9);
+                doc.text(String(value), col + 28, y + 18 + row * 7);
             });
-            y += 38;
+            y += 42;
 
             // ── Form Soruları ──
             for (const def of formDefs) {
-                checkNewPage(20);
-                doc.setFillColor(99, 102, 241);
-                doc.roundedRect(margin, y, contentW, 9, 1.5, 1.5, "F");
-                doc.setFontSize(9);
-                doc.setFont("helvetica", "bold");
-                doc.setTextColor(255, 255, 255);
-                doc.text(def.title.toUpperCase(), margin + 4, y + 6.3);
+                checkNewPage(25);
+                doc.setFillColor(...colors.indigo);
+                doc.rect(margin, y, contentW, 10, "F");
+                addText(def.title.toUpperCase(), margin + 4, y + 6.5, 10, "bold", [255, 255, 255]);
                 y += 13;
 
                 for (const sec of def.sections) {
-                    checkNewPage(12);
-                    doc.setFillColor(230, 230, 245);
-                    doc.rect(margin, y, contentW, 7, "F");
-                    doc.setFontSize(8);
-                    doc.setFont("helvetica", "bold");
-                    doc.setTextColor(80, 80, 120);
-                    doc.text(sec.title.toUpperCase(), margin + 3, y + 5);
-                    y += 9;
+                    checkNewPage(15);
+                    doc.setFillColor(235, 235, 255);
+                    doc.rect(margin, y, contentW, 8, "F");
+                    addText(sec.title.toUpperCase(), margin + 4, y + 5.5, 8.5, "bold", [50, 50, 100]);
+                    y += 8;
 
                     for (const q of sec.questions) {
                         checkNewPage(9);
                         const ans = answers.find(a => a.question_key === q.key);
                         const result = ans?.answer_value?.result || "-";
-
-                        // Zebra stripped rows
-                        if (sec.questions.indexOf(q) % 2 === 0) {
-                            doc.setFillColor(248, 248, 252);
-                            doc.rect(margin, y - 1, contentW, 8, "F");
+                        
+                        const qLines: string[] = doc.splitTextToSize(q.text, contentW - 45);
+                        const rowH = Math.max(9, qLines.length * 5 + 2);
+                        
+                        checkNewPage(rowH);
+ 
+                        if (sec.questions.indexOf(q) % 2 === 1) {
+                            doc.setFillColor(...colors.lightSlate);
+                            doc.rect(margin, y, contentW, rowH, "F");
                         }
-
-                        doc.setFontSize(8);
-                        doc.setFont("helvetica", "normal");
-                        doc.setTextColor(50, 50, 70);
-                        const lines = doc.splitTextToSize(q.text, contentW - 40);
-                        doc.text(lines[0], margin + 3, y + 4.5);
-
-                        // Result rengi
-                        let resultColor: [number,number,number] = [80, 80, 100];
-                        if (["Evet", "Uygun"].includes(result)) resultColor = [16, 185, 129];
-                        else if (["Hayır", "Uygun Değil", "Uygunsuz"].includes(result)) resultColor = [239, 68, 68];
-                        else if (result === "Kısmen") resultColor = [245, 158, 11];
-
-                        doc.setFont("helvetica", "bold");
-                        doc.setTextColor(...resultColor);
-                        doc.text(result, pageW - margin - 3, y + 4.5, { align: "right" });
-                        y += 8;
+ 
+                        addText(qLines, margin + 4, y + 5, 8, "normal", colors.slate);
+ 
+                        // Result color
+                        let resCol = colors.slate;
+                        if (["Evet", "Uygun"].includes(result)) resCol = colors.emerald;
+                        else if (["Hayır", "Uygun Değil", "Uygunsuz"].includes(result)) resCol = colors.rose;
+                        else if (result === "Kısmen") resCol = colors.amber;
+ 
+                        addText(result, pageW - margin - 4, y + 5, 8, "bold", resCol, "right");
+                        
+                        y += rowH;
+                        
+                        // Row border
+                        doc.setDrawColor(240, 240, 250);
+                        doc.setLineWidth(0.1);
+                        doc.line(margin, y, pageW - margin, y);
                     }
                     y += 3;
                 }
                 y += 5;
             }
 
-            // ── Konum ──
-            if (form.location_lat && form.location_lng) {
-                checkNewPage(22);
-                doc.setFillColor(240, 240, 248);
-                doc.roundedRect(margin, y, contentW, 18, 2, 2, "F");
-                doc.setFontSize(9);
-                doc.setFont("helvetica", "bold");
-                doc.setTextColor(80, 80, 120);
-                doc.text("📍 KONUM BİLGİSİ", margin + 4, y + 7);
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(8.5);
-                doc.setTextColor(50, 50, 70);
-                doc.text(`Enlem: ${form.location_lat}   Boylam: ${form.location_lng}`, margin + 4, y + 14);
-                y += 24;
+            // ── Notlar ve Konum ──
+            if (form.notes || (form.location_lat && form.location_lng)) {
+                checkNewPage(40);
+                addText("EK BİLGİLER VE NOTLAR", margin, y + 5, 10, "bold", colors.indigo);
+                y += 10;
+                
+                doc.setDrawColor(...colors.indigo);
+                doc.setLineWidth(0.2);
+                doc.rect(margin, y, contentW, 25);
+                
+                let infoText = "";
+                if (form.notes) infoText += `Notlar: ${form.notes}\n`;
+                if (form.location_lat) infoText += `Konum: ${form.location_lat}, ${form.location_lng}`;
+                
+                const infoLines = doc.splitTextToSize(infoText || "Ek bilgi bulunmamaktadır.", contentW - 10);
+                addText(infoLines, margin + 5, y + 8, 8, "normal", colors.slate);
+                y += 35;
             }
-
-            // ── Notlar ──
-            if (form.notes) {
-                checkNewPage(22);
-                doc.setFillColor(252, 252, 240);
-                doc.roundedRect(margin, y, contentW, 18, 2, 2, "F");
-                doc.setFontSize(9);
-                doc.setFont("helvetica", "bold");
-                doc.setTextColor(100, 100, 30);
-                doc.text("NOTLAR", margin + 4, y + 7);
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(8.5);
-                doc.setTextColor(60, 60, 30);
-                const noteLines = doc.splitTextToSize(form.notes, contentW - 8);
-                doc.text(noteLines, margin + 4, y + 14);
-                y += 14 + noteLines.length * 5;
-            }
-
-            // ── Onay Bilgisi ──
-            if (form.status === "approved" && form.approved_at) {
-                checkNewPage(18);
-                doc.setFillColor(209, 250, 229);
-                doc.roundedRect(margin, y, contentW, 16, 2, 2, "F");
-                doc.setFontSize(9);
-                doc.setFont("helvetica", "bold");
-                doc.setTextColor(16, 100, 60);
-                doc.text("✓ ONAYLANDI", margin + 4, y + 7);
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(8.5);
-                const approverName = form.approver ? `${form.approver.first_name || ""} ${form.approver.last_name || ""}`.trim() : "Bilinmiyor";
-                doc.text(`Onaylayan: ${approverName}   •   Tarih: ${new Date(form.approved_at).toLocaleString("tr-TR")}`, margin + 4, y + 13);
-                y += 22;
-            }
-
+ 
             // ── Şoför İmzası ──
             if ((form as any).driver_signature) {
-                checkNewPage(70);
-                doc.setFillColor(240, 240, 250);
-                doc.roundedRect(margin, y, contentW, 65, 2, 2, "F");
-                doc.setFontSize(9);
-                doc.setFont("helvetica", "bold");
-                doc.setTextColor(80, 80, 120);
-                doc.text("ŞOFÖR İMZASI", margin + 4, y + 8);
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(8);
-                doc.setTextColor(100, 100, 140);
-                doc.text(`Şoför: ${form.driver_name || "-"}`, margin + 4, y + 14);
-
+                checkNewPage(65);
+                doc.setFillColor(...colors.lightSlate);
+                doc.roundedRect(margin, y, contentW, 60, 1, 1, "F");
+                
+                addText("ŞOFÖR TAAHHÜTNAMESİ VE İMZA", margin + 5, y + 8, 10, "bold", colors.indigo);
+                
+                const disclaimer = "Yukarıda beyan ettiğim bilgilerin doğruluğunu, aracımın ADR kurallarına uygun olduğunu ve sefer boyunca tüm İSG kurallarına uyacağımı taahhüt ederim.";
+                const discLines = doc.splitTextToSize(disclaimer, contentW - 10);
+                addText(discLines, margin + 5, y + 16, 7.5, "normal", colors.slate);
+ 
                 try {
-                    // signature is base64 png
                     const sigData = (form as any).driver_signature as string;
-                    doc.addImage(sigData, "PNG", margin + 4, y + 18, contentW - 8, 40);
-                } catch (e) {
-                    doc.setTextColor(150, 50, 50);
-                    doc.text("İmza görüntülenemedi.", margin + 4, y + 40);
-                }
-
-                // underline
-                doc.setDrawColor(160, 160, 200);
-                doc.setLineWidth(0.3);
-                doc.line(margin + 4, y + 60, margin + contentW / 2.5, y + 60);
-                doc.setFontSize(7.5);
-                doc.setTextColor(130, 130, 160);
-                doc.text("İmza", margin + 4, y + 64);
+                    doc.addImage(sigData, "PNG", margin + 60, y + 20, 80, 25);
+                } catch (e) {}
+ 
+                addText(`Şoför: ${form.driver_name}`, margin + 5, y + 50, 9, "bold");
+                addText(`Tarih: ${new Date(form.created_at).toLocaleDateString("tr-TR")}`, margin + 5, y + 55, 8);
                 y += 70;
             }
-
+ 
+            // ── Fotoğraflar ──
+            if (media.length > 0) {
+                doc.addPage();
+                y = 20;
+                doc.setFillColor(...colors.indigo);
+                doc.rect(0, 0, pageW, 15, "F");
+                addText("FORM FOTOĞRAFLARI", margin, 10, 11, "bold", [255, 255, 255]);
+                
+                const imgW = (contentW - 10) / 2;
+                const imgH = imgW * 0.75;
+ 
+                for (let i = 0; i < media.length; i++) {
+                    if (y + imgH + 20 > 280) {
+                        doc.addPage();
+                        y = 10;
+                    }
+                    const col = i % 2 === 0 ? margin : margin + imgW + 10;
+                    const rowY = y + 15;
+                    
+                    try {
+                        doc.addImage(media[i].file_url, "JPEG", col, rowY, imgW, imgH, undefined, 'FAST');
+                        doc.setDrawColor(200, 200, 200);
+                        doc.rect(col, rowY, imgW, imgH, "D");
+                    } catch (e) {
+                        doc.rect(col, rowY, imgW, imgH, "D");
+                        addText("Resim yüklenemedi", col + 2, rowY + imgH / 2, 8);
+                    }
+ 
+                    if (i % 2 === 1 || i === media.length - 1) {
+                        y += imgH + 15;
+                    }
+                }
+            }
+ 
             // ── Footer ──
             const pageCount = doc.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
-                doc.setFontSize(7.5);
-                doc.setFont("helvetica", "normal");
-                doc.setTextColor(160, 160, 180);
-                doc.text(
-                    `ADR Formu • ${form.plate_no} • Sayfa ${i} / ${pageCount} • ${new Date().toLocaleString("tr-TR")}`,
-                    pageW / 2, 292, { align: "center" }
-                );
+                doc.setDrawColor(...colors.indigo);
+                doc.setLineWidth(0.5);
+                doc.line(margin, 285, pageW - margin, 285);
+                
+                addText(`Sayfa ${i} / ${pageCount}`, pageW / 2, 290, 8, "normal", [150, 150, 150], "center");
+                addText("bulutotomasyon.com", pageW - margin, 290, 8, "bold", colors.indigo, "right");
             }
-
-            const filename = `ADR_${form.plate_no}_${new Date(form.created_at).toISOString().slice(0, 10)}.pdf`;
-            doc.save(filename);
+ 
+            doc.save(`ADR_FORMU_${form.plate_no}_${new Date().getTime()}.pdf`);
         } catch (err: any) {
             alert("PDF oluşturulamadı: " + err.message);
         } finally {

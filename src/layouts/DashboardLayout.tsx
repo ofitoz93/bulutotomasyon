@@ -69,6 +69,11 @@ const ModuleIcon = ({ moduleKey, className = "w-4 h-4" }: { moduleKey: string; c
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
             </svg>
         ),
+        su_yonetimi: (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21.5c-4.142 0-7.5-3.358-7.5-7.5 0-3.358 4.264-9.358 6.546-12.247a1.18 1.18 0 011.908 0C15.236 4.642 19.5 10.642 19.5 14c0 4.142-3.358 7.5-7.5 7.5zM12 18.5c2.485 0 4.5-2.015 4.5-4.5 0-1.5-1.5-4-3-6m-3 6c0 1.5 1.5 4 3 6" />
+            </svg>
+        ),
     };
     return icons[moduleKey] ?? (
         <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,6 +205,7 @@ export default function DashboardLayout() {
         yasal_sartlar: "/admin/legal-requirements",
         akilli_mevzuat: "/app/mevzuat-arsivi",
         tmgd: "/app/tmgd",
+        su_yonetimi: "/app/su-yonetimi",
     };
 
     const getRoleLabel = () => {
