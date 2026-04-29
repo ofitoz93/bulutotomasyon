@@ -27,11 +27,14 @@ export default function PersonnelDetail() {
     const navigate = useNavigate();
     const [person, setPerson] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<"ozluk" | "saglik" | "egitim" | "kkd">("ozluk");
+    const [activeTab, setActiveTab] = useState<"ozluk" | "saglik" | "egitim" | "kkd" | "yetki">("ozluk");
 
     // Data states for tabs
     const [healthRecords, setHealthRecords] = useState<any[]>([]);
     const [ppeAssignments, setPPEAssignments] = useState<any[]>([]);
+    const [companyModules, setCompanyModules] = useState<any[]>([]);
+    const [userAccess, setUserAccess] = useState<string[]>([]);
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -51,11 +54,53 @@ export default function PersonnelDetail() {
 
             if (error) throw error;
             setPerson(data);
+            
+            // Şirket modüllerini ve kullanıcının yetkilerini getir
+            const [modulesRes, accessRes] = await Promise.all([
+                supabase.from("company_modules").select("module_key, modules(name)").eq("company_id", data.tenant_id).eq("is_active", true),
+                supabase.from("user_module_access").select("module_key").eq("user_id", id)
+            ]);
+
+            setCompanyModules(modulesRes.data || []);
+            setUserAccess((accessRes.data || []).map((a: any) => a.module_key));
         } catch (e) {
             console.error(e);
             navigate("/app/personel-takip");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleToggleModule = async (moduleKey: string, hasAccess: boolean) => {
+        if (!person) return;
+        setSaving(true);
+        try {
+            if (hasAccess) {
+                // Yetkiyi kaldır
+                await supabase
+                    .from("user_module_access")
+                    .delete()
+                    .eq("user_id", person.id)
+                    .eq("module_key", moduleKey)
+                    .eq("tenant_id", person.tenant_id);
+                
+                setUserAccess(prev => prev.filter(k => k !== moduleKey));
+            } else {
+                // Yetki ver
+                await supabase
+                    .from("user_module_access")
+                    .insert({
+                        user_id: person.id,
+                        module_key: moduleKey,
+                        tenant_id: person.tenant_id
+                    });
+                
+                setUserAccess(prev => [...prev, moduleKey]);
+            }
+        } catch (e) {
+            alert("Yetki güncellenirken hata oluştu.");
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -133,7 +178,8 @@ export default function PersonnelDetail() {
                     { id: "ozluk", label: "Özlük Bilgileri" },
                     { id: "saglik", label: "Sağlık & Muayene" },
                     { id: "egitim", label: "Eğitim & Sertifika" },
-                    { id: "kkd", label: "KKD Zimmetleri" }
+                    { id: "kkd", label: "KKD Zimmetleri" },
+                    { id: "yetki", label: "Modül Yetkileri" }
                 ].map(tab => (
                     <button
                         key={tab.id}
@@ -247,6 +293,56 @@ export default function PersonnelDetail() {
                                 ))}
                             </div>
                         )}
+                    </div>
+                )}
+
+                {activeTab === "yetki" && (
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                            <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600">
+                                🔑
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Modül Erişim Yetkileri</h3>
+                                <p className="text-xs text-slate-500">Personelin paneli üzerinde görebileceği modülleri belirleyin.</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {companyModules.length === 0 ? (
+                                <p className="col-span-full text-center py-8 text-slate-500 italic">Şirketinize tanımlı aktif modül bulunamadı.</p>
+                            ) : companyModules.map(m => {
+                                const hasAccess = userAccess.includes(m.module_key);
+                                return (
+                                    <div 
+                                        key={m.module_key} 
+                                        className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${
+                                            hasAccess 
+                                            ? "bg-indigo-50/50 border-indigo-200 dark:bg-indigo-500/5 dark:border-indigo-500/30" 
+                                            : "bg-white border-slate-200 dark:bg-slate-800/40 dark:border-slate-800"
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${hasAccess ? "bg-indigo-600 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-400"}`}>
+                                                📦
+                                            </div>
+                                            <span className={`text-sm font-semibold ${hasAccess ? "text-indigo-900 dark:text-indigo-100" : "text-slate-600 dark:text-slate-400"}`}>
+                                                {m.modules?.name || m.module_key}
+                                            </span>
+                                        </div>
+                                        <button
+                                            disabled={saving}
+                                            onClick={() => handleToggleModule(m.module_key, hasAccess)}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${hasAccess ? "bg-indigo-600" : "bg-slate-300 dark:bg-slate-700"}`}
+                                        >
+                                            <span
+                                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${hasAccess ? "translate-x-6" : "translate-x-1"}`}
+                                            />
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 )}
             </div>

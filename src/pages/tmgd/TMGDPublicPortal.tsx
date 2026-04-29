@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { Lock, FileText, Printer, Plus, Trash2, ArrowRight, Home, Edit2, Eye, Search, AlertTriangle } from "lucide-react";
+import { Lock, FileText, Printer, Plus, Trash2, ArrowRight, Home, Edit2, Eye, Search, AlertTriangle, CheckCircle } from "lucide-react";
 import SignaturePad from "@/components/adr/SignaturePad";
 import ADRDocumentPrint from "./components/ADRDocumentPrint";
+import TMGDFieldFormWizard from "./components/TMGDFieldFormWizard";
 
 export default function TMGDPublicPortal() {
     const { slug } = useParams();
-    const [step, setStep] = useState<"login" | "dashboard" | "form" | "print">("login");
+    const [step, setStep] = useState<"login" | "dashboard" | "wizard" | "form" | "print">("login");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -112,17 +113,71 @@ export default function TMGDPublicPortal() {
         ]);
         
         if (prodData) setCatalog(prodData);
-        if (docsData) setPastDocs(docsData);
+        if (docsData) {
+            const limit = data.role === 'manager' ? 15 : (data.doc_limit || 10);
+            setPastDocs(docsData.slice(0, limit));
+        }
         
         setStep("dashboard");
         setLoading(false);
     };
 
     const handleCreateNew = () => {
-        setDoc(emptyDoc);
+        setStep("wizard");
+    };
+
+    const handleCreateTransportDoc = () => {
+        setDoc({
+            ...emptyDoc,
+            carrier_company: clientData?.title || "",
+            status: 'draft',
+            flow_type: 'sevk',
+            form_type: 'taşıma'
+        });
         setItems([]);
         setCurrentDocId(null);
         setStep("form");
+    };
+
+    const handleWizardSuccess = async (flow: string, category: string, formData: any) => {
+        setLoading(true);
+        const payload = {
+            date: formData.date,
+            driver_plate: formData.driver_plate,
+            driver_name: formData.driver_name,
+            sender_name: formData.sender_name,
+            sender_signature: formData.sender_signature,
+            status: flow === "alim" ? "completed" : "draft",
+            flow_type: flow,
+            form_type: category,
+            adr_checklist: {
+                ...formData.checklist,
+                tank_onay: formData.tank_onay,
+                arac_uygunluk_pre2015: formData.arac_uygunluk_pre2015,
+                son_muayene: formData.son_muayene,
+                un_no: formData.un_no,
+                sinif: formData.sinif,
+                pg: formData.pg,
+                checker_name: formData.checker_name,
+                checker_signature: formData.checker_signature,
+                approver_name: formData.approver_name,
+                approver_signature: formData.approver_signature
+            }
+        };
+
+        const { data: generatedDocId, error } = await supabase.rpc("tmgd_public_create_doc", {
+            p_client_id: clientData.id, p_doc: payload, p_items: []
+        });
+
+        if (error) alert("Form kaydedilemedi: " + error.message);
+        else {
+            setCurrentDocId(generatedDocId);
+            if (clientData.doc_limit) {
+                checkQuotaAndAlert(clientData.doc_limit);
+            }
+            backToDashboard();
+        }
+        setLoading(false);
     };
 
     const handleEditDoc = (d: any) => {
@@ -173,17 +228,23 @@ export default function TMGDPublicPortal() {
 
     // Yeni evrak oluşturma / Düzenleme onay akışı
     const handleSubmitDoc = async () => {
-        if (!doc.date || !doc.sender_signature || !doc.driver_signature) {
-            alert("Lütfen tarih ve tüm imzaları onaylayarak tamamlayın.");
+        if (!doc.date) {
+            alert("Lütfen tarih seçin.");
             return;
         }
-        if (items.length === 0) {
-            alert("En az bir madde/yük eklemelisiniz.");
-            return;
-        }
-        if (items.some(i => !i.product_id || i.quantity <= 0)) {
-            alert("Lütfen tüm maddeler için ürün seçin ve miktarlarını 0'dan büyük girin.");
-            return;
+        if (doc.flow_type !== 'alim') {
+            if (!doc.sender_signature || !doc.driver_signature) {
+                alert("Lütfen tüm imzaları onaylayarak tamamlayın.");
+                return;
+            }
+            if (items.length === 0) {
+                alert("En az bir madde/yük eklemelisiniz.");
+                return;
+            }
+            if (items.some(i => !i.product_id || i.quantity <= 0)) {
+                alert("Lütfen tüm maddeler için ürün seçin ve miktarlarını 0'dan büyük girin.");
+                return;
+            }
         }
         
         if (currentDocId) {
@@ -192,17 +253,91 @@ export default function TMGDPublicPortal() {
             return;
         }
         
-        // Yeni evrak oluşturma
+        // Yeni evrak oluşturma (Direkt taşıma evrakı)
         setLoading(true);
         const { data: generatedDocId, error } = await supabase.rpc("tmgd_public_create_doc", {
-            p_client_id: clientData.id, p_doc: doc, p_items: items
+            p_client_id: clientData.id, 
+            p_doc: { ...doc, status: 'completed' }, 
+            p_items: items
         });
         if (error) alert("Oluşturma hatası: " + error.message);
         else {
+            setDoc(prev => ({ ...prev, status: 'completed' }));
             setCurrentDocId(generatedDocId);
             setStep("print");
+            if (clientData.doc_limit) {
+                checkQuotaAndAlert(clientData.doc_limit);
+            }
         }
         setLoading(false);
+    };
+
+    const checkQuotaAndAlert = async (docLimit: number) => {
+        const { count } = await supabase.from('tmgd_transport_docs').select('id', { count: 'exact', head: true }).eq('client_id', clientData.id);
+        if (count === null) return;
+        
+        const { data: company } = await supabase.from('companies').select('tmgd_alert_email, tmgd_quota_threshold').eq('id', clientData.tenant_id).single();
+        if (!company || !company.tmgd_alert_email) return;
+        
+        const threshold = company.tmgd_quota_threshold || 20;
+        const remaining = docLimit - count;
+        const remainingPercent = (remaining / docLimit) * 100;
+        
+        // Sadece kalan evrak sayısı tam olarak eşik değerine ulaştığında VEYA tam bittiğinde mail at (Spam'i engellemek için)
+        const thresholdTarget = Math.floor(docLimit * (threshold / 100));
+
+        if (remaining === thresholdTarget && remaining > 0) {
+            console.warn(`KOTA UYARISI: E-Posta gönderiliyor -> ${company.tmgd_alert_email} | Firmanın ${remaining} evrak hakkı kaldı.`);
+            
+            // Gerçek E-posta Gönderimi için Kuyruğa Ekle
+            await supabase.from('notification_queue').insert([{
+                to_email: company.tmgd_alert_email,
+                subject: `⚠️ TMGD Kota Uyarısı: ${clientData.title}`,
+                body_html: `
+                    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                        <div style="background-color: #f59e0b; padding: 16px; text-align: center;">
+                            <h2 style="color: white; margin: 0;">Kota Uyarısı</h2>
+                        </div>
+                        <div style="padding: 24px;">
+                            <p>Merhaba,</p>
+                            <p><b>${clientData.title}</b> firmasının TMGD evrak oluşturma kotası belirlediğiniz eşiğe ulaştı.</p>
+                            <p style="font-size: 16px; background-color: #fffbeb; padding: 12px; border-radius: 6px; border: 1px solid #fef3c7;">
+                                Kalan Evrak Hakkı: <b style="color: #b45309; font-size: 20px;">${remaining}</b>
+                            </p>
+                            <p>Firma paneli sadece en yeni ${docLimit} evrakı gösterir. Lütfen portal üzerinden mevcut evrakları indirerek yedekleyiniz.</p>
+                        </div>
+                    </div>
+                `,
+                status: 'pending'
+            }]);
+
+            alert(`⚠️ KOTA UYARISI!\nBu firmanın kotası dolmak üzere (Sadece ${remaining} adet evrak hakkı kaldı).\nSistem '${company.tmgd_alert_email}' adresine gönderilmek üzere uyarı mailini sıraya aldı (Günde 1 kez toplu gönderilir).`);
+            
+        } else if (remaining === 0) {
+            console.warn(`KOTA DOLDU: E-Posta gönderiliyor -> ${company.tmgd_alert_email} | Limit aşıldı.`);
+            
+            // Gerçek E-posta Gönderimi için Kuyruğa Ekle
+            await supabase.from('notification_queue').insert([{
+                to_email: company.tmgd_alert_email,
+                subject: `🚨 TMGD KOTA AŞIMI: ${clientData.title}`,
+                body_html: `
+                    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                        <div style="background-color: #ef4444; padding: 16px; text-align: center;">
+                            <h2 style="color: white; margin: 0;">Kota Doldu</h2>
+                        </div>
+                        <div style="padding: 24px;">
+                            <p>Merhaba,</p>
+                            <p><b>${clientData.title}</b> firmasının TMGD evrak oluşturma limiti (${docLimit}) tamamen dolmuştur.</p>
+                            <p>Firma yeni evrak oluşturmaya devam edebilir, ancak kendi panelinde sadece en güncel ${docLimit} adet evrakı görebilecektir.</p>
+                            <p>Yönetici panelinde (Sizde) sistem kapasitesi gereği en fazla son 50 evrak tutulur. 50'den sonraki evraklar kalıcı olarak silinir.</p>
+                        </div>
+                    </div>
+                `,
+                status: 'pending'
+            }]);
+
+            alert(`⚠️ KOTA AŞIMI!\nFirmanın evrak limiti doldu. Eklenen bu son evrakla birlikte firma sadece en yeni ${docLimit} evrakı görebilir.\nSistem '${company.tmgd_alert_email}' adresine gönderilmek üzere bilgi mailini sıraya aldı (Günde 1 kez toplu gönderilir).`);
+        }
     };
 
     // Düzenleme onaylandıktan sonra kayıt
@@ -210,18 +345,39 @@ export default function TMGDPublicPortal() {
         setShowEditConfirm(false);
         setLoading(true);
         const { error } = await supabase.rpc("tmgd_public_update_doc", {
-            p_doc_id: currentDocId, p_client_id: clientData.id, p_doc: doc, p_items: items
+            p_doc_id: currentDocId, 
+            p_client_id: clientData.id, 
+            p_doc: { ...doc, status: 'completed' }, 
+            p_items: items
         });
         if (error) alert("Güncelleme hatası: " + error.message);
-        else setStep("print");
+        else {
+            setDoc(prev => ({ ...prev, status: 'completed' }));
+            setStep("print");
+        }
         setLoading(false);
     };
 
     const backToDashboard = async () => {
         setLoading(true);
         const { data: docsData } = await supabase.rpc("tmgd_public_get_docs", { p_client_id: clientData.id });
-        if (docsData) setPastDocs(docsData);
+        if (docsData) {
+            const limit = clientData.role === 'manager' ? 15 : (clientData.doc_limit || 10);
+            setPastDocs(docsData.slice(0, limit));
+        }
         setStep("dashboard");
+        setLoading(false);
+    };
+
+    const handleDeleteDoc = async (id: string) => {
+        if (!confirm("Bu taslak evrakı silmek istediğinize emin misiniz?")) return;
+        setLoading(true);
+        const { error } = await supabase.rpc("tmgd_public_delete_doc", { p_doc_id: id, p_client_id: clientData.id });
+        if (error) {
+            alert("Silme hatası: " + error.message);
+        } else {
+            setPastDocs(prev => prev.filter(d => d.id !== id));
+        }
         setLoading(false);
     };
 
@@ -280,10 +436,20 @@ export default function TMGDPublicPortal() {
                         <div>
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Hoş Geldiniz, {clientData?.title}</h2>
                             <p className="text-slate-500 text-sm mt-1">Sisteme kayıtlı tehlikeli madde sevkiyat evraklarınızı yönetin veya yenisini oluşturun.</p>
+                            {clientData?.role === 'manager' && (
+                                <span className="inline-block mt-2 px-2 py-0.5 bg-amber-100 text-amber-800 text-xs font-bold rounded">Yönetici Yetkisi</span>
+                            )}
                         </div>
-                        <button onClick={handleCreateNew} className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 whitespace-nowrap">
-                            <Plus className="w-5 h-5"/> Yeni Taşıma Evrakı
-                        </button>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <button onClick={handleCreateNew} className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 whitespace-nowrap">
+                                <Plus className="w-5 h-5"/> Yeni Kontrol Formu
+                            </button>
+                            {clientData?.role === 'manager' && (
+                                <button onClick={handleCreateTransportDoc} className="flex items-center gap-2 px-6 py-3 bg-white text-indigo-600 border-2 border-indigo-600 rounded-lg font-bold hover:bg-indigo-50 transition whitespace-nowrap">
+                                    <FileText className="w-5 h-5"/> Yeni Taşıma Evrağı
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     {/* Arama & Filtre */}
@@ -379,12 +545,34 @@ export default function TMGDPublicPortal() {
                                                 <td className="px-6 py-3 font-medium text-slate-900 dark:text-white">
                                                     {new Date(d.date).toLocaleDateString('tr-TR')}
                                                     {isOld && <span className="ml-2 text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold">ARŞİV</span>}
+                                                    {d.status === 'draft' && <span className="ml-2 text-[10px] bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 px-1.5 py-0.5 rounded font-bold">TASLAK</span>}
                                                 </td>
-                                                <td className="px-6 py-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{d.driver_plate || '-'}</td>
+                                                <td className="px-6 py-3">
+                                                    <div className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{d.driver_plate || '-'}</div>
+                                                    <div className="text-xs text-slate-500 uppercase">{d.flow_type || 'ESKİ'} - {d.form_type || 'EVRAK'}</div>
+                                                </td>
                                                 <td className="px-6 py-3">{d.waybill_no || '-'}</td>
                                                 <td className="px-6 py-3 max-w-[180px] truncate" title={d.receiver_title}>{d.receiver_title}</td>
                                                 <td className="px-6 py-3 text-right">
                                                     <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        {(d.status === 'draft' || clientData?.role === 'manager') && (
+                                                            <button 
+                                                                onClick={(e) => { e.stopPropagation(); handleDeleteDoc(d.id); }} 
+                                                                className="px-3 py-1.5 bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded hover:bg-rose-100 dark:hover:bg-rose-500/20 flex items-center gap-1.5 text-xs font-bold" 
+                                                                title="Sil"
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5"/> Sil
+                                                            </button>
+                                                        )}
+                                                        {d.status === 'draft' && clientData?.role === 'manager' && (
+                                                            <button 
+                                                                onClick={(e) => { e.stopPropagation(); handleEditDoc(d); }} 
+                                                                className="px-3 py-1.5 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded hover:bg-amber-100 dark:hover:bg-amber-500/20 flex items-center gap-1.5 text-xs font-bold" 
+                                                                title="Taşıma Evrağına Dönüştür"
+                                                            >
+                                                                <FileText className="w-3.5 h-3.5"/> Taşıma Evrağı Oluştur
+                                                            </button>
+                                                        )}
                                                         <button 
                                                             onClick={(e) => { e.stopPropagation(); handleViewDoc(d); }} 
                                                             className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded hover:bg-emerald-100 dark:hover:bg-emerald-500/20 flex items-center gap-1.5 text-xs font-medium" 
@@ -392,13 +580,20 @@ export default function TMGDPublicPortal() {
                                                         >
                                                             <Eye className="w-3.5 h-3.5"/> Görüntüle
                                                         </button>
-                                                        <button 
-                                                            onClick={(e) => { e.stopPropagation(); handleEditDoc(d); }} 
-                                                            className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center gap-1.5 text-xs font-medium" 
-                                                            title="Düzenle"
-                                                        >
-                                                            <Edit2 className="w-3.5 h-3.5"/> Düzenle
-                                                        </button>
+                                                        {d.status !== 'draft' && clientData?.role === 'manager' && (
+                                                            <button 
+                                                                onClick={(e) => { e.stopPropagation(); handleEditDoc(d); }} 
+                                                                className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-xs font-medium transition ${
+                                                                    d.flow_type === 'alim' && !d.adr_checklist?.checker_signature 
+                                                                    ? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20 font-bold" 
+                                                                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                                                                }`} 
+                                                                title={d.flow_type === 'alim' && !d.adr_checklist?.checker_signature ? "Evrağı Onayla" : "Düzenle"}
+                                                            >
+                                                                {d.flow_type === 'alim' && !d.adr_checklist?.checker_signature ? <CheckCircle className="w-3.5 h-3.5"/> : <Edit2 className="w-3.5 h-3.5"/>}
+                                                                {d.flow_type === 'alim' && !d.adr_checklist?.checker_signature ? "Onayla" : "Düzenle"}
+                                                            </button>
+                                                        )}
                                                         <button 
                                                             onClick={(e) => { e.stopPropagation(); handleViewDoc(d); setTimeout(() => window.print(), 800); }} 
                                                             className="px-3 py-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 flex items-center gap-1.5 text-xs font-medium shadow-sm" 
@@ -429,7 +624,24 @@ export default function TMGDPublicPortal() {
     }
 
     // ------------------------------------------
-    // 3. PRINT UI
+    // 3. WIZARD UI (Field Personnel Forms)
+    // ------------------------------------------
+    if (step === "wizard") {
+        return (
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20 print:hidden p-4 md:p-8">
+                <div className="max-w-4xl mx-auto">
+                    <TMGDFieldFormWizard 
+                        clientData={clientData}
+                        onSuccess={handleWizardSuccess}
+                        onCancel={() => setStep("dashboard")}
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    // ------------------------------------------
+    // 4. PRINT UI
     // ------------------------------------------
     if (step === "print") {
         return (
@@ -467,10 +679,10 @@ export default function TMGDPublicPortal() {
                 <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
                     <h2 className="text-lg font-bold mb-4 text-slate-800 dark:text-slate-100 border-b pb-2">Evrak Genel Bilgileri</h2>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div><label className="block text-sm font-medium mb-1">Sevk Tarihi</label><input type="date" value={doc.date} onChange={e=>setDoc({...doc, date: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"/></div>
-                        <div><label className="block text-sm font-medium mb-1">İrsaliye No</label><input value={doc.waybill_no} onChange={e=>setDoc({...doc, waybill_no: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"/></div>
-                        <div><label className="block text-sm font-medium mb-1">Sipariş No</label><input value={doc.order_no} onChange={e=>setDoc({...doc, order_no: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"/></div>
-                        <div><label className="block text-sm font-medium mb-1">TKN (Kimlik No)</label><input value={doc.transport_id_no} onChange={e=>setDoc({...doc, transport_id_no: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"/></div>
+                        <div><label className="block text-sm font-medium mb-1">Sevk Tarihi</label><input disabled={doc.flow_type === 'alim'} type="date" value={doc.date} onChange={e=>setDoc({...doc, date: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm disabled:opacity-70"/></div>
+                        <div><label className="block text-sm font-medium mb-1">İrsaliye No</label><input disabled={doc.flow_type === 'alim'} value={doc.waybill_no} onChange={e=>setDoc({...doc, waybill_no: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm disabled:opacity-70"/></div>
+                        <div><label className="block text-sm font-medium mb-1">Sipariş No</label><input disabled={doc.flow_type === 'alim'} value={doc.order_no} onChange={e=>setDoc({...doc, order_no: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm disabled:opacity-70"/></div>
+                        <div><label className="block text-sm font-medium mb-1">TKN (Kimlik No)</label><input disabled={doc.flow_type === 'alim'} value={doc.transport_id_no} onChange={e=>setDoc({...doc, transport_id_no: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm disabled:opacity-70"/></div>
                     </div>
                     
                     <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-700 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -484,6 +696,7 @@ export default function TMGDPublicPortal() {
                             <h3 className="font-bold text-sm text-slate-500 uppercase mb-3">Alıcı Bilgileri</h3>
                             <div className="space-y-3">
                                 <input 
+                                    disabled={doc.flow_type === 'alim'}
                                     list="past-receivers" 
                                     placeholder="Alıcı Ünvanı / Firma Adı" 
                                     value={doc.receiver_title} 
@@ -496,20 +709,21 @@ export default function TMGDPublicPortal() {
                                             setDoc({...doc, receiver_title: val});
                                         }
                                     }} 
-                                    className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"
+                                    className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm disabled:opacity-70"
                                 />
                                 <datalist id="past-receivers">
                                     {uniqueReceivers.map(r => <option key={r.title} value={r.title} />)}
                                 </datalist>
 
-                                <input placeholder="Açık Adres" value={doc.receiver_address} onChange={e=>setDoc({...doc, receiver_address: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"/>
-                                <input placeholder="Telefon / İletişim" value={doc.receiver_tel} onChange={e=>setDoc({...doc, receiver_tel: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"/>
+                                <input disabled={doc.flow_type === 'alim'} placeholder="Açık Adres" value={doc.receiver_address} onChange={e=>setDoc({...doc, receiver_address: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm disabled:opacity-70"/>
+                                <input disabled={doc.flow_type === 'alim'} placeholder="Telefon / İletişim" value={doc.receiver_tel} onChange={e=>setDoc({...doc, receiver_tel: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm disabled:opacity-70"/>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Yük Kalemleri */}
+                {doc.flow_type !== 'alim' && (
                 <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-0 overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
                         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
@@ -519,7 +733,7 @@ export default function TMGDPublicPortal() {
                                     <span className="text-slate-500">Miktar:</span> <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold ml-1">{totalQuantity.toFixed(2)}</span>
                                 </div>
                                 <div className="text-xs sm:text-sm font-medium px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md">
-                                    <span className="text-slate-500">1.1.3.6 Puan:</span> <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold ml-1">{doc.total_1136_points.toFixed(2)}</span>
+                                    <span className="text-slate-500">1.1.3.6 Puan:</span> <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold ml-1">{(doc.total_1136_points||0).toFixed(2)}</span>
                                 </div>
                                 <button onClick={addItem} type="button" className="flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-indigo-700 font-medium"> <Plus className="w-4 h-4"/> Yük Ekle</button>
                             </div>
@@ -574,23 +788,29 @@ export default function TMGDPublicPortal() {
                         })}
                     </div>
                 </div>
+                )}
 
                 {/* Ek Özellikler & Taraflar & İmzalar */}
+                {doc.flow_type !== 'alim' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 space-y-4">
                         <h2 className="text-md font-bold mb-4 text-slate-800 dark:text-slate-100 border-b pb-2">Sevk Detayları & Kurallar</h2>
-                        <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-700">
-                            <input type="checkbox" checked={doc.is_multimodal} onChange={e=>setDoc({...doc, is_multimodal: e.target.checked})} className="w-5 h-5 text-indigo-600 rounded" />
-                            <span className="text-sm font-medium">Çoklu Modlu Taşıma (Multimodal Cargo)</span>
-                        </label>
-                        <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-700">
-                            <input type="checkbox" checked={doc.is_limited} onChange={e=>setDoc({...doc, is_limited: e.target.checked})} className="w-5 h-5 text-indigo-600 rounded" />
-                            <span className="text-sm font-medium">Sınırlı Miktar (Limited Quantity - LQ)</span>
-                        </label>
-                        <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-700">
-                            <input type="checkbox" checked={doc.is_env_hazardous} onChange={e=>setDoc({...doc, is_env_hazardous: e.target.checked})} className="w-5 h-5 text-indigo-600 rounded" />
-                            <span className="text-sm font-medium">Tüm Yük Çevreye Zararlı</span>
-                        </label>
+                        {doc.flow_type !== 'alim' && (
+                            <>
+                                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-700">
+                                    <input type="checkbox" checked={doc.is_multimodal} onChange={e=>setDoc({...doc, is_multimodal: e.target.checked})} className="w-5 h-5 text-indigo-600 rounded" />
+                                    <span className="text-sm font-medium">Çoklu Modlu Taşıma (Multimodal Cargo)</span>
+                                </label>
+                                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-700">
+                                    <input type="checkbox" checked={doc.is_limited} onChange={e=>setDoc({...doc, is_limited: e.target.checked})} className="w-5 h-5 text-indigo-600 rounded" />
+                                    <span className="text-sm font-medium">Sınırlı Miktar (Limited Quantity - LQ)</span>
+                                </label>
+                                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-700">
+                                    <input type="checkbox" checked={doc.is_env_hazardous} onChange={e=>setDoc({...doc, is_env_hazardous: e.target.checked})} className="w-5 h-5 text-indigo-600 rounded" />
+                                    <span className="text-sm font-medium">Tüm Yük Çevreye Zararlı</span>
+                                </label>
+                            </>
+                        )}
 
                         <div className="mt-8 pt-4 border-t border-slate-200 dark:border-slate-700">
                             <label className="block text-sm font-medium mb-1">Gönderen Sorumlu Adı Soyadı</label>
@@ -605,10 +825,10 @@ export default function TMGDPublicPortal() {
                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 flex flex-col justify-between">
                         <div className="space-y-4">
                             <h2 className="text-md font-bold mb-4 text-slate-800 dark:text-slate-100 border-b pb-2">Taşıyıcı ve Sürücü</h2>
-                            <div><label className="block text-sm font-medium mb-1">Taşıyıcı Lojistik Firma</label><input value={doc.carrier_company} onChange={e=>setDoc({...doc, carrier_company: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"/></div>
+                            <div><label className="block text-sm font-medium mb-1">Taşıyıcı Lojistik Firma</label><input disabled={doc.flow_type === 'alim'} value={doc.carrier_company} onChange={e=>setDoc({...doc, carrier_company: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm disabled:opacity-70"/></div>
                             <div className="grid grid-cols-2 gap-4">
-                                <div><label className="block text-sm font-medium mb-1">Araç Plakası</label><input value={doc.driver_plate} onChange={e=>setDoc({...doc, driver_plate: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm font-mono font-bold uppercase"/></div>
-                                <div><label className="block text-sm font-medium mb-1">Sürücü Adı</label><input value={doc.driver_name} onChange={e=>setDoc({...doc, driver_name: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm"/></div>
+                                <div><label className="block text-sm font-medium mb-1">Araç Plakası</label><input disabled={doc.flow_type === 'alim'} value={doc.driver_plate} onChange={e=>setDoc({...doc, driver_plate: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm font-mono font-bold uppercase disabled:opacity-70"/></div>
+                                <div><label className="block text-sm font-medium mb-1">Sürücü Adı</label><input disabled={doc.flow_type === 'alim'} value={doc.driver_name} onChange={e=>setDoc({...doc, driver_name: e.target.value})} className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-sm disabled:opacity-70"/></div>
                             </div>
                         </div>
 
@@ -619,68 +839,46 @@ export default function TMGDPublicPortal() {
                         </div>
                     </div>
                 </div>
+                )}
 
-                {/* ARAÇ KONTROL FORMU (YÜKLEYEN-GÖNDEREN) */}
-                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                    <div className="flex items-center gap-3 mb-6 border-b border-slate-200 dark:border-slate-700 pb-4">
-                        <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center">
-                            <FileText className="w-5 h-5 text-indigo-600" />
+                {/* YÖNETİCİ ONAY BÖLÜMÜ */}
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-20">
+                    <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 border-b border-slate-200 dark:border-slate-700 pb-2 mb-6">Yönetici Onayı</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 className="font-bold text-sm mb-3 text-slate-700">Kontrol Eden (TMGD Yetkilisi)</h4>
+                            <input 
+                                placeholder="Ad Soyad" 
+                                value={doc.adr_checklist?.checker_name || ""} 
+                                onChange={e => setDoc(prev => ({...prev, adr_checklist: {...prev.adr_checklist, checker_name: e.target.value}}))} 
+                                className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 text-sm mb-3"
+                            />
+                            <div className="bg-slate-50 dark:bg-slate-900 p-2 rounded-xl">
+                                <SignaturePad 
+                                    label="İmza" 
+                                    value={doc.adr_checklist?.checker_signature || ""} 
+                                    onChange={s => setDoc(prev => ({...prev, adr_checklist: {...prev.adr_checklist, checker_signature: s}}))} 
+                                    required
+                                />
+                            </div>
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Araç Kontrol Formu (Yükleyen-Gönderen)</h2>
-                            <p className="text-sm text-slate-500">Mevzuata uygun olarak sevkiyat kontrol aşamalarını işaretleyiniz. İşaretlenen veriler çıktı sayfasına otomatik yansır.</p>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                        {[
-                            { title: 'Ambalaj Uygunluğu', items: [
-                                { key: 'ambalaj_hasar', text: 'Ambalaj dış yüzeyinde hasar var mı?' },
-                                { key: 'etiketleme_uygunluk', text: 'Etiketlemeler uygun mu?' }
-                            ]},
-                            { title: 'Taşıt ve Ambalaj İşaret-Etiket Zorunlulukları', items: [
-                                { key: 'arac_plaka_levha', text: 'Araç ön/arka turuncu plaka var mı?' },
-                                { key: 'ambalaj_sizdirmazlik', text: 'Ambalaj sızdırmazlığı uygun mu?' },
-                                { key: 'palet_konteyner', text: 'Palet/Konteyner uygun mu?' },
-                                { key: 'yuk_guvenligi', text: 'Yükler güvenli yerleştirildi mi?' }
-                            ]},
-                            { title: 'Karışık Yükleme/Ambalajlama & Belge', items: [
-                                { key: 'karisik_yukleme', text: 'İzin verilen sınıflar kontrol edildi mi?' },
-                                { key: 'sizinti_onlem', text: 'Sızıntı riskine karşı önlem alındı mı?' },
-                                { key: 'tasima_evraki', text: 'Taşıma Evrakı Var mı?' },
-                                { key: 'src5', text: 'SRC-5 Belgesi Var mı?' },
-                                { key: 'mali_sorumluluk', text: 'Sigorta Poliçesi Var mı?' }
-                            ]}
-                        ].map((section, idx) => (
-                            <div key={idx} className="bg-slate-50 dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <h3 className="font-bold text-sm text-indigo-600 uppercase mb-4">{section.title}</h3>
-                                <div className="space-y-4">
-                                    {section.items.map(item => (
-                                        <div key={item.key} className="flex flex-col gap-2">
-                                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-tight block">{item.text}</label>
-                                            <div className="flex gap-4">
-                                                {['Evet', 'Hayır', 'Kısmen'].map((opt) => (
-                                                    <label key={opt} className="flex items-center gap-2 cursor-pointer bg-white dark:bg-slate-800 px-3 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 hover:border-indigo-500 transition-colors">
-                                                        <input 
-                                                            type="radio" 
-                                                            name={`chk_${item.key}`} 
-                                                            value={opt.toLowerCase()} 
-                                                            checked={doc.adr_checklist?.[item.key] === opt.toLowerCase()}
-                                                            onChange={(e) => setDoc(prev => ({
-                                                                ...prev, 
-                                                                adr_checklist: { ...prev.adr_checklist, [item.key]: e.target.value }
-                                                            }))}
-                                                            className="text-indigo-600"
-                                                        />
-                                                        <span className="text-xs font-medium">{opt}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                            <h4 className="font-bold text-sm mb-3 text-slate-700">Onaylayan (Firma Yetkilisi)</h4>
+                            <input 
+                                placeholder="Ad Soyad" 
+                                value={doc.adr_checklist?.approver_name || ""} 
+                                onChange={e => setDoc(prev => ({...prev, adr_checklist: {...prev.adr_checklist, approver_name: e.target.value}}))} 
+                                className="w-full px-3 py-2 border rounded-lg bg-slate-50 dark:bg-slate-900 text-sm mb-3"
+                            />
+                            <div className="bg-slate-50 dark:bg-slate-900 p-2 rounded-xl">
+                                <SignaturePad 
+                                    label="İmza" 
+                                    value={doc.adr_checklist?.approver_signature || ""} 
+                                    onChange={s => setDoc(prev => ({...prev, adr_checklist: {...prev.adr_checklist, approver_signature: s}}))} 
+                                    required
+                                />
                             </div>
-                        ))}
+                        </div>
                     </div>
                 </div>
 
@@ -689,11 +887,11 @@ export default function TMGDPublicPortal() {
                     <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div className="text-sm font-medium text-slate-500">Mevzuat: ADR 5.4.1 & Kontrol Formu</div>
                         <button 
-                            disabled={loading || !doc.sender_signature || !doc.driver_signature || items.length === 0} 
+                            disabled={loading || (doc.flow_type !== 'alim' && (!doc.sender_signature || !doc.driver_signature || items.length === 0))} 
                             onClick={handleSubmitDoc} 
                             className="w-full sm:w-auto bg-indigo-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition disabled:opacity-50 flex gap-2 items-center justify-center"
                         >
-                            {loading ? "Kaydediliyor..." : (currentDocId ? "Düzenlemeyi Kaydet" : "2 Sayfa Evrakı Oluştur")} <ArrowRight className="w-5 h-5"/>
+                            {loading ? "Kaydediliyor..." : (currentDocId ? "Evrağı Onayla ve Kaydet" : "2 Sayfa Evrakı Oluştur")} <ArrowRight className="w-5 h-5"/>
                         </button>
                     </div>
                 </div>

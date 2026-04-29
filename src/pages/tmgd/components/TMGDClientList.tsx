@@ -12,7 +12,7 @@ export default function TMGDClientList() {
     const [uploadingLogo, setUploadingLogo] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [form, setForm] = useState({
-        title: "", address: "", tel: "", fax: "", url_slug: "", access_password: "", logo_url: ""
+        title: "", address: "", tel: "", fax: "", url_slug: "", access_password: "", manager_password: "", logo_url: "", doc_limit: 10
     });
 
     useEffect(() => {
@@ -49,15 +49,15 @@ export default function TMGDClientList() {
     const openEdit = (client: any) => {
         setForm({
             title: client.title, address: client.address || "", tel: client.tel || "", 
-            fax: client.fax || "", url_slug: client.url_slug, access_password: client.access_password, 
-            logo_url: client.logo_url || ""
+            fax: client.fax || "", url_slug: client.url_slug, access_password: client.access_password, manager_password: client.manager_password || "",
+            logo_url: client.logo_url || "", doc_limit: client.doc_limit || 10
         });
         setEditingId(client.id);
         setIsModalOpen(true);
     };
 
     const openNew = () => {
-        setForm({ title: "", address: "", tel: "", fax: "", url_slug: "", access_password: "", logo_url: "" });
+        setForm({ title: "", address: "", tel: "", fax: "", url_slug: "", access_password: "", manager_password: "", logo_url: "", doc_limit: 10 });
         setEditingId(null);
         setIsModalOpen(true);
     };
@@ -156,8 +156,19 @@ export default function TMGDClientList() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Erişim Şifresi *</label>
+                                    <label className="block text-sm font-medium mb-1">Erişim Şifresi (Personel) *</label>
                                     <input required value={form.access_password} onChange={e=>setForm({...form, access_password: e.target.value})} className="w-full px-3 py-2 border dark:border-slate-700 rounded-lg bg-transparent text-sm font-mono" placeholder="Örn: 123456" />
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Yönetici Şifresi (Opsiyonel)</label>
+                                    <input value={form.manager_password || ""} onChange={e=>setForm({...form, manager_password: e.target.value})} className="w-full px-3 py-2 border dark:border-slate-700 rounded-lg bg-transparent text-sm font-mono" placeholder="Taşıma Evrağı onaylama yetkisi için" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Evrak Kotası (Limit)</label>
+                                    <input type="number" min="1" value={form.doc_limit || ""} onChange={e=>setForm({...form, doc_limit: parseInt(e.target.value) || 10})} className="w-full px-3 py-2 border dark:border-slate-700 rounded-lg bg-transparent text-sm font-mono" placeholder="Örn: 10" title="Sınır dolduğunda en eski evrak otomatik silinir." />
                                 </div>
                             </div>
                             

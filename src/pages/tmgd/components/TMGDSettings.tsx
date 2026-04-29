@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/authStore";
-import { Save, Upload } from "lucide-react";
+import { Save, Upload, Printer, Mail } from "lucide-react";
 
 export default function TMGDSettings() {
     const profile = useAuthStore(state => state.profile);
     const [logoUrl, setLogoUrl] = useState("");
+    const [alertEmail, setAlertEmail] = useState("");
+    const [quotaThreshold, setQuotaThreshold] = useState<number>(20);
+    const [undownloadedLimit, setUndownloadedLimit] = useState<number>(10);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [testingEmail, setTestingEmail] = useState(false);
 
     useEffect(() => {
         if (profile?.tenant_id) fetchCompany();
@@ -17,10 +21,15 @@ export default function TMGDSettings() {
         setLoading(true);
         const { data } = await supabase
             .from("companies")
-            .select("tmgd_logo_url")
+            .select("tmgd_logo_url, tmgd_alert_email, tmgd_quota_threshold, tmgd_undownloaded_limit")
             .eq("id", profile?.tenant_id)
             .single();
-        if (data) setLogoUrl(data.tmgd_logo_url || "");
+        if (data) {
+            setLogoUrl(data.tmgd_logo_url || "");
+            setAlertEmail(data.tmgd_alert_email || "");
+            setQuotaThreshold(data.tmgd_quota_threshold || 20);
+            setUndownloadedLimit(data.tmgd_undownloaded_limit || 10);
+        }
         setLoading(false);
     };
 
@@ -29,10 +38,43 @@ export default function TMGDSettings() {
         setSaving(true);
         await supabase
             .from("companies")
-            .update({ tmgd_logo_url: logoUrl })
+            .update({ 
+                tmgd_logo_url: logoUrl,
+                tmgd_alert_email: alertEmail,
+                tmgd_quota_threshold: quotaThreshold,
+                tmgd_undownloaded_limit: undownloadedLimit
+            })
             .eq("id", profile.tenant_id);
         setSaving(false);
-        alert("E-İmza & Logolar başarıyla kaydedildi!");
+        alert("Ayarlar başarıyla kaydedildi!");
+    };
+
+    const handleTestEmail = async () => {
+        if (!alertEmail) return alert("Önce bir e-posta adresi giriniz.");
+        setTestingEmail(true);
+        try {
+            const { data, error } = await supabase.functions.invoke('send-tmgd-notifications', {
+                body: { 
+                    type: 'test', 
+                    email: alertEmail,
+                    company_name: profile?.company_name
+                }
+            });
+            if (error) {
+                // Edge function hata döndürdüğünde body'yi okumaya çalış
+                let msg = error.message;
+                try {
+                    const errData = await error.context.json();
+                    if (errData.error) msg = errData.error;
+                } catch (e) {}
+                throw new Error(msg);
+            }
+            alert("Deneme maili başarıyla gönderildi! Lütfen gelen kutunuzu (ve gereksiz klasörünü) kontrol edin.");
+        } catch (err: any) {
+            alert("Mail Hatası: " + err.message);
+        } finally {
+            setTestingEmail(false);
+        }
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,6 +134,65 @@ export default function TMGDSettings() {
                                 <img src={logoUrl} alt="Logo Preview" className="h-20 object-contain" />
                             </div>
                         )}
+                    </div>
+
+                    <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
+                        <h3 className="text-md font-semibold text-slate-800 dark:text-slate-100 mb-4">Otomatik Uyarı & E-Posta Ayarları</h3>
+                        <p className="text-xs text-slate-500 mb-4">Firmalara tanımladığınız evrak oluşturma kotaları (limitler) dolmaya yaklaştığında, sistemin otomatik olarak göndereceği uyarı maillerini buradan yönetebilirsiniz.</p>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                    Kota Uyarı E-Posta Adresi
+                                </label>
+                                <input
+                                    type="email"
+                                    value={alertEmail}
+                                    onChange={(e) => setAlertEmail(e.target.value)}
+                                    placeholder="Örn: admin@tmgdfirmasi.com"
+                                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                />
+                                <p className="text-[10px] text-slate-400 mt-1">Uyarı mailleri bu adrese gönderilecektir.</p>
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                    İndirilmeyen Evrak Uyarı Limiti
+                                </label>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="50"
+                                        value={undownloadedLimit}
+                                        onChange={(e) => setUndownloadedLimit(Number(e.target.value))}
+                                        className="w-24 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    />
+                                    <span className="text-sm font-medium text-slate-600">Evrak İndirilmezse Uyar</span>
+                                </div>
+                                <p className="text-[10px] text-slate-400 mt-1">Son yüklenen evraklardan bu kadarı indirilmediğinde mail alırsınız.</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 p-4 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl border border-indigo-100 dark:border-indigo-500/20">
+                            <div className="flex items-center justify-between">
+                                <div className="text-xs text-indigo-700 dark:text-indigo-400 font-medium">
+                                    Mail sistemini test etmek için:
+                                </div>
+                                <button
+                                    onClick={handleTestEmail}
+                                    disabled={testingEmail}
+                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition disabled:opacity-50 flex items-center gap-2 shadow-sm"
+                                >
+                                    {testingEmail ? (
+                                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    ) : (
+                                        <Printer className="w-3 h-3" />
+                                    )}
+                                    Deneme Maili Gönder
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
