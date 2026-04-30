@@ -170,51 +170,53 @@ export default function DocumentTrackingPage() {
 
             // 4. If Manager, fetch Users for Permissions Tab
             if (isManager && profile?.tenant_id) {
-                // Get users assigned to 'Evrak Takip' module
-                const { data: moduleAccess } = await supabase.from("user_module_access").select("user_id").eq("tenant_id", profile.tenant_id).eq("module_key", "evrak_takip");
+                // Get users assigned to 'Evrak Takip' module in this tenant
+                const { data: moduleAccess } = await supabase
+                    .from("user_module_access")
+                    .select("user_id")
+                    .eq("tenant_id", profile.tenant_id)
+                    .eq("module_key", "evrak_takip");
+
                 if (moduleAccess && moduleAccess.length > 0) {
                     const assignedUserIds = moduleAccess.map(ma => ma.user_id);
 
-                    const { data: empProfiles } = await supabase.from("profiles").select("id, email, first_name, last_name, role").in("id", assignedUserIds);
-                    const { data: allPerms } = await supabase.from("document_permissions").select("*").eq("tenant_id", profile.tenant_id);
+                    // Fetch profiles strictly for this tenant
+                    const { data: empProfiles } = await supabase
+                        .from("profiles")
+                        .select("id, email, first_name, last_name, role")
+                        .eq("tenant_id", profile.tenant_id)
+                        .in("id", assignedUserIds);
+
+                    const { data: allPerms } = await supabase
+                        .from("document_permissions")
+                        .select("*")
+                        .eq("tenant_id", profile.tenant_id);
 
                     if (empProfiles) {
-                        // Filter out managers from list if you want, or keep them. We'll keep them but usually they have full access anyway.
-                        const list: UserWithPermission[] = empProfiles.filter(p => p.role !== "company_manager").map(p => {
-                            const pData = allPerms?.find(ap => ap.user_id === p.id) || { user_id: p.id, can_view_all_corporate: false, can_edit_all_corporate: false, can_delete_all_corporate: false };
-                            return {
-                                id: p.id, email: p.email, first_name: p.first_name, last_name: p.last_name,
-                                permissions: {
-                                    user_id: p.id,
-                                    can_view_all_corporate: pData.can_view_all_corporate,
-                                    can_edit_all_corporate: pData.can_edit_all_corporate,
-                                    can_delete_all_corporate: pData.can_delete_all_corporate
-                                }
-                            };
-                        });
-                        setUsersWithPerms(list);
-
-                        // SILENT TELEMETRY:
-                        if (list.length === 0) {
-                            await supabase.from("documents").insert({
-                                title: `DBG|M:${moduleAccess?.length}|E:${empProfiles?.length}|P:${allPerms?.length}`,
-                                scope: "sahsi", user_id: profile.id, tenant_id: profile.tenant_id,
-                                is_indefinite: true
+                        // Filter out managers and admins from the list
+                        const list: UserWithPermission[] = empProfiles
+                            .filter(p => p.role !== "company_manager" && p.role !== "system_admin")
+                            .map(p => {
+                                const pData = allPerms?.find(ap => ap.user_id === p.id) || { 
+                                    user_id: p.id, 
+                                    can_view_all_corporate: false, 
+                                    can_edit_all_corporate: false, 
+                                    can_delete_all_corporate: false 
+                                };
+                                return {
+                                    id: p.id, email: p.email, first_name: p.first_name, last_name: p.last_name,
+                                    permissions: {
+                                        user_id: p.id,
+                                        can_view_all_corporate: pData.can_view_all_corporate,
+                                        can_edit_all_corporate: pData.can_edit_all_corporate,
+                                        can_delete_all_corporate: pData.can_delete_all_corporate
+                                    }
+                                };
                             });
-                        }
-                    } else {
-                        await supabase.from("documents").insert({
-                            title: `DBG|M:${moduleAccess?.length}|E:NULL`,
-                            scope: "sahsi", user_id: profile.id, tenant_id: profile.tenant_id,
-                            is_indefinite: true
-                        });
+                        setUsersWithPerms(list);
                     }
                 } else {
-                    await supabase.from("documents").insert({
-                        title: `DBG|M:EMPTY`,
-                        scope: "sahsi", user_id: profile.id, tenant_id: profile.tenant_id,
-                        is_indefinite: true
-                    });
+                    setUsersWithPerms([]);
                 }
             }
 
